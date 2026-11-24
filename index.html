@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>音声入力記録</title>
+<meta name="robots" content="noindex">
+<script>window.API_URL = "https://script.google.com/macros/s/AKfycbwWltlwQFGzXvHzJ5O-uQo_plTn-8-VkT3m4g75G1IkFw6mVA8jDsgLMI2egTO8xr6n/exec";</script>
+<meta charset="utf-8">
+<style>
+:root{--bg:#f2f4f7;--card:#fff;--ink:#1d2733;--sub:#5b6878;--line:#d8dee6;--acc:#2f6fb2;--acc2:#e8f0fa;--ok:#1f8a4c;--okbg:#e6f4ec;--ng:#c0392b;--ngbg:#fbeaea;--warnbg:#fff4dd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;font-size:16px}
+header{background:#24384f;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+header h1{font-size:17px;margin:0}
+header .d{font-size:13px;opacity:.85}
+.wrap{max-width:560px;margin:0 auto;padding:12px 12px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+#steps{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;min-height:4px}
+#steps span{font-size:12px;padding:3px 9px;border-radius:999px;background:#eef1f5;color:var(--sub)}
+#steps span.now{background:var(--acc);color:#fff}
+#steps span.done{background:var(--acc2);color:var(--acc)}
+#prompt{font-size:22px;font-weight:700;line-height:1.5;text-align:center;min-height:66px;white-space:pre-line}
+#heard{font-size:14px;color:var(--sub);text-align:center;min-height:21px;margin-top:4px}
+#micBtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0 4px;padding:18px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:inherit;font-size:22px;font-weight:700}
+#micBtn.listen{background:var(--ok);animation:pulse 1.2s infinite}
+#micBtn:disabled{opacity:.5}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 14px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+#chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+#chips button,.sbtn{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;color:var(--ink)}
+#typeRow{display:none;gap:6px;margin-top:10px}
+#typeRow.on{display:flex}
+#typeIn{flex:1;font:inherit;font-size:18px;padding:10px;border:1px solid var(--line);border-radius:10px;min-width:0}
+#typeOk{font:inherit;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:0 16px;font-weight:700}
+.sub{font-size:12px;color:var(--sub);text-align:center;margin-top:6px;line-height:1.6}
+.row2{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.res{border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid}
+.res.ok{background:var(--okbg);border-color:#b9dfc8}
+.res.ng{background:var(--ngbg);border-color:#efc2bd}
+.res.info{background:var(--warnbg);border-color:#f0d9a6}
+.res .t{font-weight:700;margin-bottom:6px}
+.res table{border-collapse:collapse;width:100%;font-size:15px}
+.res td{padding:4px 4px;border-top:1px solid rgba(0,0,0,.06)}
+.res td.c{color:var(--sub);white-space:nowrap;width:1%;padding-right:10px}
+.res td.v{font-weight:700}
+.res .undo{margin-top:8px;font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px}
+.mbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mbar b{font-size:16px}
+.mbar button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px}
+#tbl{width:100%;border-collapse:collapse;font-size:14px}
+#tbl th,#tbl td{border-bottom:1px solid var(--line);padding:6px 3px;text-align:center}
+#tbl th{font-size:12px;color:var(--sub);font-weight:700}
+#tbl tr.today td{background:#fffbe6}
+#tbl td.ng{color:var(--ng);font-weight:700}
+#tbl td.okj{color:var(--ok);font-weight:700}
+#tbl td.wd{color:var(--sub);font-size:12px}
+#tbl tr.memo td{text-align:left;font-size:12px;color:var(--sub);border-bottom:1px solid var(--line);padding-top:0}
+#tbl td.nm{font-size:12px}
+#xlBtn{width:100%;margin-top:10px;font:inherit;font-weight:700;border:1px solid var(--acc);color:var(--acc);background:#fff;border-radius:10px;padding:11px}
+details{font-size:14px}
+details summary{color:var(--sub);cursor:pointer;padding:2px 0}
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set input{width:22px;height:22px}
+.help{font-size:13px;color:var(--sub);line-height:1.75;margin-top:8px}
+.help b{color:var(--ink)}
+#err{display:none}
+.ctitle{font-size:15px;font-weight:700;margin:0 0 8px;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:8px;row-gap:2px}
+.ctitle span{white-space:nowrap}
+.ctitle small{font-weight:400;color:var(--sub);font-size:12px}
+#quick{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+#quick .lab{font-size:13px;color:var(--sub);margin-bottom:6px}
+#quickRow{display:flex;gap:6px}
+#quickIn{flex:1;font:inherit;font-size:17px;padding:10px;border:1px solid var(--line);border-radius:10px;min-width:0}
+#quickOk{font:inherit;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:0 16px;font-weight:700}
+#gate{display:none;max-width:420px;margin:40px auto;padding:0 16px}
+#gate .card{text-align:center}
+#gate h2{font-size:18px;margin:4px 0 6px}
+#gate p{font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.7}
+#gate input[type=password]{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--line);border-radius:10px;text-align:center}
+#gate button{width:100%;margin-top:10px;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:12px}
+#gate label{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--sub);margin-top:10px}
+#gateMsg{color:var(--ng);font-size:13px;min-height:18px;margin-top:8px}
+body.locked .wrap{display:none}
+body.locked #gate{display:block}
+</style>
+</head>
+<body>
+<header><h1>🎙️ 音声入力記録</h1><span class="d" id="hdDate"></span></header>
+<div id="gate">
+  <div class="card">
+    <h2>合言葉を入れてください</h2>
+    <p>NYKインフォメーションと同じ合言葉です。</p>
+    <input type="password" id="pass" autocomplete="current-password" enterkeyhint="go">
+    <label><input type="checkbox" id="keep" checked> このスマホで覚えておく</label>
+    <button id="passOk">はじめる</button>
+    <div id="gateMsg"></div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <div class="ctitle"><span>🌡️ 肉の温度記録</span><small>からあげ（味付け）タンブリング後 品温【CCP】</small></div>
+    <div id="steps"></div>
+    <div id="prompt">下のボタンを押して記録をはじめます</div>
+    <div id="heard"></div>
+    <button id="micBtn">🎤 記録する</button>
+    <div id="chips"></div>
+    <div id="typeRow"><input id="typeIn" enterkeyhint="done" autocomplete="off"><button id="typeOk">決定</button></div>
+    <div class="row2"><button class="sbtn" id="cancelBtn" style="display:none">やめる</button><button class="sbtn" id="typeBtn" style="display:none">⌨️ 文字で入れる</button></div>
+    <div class="sub" id="subMsg">今日のまだ書いていない回（1回目→2回目→3回目）を順番に聞きます</div>
+    <div id="quick">
+      <div class="lab">⌨️ まとめて入力（キーボードのマイクで話してもOK）</div>
+      <div id="quickRow"><input id="quickIn" enterkeyhint="done" autocomplete="off" placeholder="例 2回目 5.8度 山田"><button id="quickOk">記録</button></div>
+    </div>
+  </div>
+  <div id="result"></div>
+  <div class="card">
+    <div class="mbar"><button id="prevM">‹</button><b id="monTitle"></b><button id="nextM">›</button></div>
+    <table id="tbl"></table>
+    <button id="xlBtn">📥 この月をエクセルで保存</button>
+  </div>
+  <div class="card">
+    <details>
+      <summary>設定・使い方</summary>
+      <div style="margin-top:8px">
+        <label class="set"><span>読み上げ（質問と記録した内容を声で知らせる）</span><input type="checkbox" id="optSay"></label>
+        <label class="set"><span>「記録する」と言って始める（画面を開いている間ずっと聞く）</span><input type="checkbox" id="optWake"></label>
+        <label class="set"><span>測定者の名前</span><input id="optName" style="width:9em;height:auto;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px" placeholder="例 松澤"></label>
+      </div>
+      <div class="help">
+        <b>流れ</b>：「記録する」→ ① 温度（例「5.8度」「5度8分」）→ 10.0℃を超えた時は処置 → ② 測定者 → 記録して、何をどこに書いたかを知らせます。判定（合・否）は自動です。<br>
+        <b>言えること</b>：「なし」＝回さない回（斜線）／「2回目を記録する」＝回を指定（書き直し）／「やめる」＝中止。間違えた時は記録の下の「取り消す」。<br>
+        <b>まとめて一言</b>：「2回目 5.8度 山田」のように、回・温度・測定者を一度に言えます（回を言わなければ今日のまだ空いている回）。足りないところだけ聞き返します。「記録する」と言って始める設定なら「記録する 5.8度 山田」でもOK。<br>
+        声が使えない時（電波が弱い時など）は「まとめて入力」の欄を押し、キーボードのマイクボタンで話してください。<br>
+        <b>合図の音</b>：「ピッ」と鳴ったら話してください。<br>
+        <b>エクセル</b>：表の下の「この月をエクセルで保存」で、いつもの記録表の形のファイルができます。<br>
+        <button class="sbtn" id="logoutBtn" style="margin-top:8px">合言葉を入れ直す</button>
+      </div>
+    </details>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+var TPL = [["[Content_Types].xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cTypes xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"\u003e\u003cDefault Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/\u003e\u003cDefault Extension=\"xml\" ContentType=\"application/xml\"/\u003e\u003cOverride PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/\u003e\u003cOverride PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/\u003e\u003cOverride PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/\u003e\u003cOverride PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/\u003e\u003cOverride PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/\u003e\u003cOverride PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/\u003e\u003cOverride PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/\u003e\u003c/Types\u003e"],["_rels/.rels","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cRelationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"\u003e\u003cRelationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/\u003e\u003cRelationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/\u003e\u003cRelationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/\u003e\u003c/Relationships\u003e"],["xl/workbook.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cworkbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x15 xr xr6 xr10 xr2\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr6=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision6\" xmlns:xr10=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision10\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\"\u003e\u003cfileVersion appName=\"xl\" lastEdited=\"7\" lowestEdited=\"7\" rupBuild=\"30527\"/\u003e\u003cworkbookPr defaultThemeVersion=\"202300\"/\u003e\u003cmc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\"\u003e\u003cmc:Choice Requires=\"x15\"\u003e\u003cx15ac:absPath url=\"C:\\Users\\NYK\\Desktop\\\" xmlns:x15ac=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac\"/\u003e\u003c/mc:Choice\u003e\u003c/mc:AlternateContent\u003e\u003cxr:revisionPtr revIDLastSave=\"0\" documentId=\"8_{EB24242A-66C5-403B-A9BC-46B9428218B2}\" xr6:coauthVersionLast=\"47\" xr6:coauthVersionMax=\"47\" xr10:uidLastSave=\"{00000000-0000-0000-0000-000000000000}\"/\u003e\u003cbookViews\u003e\u003cworkbookView xWindow=\"-108\" yWindow=\"-108\" windowWidth=\"23256\" windowHeight=\"13176\" xr2:uid=\"{A2B00B87-A595-40D4-9288-964B40343CFE}\"/\u003e\u003c/bookViews\u003e\u003csheets\u003e\u003csheet name=\"からあげ_CCP品温記録表_1ヶ月 (2)\" sheetId=\"2\" r:id=\"rId1\"/\u003e\u003c/sheets\u003e\u003ccalcPr calcId=\"191029\"/\u003e\u003cextLst\u003e\u003cext uri=\"{140A7094-0E35-4892-8432-C4D2E57EDEB5}\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\"\u003e\u003cx15:workbookPr chartTrackingRefBase=\"1\"/\u003e\u003c/ext\u003e\u003cext uri=\"{B58B0392-4F1F-4190-BB64-5DF3571DCE5F}\" xmlns:xcalcf=\"http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures\"\u003e\u003cxcalcf:calcFeatures\u003e\u003cxcalcf:feature name=\"microsoft.com:RD\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:Single\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:FV\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:CNMTM\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:LET_WF\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:LAMBDA_WF\"/\u003e\u003cxcalcf:feature name=\"microsoft.com:ARRAYTEXT_WF\"/\u003e\u003c/xcalcf:calcFeatures\u003e\u003c/ext\u003e\u003cext uri=\"{D14903EA-33C4-47F7-8F05-3474C54BE107}\" xmlns:xlwcv=\"http://schemas.microsoft.com/office/spreadsheetml/2024/workbookCompatibilityVersion\"\u003e\u003cxlwcv:version setVersion=\"2\"/\u003e\u003c/ext\u003e\u003c/extLst\u003e\u003c/workbook\u003e"],["xl/_rels/workbook.xml.rels","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cRelationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"\u003e\u003cRelationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/\u003e\u003cRelationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/\u003e\u003cRelationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/\u003e\u003cRelationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/\u003e\u003c/Relationships\u003e"],["xl/worksheets/sheet1.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cworksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{C1FC0328-3E84-4D71-B7AF-4E4D660CEB37}\"\u003e\u003csheetPr\u003e\u003cpageSetUpPr fitToPage=\"1\"/\u003e\u003c/sheetPr\u003e\u003cdimension ref=\"A1:I35\"/\u003e\u003csheetViews\u003e\u003csheetView tabSelected=\"1\" workbookViewId=\"0\"\u003e\u003cselection activeCell=\"I5\" sqref=\"I5\"/\u003e\u003c/sheetView\u003e\u003c/sheetViews\u003e\u003csheetFormatPr defaultRowHeight=\"18\"/\u003e\u003ccols\u003e\u003ccol min=\"1\" max=\"1\" width=\"5.3984375\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"2\" max=\"2\" width=\"4.5\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"3\" max=\"5\" width=\"9.3984375\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"6\" max=\"6\" width=\"9\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"7\" max=\"7\" width=\"32.3984375\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"8\" max=\"9\" width=\"7.59765625\" style=\"1\" customWidth=\"1\"/\u003e\u003ccol min=\"10\" max=\"16384\" width=\"8.796875\" style=\"1\"/\u003e\u003c/cols\u003e\u003csheetData\u003e\u003crow r=\"1\" spans=\"1:9\" ht=\"22.05\" customHeight=\"1\"\u003e\u003cc r=\"A1\" s=\"10\" t=\"s\"\u003e\u003cv\u003e45\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B1\" s=\"6\"/\u003e\u003cc r=\"C1\" s=\"6\"/\u003e\u003cc r=\"D1\" s=\"6\"/\u003e\u003cc r=\"E1\" s=\"6\"/\u003e\u003cc r=\"F1\" s=\"6\"/\u003e\u003cc r=\"G1\" s=\"6\"/\u003e\u003cc r=\"H1\" s=\"9\" t=\"s\"\u003e\u003cv\u003e44\u003c/v\u003e\u003c/c\u003e\u003cc r=\"I1\" s=\"6\"/\u003e\u003c/row\u003e\u003crow r=\"2\" spans=\"1:9\" ht=\"18\" customHeight=\"1\"\u003e\u003cc r=\"A2\" s=\"8\" t=\"s\"\u003e\u003cv\u003e43\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B2\" s=\"6\"/\u003e\u003cc r=\"C2\" s=\"6\"/\u003e\u003cc r=\"D2\" s=\"6\"/\u003e\u003cc r=\"E2\" s=\"6\"/\u003e\u003cc r=\"F2\" s=\"6\"/\u003e\u003cc r=\"G2\" s=\"6\"/\u003e\u003cc r=\"H2\" s=\"6\"/\u003e\u003cc r=\"I2\" s=\"6\"/\u003e\u003c/row\u003e\u003crow r=\"3\" spans=\"1:9\" ht=\"18\" customHeight=\"1\"\u003e\u003cc r=\"A3\" s=\"7\" t=\"s\"\u003e\u003cv\u003e42\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B3\" s=\"6\"/\u003e\u003cc r=\"C3\" s=\"6\"/\u003e\u003cc r=\"D3\" s=\"6\"/\u003e\u003cc r=\"E3\" s=\"6\"/\u003e\u003cc r=\"F3\" s=\"6\"/\u003e\u003cc r=\"G3\" s=\"6\"/\u003e\u003cc r=\"H3\" s=\"6\"/\u003e\u003cc r=\"I3\" s=\"6\"/\u003e\u003c/row\u003e\u003crow r=\"4\" spans=\"1:9\" ht=\"35.4\" customHeight=\"1\"\u003e\u003cc r=\"A4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e41\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e40\u003c/v\u003e\u003c/c\u003e\u003cc r=\"C4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e39\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e38\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e37\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e36\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e35\u003c/v\u003e\u003c/c\u003e\u003cc r=\"H4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e34\u003c/v\u003e\u003c/c\u003e\u003cc r=\"I4\" s=\"5\" t=\"s\"\u003e\u003cv\u003e33\u003c/v\u003e\u003c/c\u003e\u003c/row\u003e\u003crow r=\"5\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A5\" s=\"3\" t=\"s\"\u003e\u003cv\u003e32\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B5\" s=\"3\"/\u003e\u003cc r=\"C5\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D5\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E5\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F5\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G5\" s=\"2\"/\u003e\u003cc r=\"H5\" s=\"2\"/\u003e\u003cc r=\"I5\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"6\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A6\" s=\"3\" t=\"s\"\u003e\u003cv\u003e31\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B6\" s=\"3\"/\u003e\u003cc r=\"C6\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D6\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E6\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F6\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G6\" s=\"2\"/\u003e\u003cc r=\"H6\" s=\"2\"/\u003e\u003cc r=\"I6\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"7\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A7\" s=\"3\" t=\"s\"\u003e\u003cv\u003e30\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B7\" s=\"3\"/\u003e\u003cc r=\"C7\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D7\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E7\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F7\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G7\" s=\"2\"/\u003e\u003cc r=\"H7\" s=\"2\"/\u003e\u003cc r=\"I7\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"8\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A8\" s=\"3\" t=\"s\"\u003e\u003cv\u003e29\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B8\" s=\"3\"/\u003e\u003cc r=\"C8\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D8\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E8\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F8\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G8\" s=\"2\"/\u003e\u003cc r=\"H8\" s=\"2\"/\u003e\u003cc r=\"I8\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"9\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A9\" s=\"3\" t=\"s\"\u003e\u003cv\u003e28\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B9\" s=\"3\"/\u003e\u003cc r=\"C9\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D9\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E9\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F9\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G9\" s=\"2\"/\u003e\u003cc r=\"H9\" s=\"2\"/\u003e\u003cc r=\"I9\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"10\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A10\" s=\"3\" t=\"s\"\u003e\u003cv\u003e27\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B10\" s=\"3\"/\u003e\u003cc r=\"C10\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D10\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E10\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F10\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G10\" s=\"2\"/\u003e\u003cc r=\"H10\" s=\"2\"/\u003e\u003cc r=\"I10\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"11\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A11\" s=\"3\" t=\"s\"\u003e\u003cv\u003e26\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B11\" s=\"3\"/\u003e\u003cc r=\"C11\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D11\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E11\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F11\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G11\" s=\"2\"/\u003e\u003cc r=\"H11\" s=\"2\"/\u003e\u003cc r=\"I11\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"12\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A12\" s=\"3\" t=\"s\"\u003e\u003cv\u003e25\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B12\" s=\"3\"/\u003e\u003cc r=\"C12\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D12\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E12\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F12\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G12\" s=\"2\"/\u003e\u003cc r=\"H12\" s=\"2\"/\u003e\u003cc r=\"I12\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"13\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A13\" s=\"3\" t=\"s\"\u003e\u003cv\u003e24\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B13\" s=\"3\"/\u003e\u003cc r=\"C13\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D13\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E13\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F13\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G13\" s=\"2\"/\u003e\u003cc r=\"H13\" s=\"2\"/\u003e\u003cc r=\"I13\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"14\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A14\" s=\"3\" t=\"s\"\u003e\u003cv\u003e23\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B14\" s=\"3\"/\u003e\u003cc r=\"C14\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D14\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E14\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F14\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G14\" s=\"2\"/\u003e\u003cc r=\"H14\" s=\"2\"/\u003e\u003cc r=\"I14\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"15\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A15\" s=\"3\" t=\"s\"\u003e\u003cv\u003e22\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B15\" s=\"3\"/\u003e\u003cc r=\"C15\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D15\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E15\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F15\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G15\" s=\"2\"/\u003e\u003cc r=\"H15\" s=\"2\"/\u003e\u003cc r=\"I15\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"16\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A16\" s=\"3\" t=\"s\"\u003e\u003cv\u003e21\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B16\" s=\"3\"/\u003e\u003cc r=\"C16\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D16\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E16\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F16\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G16\" s=\"2\"/\u003e\u003cc r=\"H16\" s=\"2\"/\u003e\u003cc r=\"I16\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"17\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A17\" s=\"3\" t=\"s\"\u003e\u003cv\u003e20\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B17\" s=\"3\"/\u003e\u003cc r=\"C17\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D17\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E17\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F17\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G17\" s=\"2\"/\u003e\u003cc r=\"H17\" s=\"2\"/\u003e\u003cc r=\"I17\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"18\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A18\" s=\"3\" t=\"s\"\u003e\u003cv\u003e19\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B18\" s=\"3\"/\u003e\u003cc r=\"C18\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D18\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E18\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F18\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G18\" s=\"2\"/\u003e\u003cc r=\"H18\" s=\"2\"/\u003e\u003cc r=\"I18\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"19\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A19\" s=\"3\" t=\"s\"\u003e\u003cv\u003e18\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B19\" s=\"3\"/\u003e\u003cc r=\"C19\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D19\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E19\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F19\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G19\" s=\"2\"/\u003e\u003cc r=\"H19\" s=\"2\"/\u003e\u003cc r=\"I19\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"20\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A20\" s=\"3\" t=\"s\"\u003e\u003cv\u003e17\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B20\" s=\"3\"/\u003e\u003cc r=\"C20\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D20\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E20\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F20\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G20\" s=\"2\"/\u003e\u003cc r=\"H20\" s=\"2\"/\u003e\u003cc r=\"I20\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"21\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A21\" s=\"3\" t=\"s\"\u003e\u003cv\u003e16\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B21\" s=\"3\"/\u003e\u003cc r=\"C21\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D21\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E21\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F21\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G21\" s=\"2\"/\u003e\u003cc r=\"H21\" s=\"2\"/\u003e\u003cc r=\"I21\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"22\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A22\" s=\"3\" t=\"s\"\u003e\u003cv\u003e15\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B22\" s=\"3\"/\u003e\u003cc r=\"C22\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D22\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E22\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F22\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G22\" s=\"2\"/\u003e\u003cc r=\"H22\" s=\"2\"/\u003e\u003cc r=\"I22\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"23\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A23\" s=\"3\" t=\"s\"\u003e\u003cv\u003e14\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B23\" s=\"3\"/\u003e\u003cc r=\"C23\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D23\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E23\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F23\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G23\" s=\"2\"/\u003e\u003cc r=\"H23\" s=\"2\"/\u003e\u003cc r=\"I23\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"24\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A24\" s=\"3\" t=\"s\"\u003e\u003cv\u003e13\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B24\" s=\"3\"/\u003e\u003cc r=\"C24\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D24\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E24\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F24\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G24\" s=\"2\"/\u003e\u003cc r=\"H24\" s=\"2\"/\u003e\u003cc r=\"I24\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"25\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A25\" s=\"3\" t=\"s\"\u003e\u003cv\u003e12\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B25\" s=\"3\"/\u003e\u003cc r=\"C25\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D25\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E25\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F25\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G25\" s=\"2\"/\u003e\u003cc r=\"H25\" s=\"2\"/\u003e\u003cc r=\"I25\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"26\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A26\" s=\"3\" t=\"s\"\u003e\u003cv\u003e11\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B26\" s=\"3\"/\u003e\u003cc r=\"C26\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D26\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E26\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F26\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G26\" s=\"2\"/\u003e\u003cc r=\"H26\" s=\"2\"/\u003e\u003cc r=\"I26\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"27\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A27\" s=\"3\" t=\"s\"\u003e\u003cv\u003e10\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B27\" s=\"3\"/\u003e\u003cc r=\"C27\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D27\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E27\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F27\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G27\" s=\"2\"/\u003e\u003cc r=\"H27\" s=\"2\"/\u003e\u003cc r=\"I27\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"28\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A28\" s=\"3\" t=\"s\"\u003e\u003cv\u003e9\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B28\" s=\"3\"/\u003e\u003cc r=\"C28\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D28\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E28\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F28\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G28\" s=\"2\"/\u003e\u003cc r=\"H28\" s=\"2\"/\u003e\u003cc r=\"I28\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"29\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A29\" s=\"3\" t=\"s\"\u003e\u003cv\u003e8\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B29\" s=\"3\"/\u003e\u003cc r=\"C29\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D29\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E29\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F29\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G29\" s=\"2\"/\u003e\u003cc r=\"H29\" s=\"2\"/\u003e\u003cc r=\"I29\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"30\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A30\" s=\"3\" t=\"s\"\u003e\u003cv\u003e7\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B30\" s=\"3\"/\u003e\u003cc r=\"C30\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D30\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E30\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F30\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G30\" s=\"2\"/\u003e\u003cc r=\"H30\" s=\"2\"/\u003e\u003cc r=\"I30\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"31\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A31\" s=\"3\" t=\"s\"\u003e\u003cv\u003e6\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B31\" s=\"3\"/\u003e\u003cc r=\"C31\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D31\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E31\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F31\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G31\" s=\"2\"/\u003e\u003cc r=\"H31\" s=\"2\"/\u003e\u003cc r=\"I31\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"32\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A32\" s=\"3\" t=\"s\"\u003e\u003cv\u003e5\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B32\" s=\"3\"/\u003e\u003cc r=\"C32\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D32\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E32\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F32\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G32\" s=\"2\"/\u003e\u003cc r=\"H32\" s=\"2\"/\u003e\u003cc r=\"I32\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"33\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A33\" s=\"3\" t=\"s\"\u003e\u003cv\u003e4\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B33\" s=\"3\"/\u003e\u003cc r=\"C33\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D33\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E33\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F33\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G33\" s=\"2\"/\u003e\u003cc r=\"H33\" s=\"2\"/\u003e\u003cc r=\"I33\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"34\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A34\" s=\"3\" t=\"s\"\u003e\u003cv\u003e3\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B34\" s=\"3\"/\u003e\u003cc r=\"C34\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D34\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E34\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F34\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G34\" s=\"2\"/\u003e\u003cc r=\"H34\" s=\"2\"/\u003e\u003cc r=\"I34\" s=\"2\"/\u003e\u003c/row\u003e\u003crow r=\"35\" spans=\"1:9\" ht=\"20.55\" customHeight=\"1\"\u003e\u003cc r=\"A35\" s=\"3\" t=\"s\"\u003e\u003cv\u003e2\u003c/v\u003e\u003c/c\u003e\u003cc r=\"B35\" s=\"3\"/\u003e\u003cc r=\"C35\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"D35\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"E35\" s=\"4\" t=\"s\"\u003e\u003cv\u003e1\u003c/v\u003e\u003c/c\u003e\u003cc r=\"F35\" s=\"3\" t=\"s\"\u003e\u003cv\u003e0\u003c/v\u003e\u003c/c\u003e\u003cc r=\"G35\" s=\"2\"/\u003e\u003cc r=\"H35\" s=\"2\"/\u003e\u003cc r=\"I35\" s=\"2\"/\u003e\u003c/row\u003e\u003c/sheetData\u003e\u003cmergeCells count=\"4\"\u003e\u003cmergeCell ref=\"A1:G1\"/\u003e\u003cmergeCell ref=\"H1:I1\"/\u003e\u003cmergeCell ref=\"A2:I2\"/\u003e\u003cmergeCell ref=\"A3:I3\"/\u003e\u003c/mergeCells\u003e\u003cphoneticPr fontId=\"2\"/\u003e\u003cpageMargins left=\"0.35\" right=\"0.35\" top=\"0.3\" bottom=\"0.3\" header=\"0.5\" footer=\"0.5\"/\u003e\u003cpageSetup paperSize=\"9\" orientation=\"portrait\"/\u003e\u003c/worksheet\u003e"],["xl/theme/theme1.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003ca:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office テーマ\"\u003e\u003ca:themeElements\u003e\u003ca:clrScheme name=\"Office\"\u003e\u003ca:dk1\u003e\u003ca:sysClr val=\"windowText\" lastClr=\"000000\"/\u003e\u003c/a:dk1\u003e\u003ca:lt1\u003e\u003ca:sysClr val=\"window\" lastClr=\"FFFFFF\"/\u003e\u003c/a:lt1\u003e\u003ca:dk2\u003e\u003ca:srgbClr val=\"0E2841\"/\u003e\u003c/a:dk2\u003e\u003ca:lt2\u003e\u003ca:srgbClr val=\"E8E8E8\"/\u003e\u003c/a:lt2\u003e\u003ca:accent1\u003e\u003ca:srgbClr val=\"156082\"/\u003e\u003c/a:accent1\u003e\u003ca:accent2\u003e\u003ca:srgbClr val=\"E97132\"/\u003e\u003c/a:accent2\u003e\u003ca:accent3\u003e\u003ca:srgbClr val=\"196B24\"/\u003e\u003c/a:accent3\u003e\u003ca:accent4\u003e\u003ca:srgbClr val=\"0F9ED5\"/\u003e\u003c/a:accent4\u003e\u003ca:accent5\u003e\u003ca:srgbClr val=\"A02B93\"/\u003e\u003c/a:accent5\u003e\u003ca:accent6\u003e\u003ca:srgbClr val=\"4EA72E\"/\u003e\u003c/a:accent6\u003e\u003ca:hlink\u003e\u003ca:srgbClr val=\"467886\"/\u003e\u003c/a:hlink\u003e\u003ca:folHlink\u003e\u003ca:srgbClr val=\"96607D\"/\u003e\u003c/a:folHlink\u003e\u003c/a:clrScheme\u003e\u003ca:fontScheme name=\"Office\"\u003e\u003ca:majorFont\u003e\u003ca:latin typeface=\"Aptos Display\" panose=\"02110004020202020204\"/\u003e\u003ca:ea typeface=\"\"/\u003e\u003ca:cs typeface=\"\"/\u003e\u003ca:font script=\"Jpan\" typeface=\"游ゴシック Light\"/\u003e\u003ca:font script=\"Hang\" typeface=\"맑은 고딕\"/\u003e\u003ca:font script=\"Hans\" typeface=\"等线 Light\"/\u003e\u003ca:font script=\"Hant\" typeface=\"新細明體\"/\u003e\u003ca:font script=\"Arab\" typeface=\"Times New Roman\"/\u003e\u003ca:font script=\"Hebr\" typeface=\"Times New Roman\"/\u003e\u003ca:font script=\"Thai\" typeface=\"Tahoma\"/\u003e\u003ca:font script=\"Ethi\" typeface=\"Nyala\"/\u003e\u003ca:font script=\"Beng\" typeface=\"Vrinda\"/\u003e\u003ca:font script=\"Gujr\" typeface=\"Shruti\"/\u003e\u003ca:font script=\"Khmr\" typeface=\"MoolBoran\"/\u003e\u003ca:font script=\"Knda\" typeface=\"Tunga\"/\u003e\u003ca:font script=\"Guru\" typeface=\"Raavi\"/\u003e\u003ca:font script=\"Cans\" typeface=\"Euphemia\"/\u003e\u003ca:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/\u003e\u003ca:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/\u003e\u003ca:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/\u003e\u003ca:font script=\"Thaa\" typeface=\"MV Boli\"/\u003e\u003ca:font script=\"Deva\" typeface=\"Mangal\"/\u003e\u003ca:font script=\"Telu\" typeface=\"Gautami\"/\u003e\u003ca:font script=\"Taml\" typeface=\"Latha\"/\u003e\u003ca:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Orya\" typeface=\"Kalinga\"/\u003e\u003ca:font script=\"Mlym\" typeface=\"Kartika\"/\u003e\u003ca:font script=\"Laoo\" typeface=\"DokChampa\"/\u003e\u003ca:font script=\"Sinh\" typeface=\"Iskoola Pota\"/\u003e\u003ca:font script=\"Mong\" typeface=\"Mongolian Baiti\"/\u003e\u003ca:font script=\"Viet\" typeface=\"Times New Roman\"/\u003e\u003ca:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/\u003e\u003ca:font script=\"Geor\" typeface=\"Sylfaen\"/\u003e\u003ca:font script=\"Armn\" typeface=\"Arial\"/\u003e\u003ca:font script=\"Bugi\" typeface=\"Leelawadee UI\"/\u003e\u003ca:font script=\"Bopo\" typeface=\"Microsoft JhengHei\"/\u003e\u003ca:font script=\"Java\" typeface=\"Javanese Text\"/\u003e\u003ca:font script=\"Lisu\" typeface=\"Segoe UI\"/\u003e\u003ca:font script=\"Mymr\" typeface=\"Myanmar Text\"/\u003e\u003ca:font script=\"Nkoo\" typeface=\"Ebrima\"/\u003e\u003ca:font script=\"Olck\" typeface=\"Nirmala UI\"/\u003e\u003ca:font script=\"Osma\" typeface=\"Ebrima\"/\u003e\u003ca:font script=\"Phag\" typeface=\"Phagspa\"/\u003e\u003ca:font script=\"Syrn\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Syrj\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Syre\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Sora\" typeface=\"Nirmala UI\"/\u003e\u003ca:font script=\"Tale\" typeface=\"Microsoft Tai Le\"/\u003e\u003ca:font script=\"Talu\" typeface=\"Microsoft New Tai Lue\"/\u003e\u003ca:font script=\"Tfng\" typeface=\"Ebrima\"/\u003e\u003c/a:majorFont\u003e\u003ca:minorFont\u003e\u003ca:latin typeface=\"Aptos Narrow\" panose=\"02110004020202020204\"/\u003e\u003ca:ea typeface=\"\"/\u003e\u003ca:cs typeface=\"\"/\u003e\u003ca:font script=\"Jpan\" typeface=\"游ゴシック\"/\u003e\u003ca:font script=\"Hang\" typeface=\"맑은 고딕\"/\u003e\u003ca:font script=\"Hans\" typeface=\"等线\"/\u003e\u003ca:font script=\"Hant\" typeface=\"新細明體\"/\u003e\u003ca:font script=\"Arab\" typeface=\"Arial\"/\u003e\u003ca:font script=\"Hebr\" typeface=\"Arial\"/\u003e\u003ca:font script=\"Thai\" typeface=\"Tahoma\"/\u003e\u003ca:font script=\"Ethi\" typeface=\"Nyala\"/\u003e\u003ca:font script=\"Beng\" typeface=\"Vrinda\"/\u003e\u003ca:font script=\"Gujr\" typeface=\"Shruti\"/\u003e\u003ca:font script=\"Khmr\" typeface=\"DaunPenh\"/\u003e\u003ca:font script=\"Knda\" typeface=\"Tunga\"/\u003e\u003ca:font script=\"Guru\" typeface=\"Raavi\"/\u003e\u003ca:font script=\"Cans\" typeface=\"Euphemia\"/\u003e\u003ca:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/\u003e\u003ca:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/\u003e\u003ca:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/\u003e\u003ca:font script=\"Thaa\" typeface=\"MV Boli\"/\u003e\u003ca:font script=\"Deva\" typeface=\"Mangal\"/\u003e\u003ca:font script=\"Telu\" typeface=\"Gautami\"/\u003e\u003ca:font script=\"Taml\" typeface=\"Latha\"/\u003e\u003ca:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Orya\" typeface=\"Kalinga\"/\u003e\u003ca:font script=\"Mlym\" typeface=\"Kartika\"/\u003e\u003ca:font script=\"Laoo\" typeface=\"DokChampa\"/\u003e\u003ca:font script=\"Sinh\" typeface=\"Iskoola Pota\"/\u003e\u003ca:font script=\"Mong\" typeface=\"Mongolian Baiti\"/\u003e\u003ca:font script=\"Viet\" typeface=\"Arial\"/\u003e\u003ca:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/\u003e\u003ca:font script=\"Geor\" typeface=\"Sylfaen\"/\u003e\u003ca:font script=\"Armn\" typeface=\"Arial\"/\u003e\u003ca:font script=\"Bugi\" typeface=\"Leelawadee UI\"/\u003e\u003ca:font script=\"Bopo\" typeface=\"Microsoft JhengHei\"/\u003e\u003ca:font script=\"Java\" typeface=\"Javanese Text\"/\u003e\u003ca:font script=\"Lisu\" typeface=\"Segoe UI\"/\u003e\u003ca:font script=\"Mymr\" typeface=\"Myanmar Text\"/\u003e\u003ca:font script=\"Nkoo\" typeface=\"Ebrima\"/\u003e\u003ca:font script=\"Olck\" typeface=\"Nirmala UI\"/\u003e\u003ca:font script=\"Osma\" typeface=\"Ebrima\"/\u003e\u003ca:font script=\"Phag\" typeface=\"Phagspa\"/\u003e\u003ca:font script=\"Syrn\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Syrj\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Syre\" typeface=\"Estrangelo Edessa\"/\u003e\u003ca:font script=\"Sora\" typeface=\"Nirmala UI\"/\u003e\u003ca:font script=\"Tale\" typeface=\"Microsoft Tai Le\"/\u003e\u003ca:font script=\"Talu\" typeface=\"Microsoft New Tai Lue\"/\u003e\u003ca:font script=\"Tfng\" typeface=\"Ebrima\"/\u003e\u003c/a:minorFont\u003e\u003c/a:fontScheme\u003e\u003ca:fmtScheme name=\"Office\"\u003e\u003ca:fillStyleLst\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"/\u003e\u003c/a:solidFill\u003e\u003ca:gradFill rotWithShape=\"1\"\u003e\u003ca:gsLst\u003e\u003ca:gs pos=\"0\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:lumMod val=\"110000\"/\u003e\u003ca:satMod val=\"105000\"/\u003e\u003ca:tint val=\"67000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"50000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:lumMod val=\"105000\"/\u003e\u003ca:satMod val=\"103000\"/\u003e\u003ca:tint val=\"73000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"100000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:lumMod val=\"105000\"/\u003e\u003ca:satMod val=\"109000\"/\u003e\u003ca:tint val=\"81000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003c/a:gsLst\u003e\u003ca:lin ang=\"5400000\" scaled=\"0\"/\u003e\u003c/a:gradFill\u003e\u003ca:gradFill rotWithShape=\"1\"\u003e\u003ca:gsLst\u003e\u003ca:gs pos=\"0\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:satMod val=\"103000\"/\u003e\u003ca:lumMod val=\"102000\"/\u003e\u003ca:tint val=\"94000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"50000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:satMod val=\"110000\"/\u003e\u003ca:lumMod val=\"100000\"/\u003e\u003ca:shade val=\"100000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"100000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:lumMod val=\"99000\"/\u003e\u003ca:satMod val=\"120000\"/\u003e\u003ca:shade val=\"78000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003c/a:gsLst\u003e\u003ca:lin ang=\"5400000\" scaled=\"0\"/\u003e\u003c/a:gradFill\u003e\u003c/a:fillStyleLst\u003e\u003ca:lnStyleLst\u003e\u003ca:ln w=\"12700\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"/\u003e\u003c/a:solidFill\u003e\u003ca:prstDash val=\"solid\"/\u003e\u003ca:miter lim=\"800000\"/\u003e\u003c/a:ln\u003e\u003ca:ln w=\"19050\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"/\u003e\u003c/a:solidFill\u003e\u003ca:prstDash val=\"solid\"/\u003e\u003ca:miter lim=\"800000\"/\u003e\u003c/a:ln\u003e\u003ca:ln w=\"25400\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"/\u003e\u003c/a:solidFill\u003e\u003ca:prstDash val=\"solid\"/\u003e\u003ca:miter lim=\"800000\"/\u003e\u003c/a:ln\u003e\u003c/a:lnStyleLst\u003e\u003ca:effectStyleLst\u003e\u003ca:effectStyle\u003e\u003ca:effectLst/\u003e\u003c/a:effectStyle\u003e\u003ca:effectStyle\u003e\u003ca:effectLst/\u003e\u003c/a:effectStyle\u003e\u003ca:effectStyle\u003e\u003ca:effectLst\u003e\u003ca:outerShdw blurRad=\"57150\" dist=\"19050\" dir=\"5400000\" algn=\"ctr\" rotWithShape=\"0\"\u003e\u003ca:srgbClr val=\"000000\"\u003e\u003ca:alpha val=\"63000\"/\u003e\u003c/a:srgbClr\u003e\u003c/a:outerShdw\u003e\u003c/a:effectLst\u003e\u003c/a:effectStyle\u003e\u003c/a:effectStyleLst\u003e\u003ca:bgFillStyleLst\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"/\u003e\u003c/a:solidFill\u003e\u003ca:solidFill\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:tint val=\"95000\"/\u003e\u003ca:satMod val=\"170000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:solidFill\u003e\u003ca:gradFill rotWithShape=\"1\"\u003e\u003ca:gsLst\u003e\u003ca:gs pos=\"0\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:tint val=\"93000\"/\u003e\u003ca:satMod val=\"150000\"/\u003e\u003ca:shade val=\"98000\"/\u003e\u003ca:lumMod val=\"102000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"50000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:tint val=\"98000\"/\u003e\u003ca:satMod val=\"130000\"/\u003e\u003ca:shade val=\"90000\"/\u003e\u003ca:lumMod val=\"103000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003ca:gs pos=\"100000\"\u003e\u003ca:schemeClr val=\"phClr\"\u003e\u003ca:shade val=\"63000\"/\u003e\u003ca:satMod val=\"120000\"/\u003e\u003c/a:schemeClr\u003e\u003c/a:gs\u003e\u003c/a:gsLst\u003e\u003ca:lin ang=\"5400000\" scaled=\"0\"/\u003e\u003c/a:gradFill\u003e\u003c/a:bgFillStyleLst\u003e\u003c/a:fmtScheme\u003e\u003c/a:themeElements\u003e\u003ca:objectDefaults\u003e\u003ca:lnDef\u003e\u003ca:spPr/\u003e\u003ca:bodyPr/\u003e\u003ca:lstStyle/\u003e\u003ca:style\u003e\u003ca:lnRef idx=\"2\"\u003e\u003ca:schemeClr val=\"accent1\"/\u003e\u003c/a:lnRef\u003e\u003ca:fillRef idx=\"0\"\u003e\u003ca:schemeClr val=\"accent1\"/\u003e\u003c/a:fillRef\u003e\u003ca:effectRef idx=\"1\"\u003e\u003ca:schemeClr val=\"accent1\"/\u003e\u003c/a:effectRef\u003e\u003ca:fontRef idx=\"minor\"\u003e\u003ca:schemeClr val=\"tx1\"/\u003e\u003c/a:fontRef\u003e\u003c/a:style\u003e\u003c/a:lnDef\u003e\u003c/a:objectDefaults\u003e\u003ca:extraClrSchemeLst/\u003e\u003ca:extLst\u003e\u003ca:ext uri=\"{05A4C25C-085E-4340-85A3-A5531E510DB2}\"\u003e\u003cthm15:themeFamily xmlns:thm15=\"http://schemas.microsoft.com/office/thememl/2012/main\" name=\"Office Theme\" id=\"{2E142A2C-CD16-42D6-873A-C26D2A0506FA}\" vid=\"{1BDDFF52-6CD6-40A5-AB3C-68EB2F1E4D0A}\"/\u003e\u003c/a:ext\u003e\u003c/a:extLst\u003e\u003c/a:theme\u003e"],["xl/styles.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cstyleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac x16r2 xr\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\"\u003e\u003cfonts count=\"10\"\u003e\u003cfont\u003e\u003csz val=\"11\"/\u003e\u003ccolor theme=\"1\"/\u003e\u003cname val=\"游ゴシック\"/\u003e\u003cfamily val=\"2\"/\u003e\u003ccharset val=\"128\"/\u003e\u003cscheme val=\"minor\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003csz val=\"11\"/\u003e\u003ccolor theme=\"1\"/\u003e\u003cname val=\"游ゴシック\"/\u003e\u003cfamily val=\"2\"/\u003e\u003cscheme val=\"minor\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003csz val=\"6\"/\u003e\u003cname val=\"游ゴシック\"/\u003e\u003cfamily val=\"2\"/\u003e\u003ccharset val=\"128\"/\u003e\u003cscheme val=\"minor\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003csz val=\"9\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003cb/\u003e\u003csz val=\"9\"/\u003e\u003ccolor rgb=\"FFFFFFFF\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003csz val=\"6\"/\u003e\u003cname val=\"游ゴシック\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003cscheme val=\"minor\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003cb/\u003e\u003csz val=\"8.5\"/\u003e\u003ccolor rgb=\"FFB71C1C\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003cb/\u003e\u003csz val=\"9\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003cb/\u003e\u003csz val=\"10\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003cfont\u003e\u003cb/\u003e\u003csz val=\"12\"/\u003e\u003cname val=\"Meiryo UI\"/\u003e\u003cfamily val=\"3\"/\u003e\u003ccharset val=\"128\"/\u003e\u003c/font\u003e\u003c/fonts\u003e\u003cfills count=\"4\"\u003e\u003cfill\u003e\u003cpatternFill patternType=\"none\"/\u003e\u003c/fill\u003e\u003cfill\u003e\u003cpatternFill patternType=\"gray125\"/\u003e\u003c/fill\u003e\u003cfill\u003e\u003cpatternFill patternType=\"solid\"\u003e\u003cfgColor rgb=\"FF2C3E50\"/\u003e\u003cbgColor rgb=\"FF2C3E50\"/\u003e\u003c/patternFill\u003e\u003c/fill\u003e\u003cfill\u003e\u003cpatternFill patternType=\"solid\"\u003e\u003cfgColor rgb=\"FFFDEDEC\"/\u003e\u003cbgColor rgb=\"FFFDEDEC\"/\u003e\u003c/patternFill\u003e\u003c/fill\u003e\u003c/fills\u003e\u003cborders count=\"2\"\u003e\u003cborder\u003e\u003cleft/\u003e\u003cright/\u003e\u003ctop/\u003e\u003cbottom/\u003e\u003cdiagonal/\u003e\u003c/border\u003e\u003cborder\u003e\u003cleft style=\"thin\"\u003e\u003ccolor rgb=\"FF7F8C8D\"/\u003e\u003c/left\u003e\u003cright style=\"thin\"\u003e\u003ccolor rgb=\"FF7F8C8D\"/\u003e\u003c/right\u003e\u003ctop style=\"thin\"\u003e\u003ccolor rgb=\"FF7F8C8D\"/\u003e\u003c/top\u003e\u003cbottom style=\"thin\"\u003e\u003ccolor rgb=\"FF7F8C8D\"/\u003e\u003c/bottom\u003e\u003cdiagonal/\u003e\u003c/border\u003e\u003c/borders\u003e\u003ccellStyleXfs count=\"2\"\u003e\u003cxf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"\u003e\u003calignment vertical=\"center\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\"/\u003e\u003c/cellStyleXfs\u003e\u003ccellXfs count=\"11\"\u003e\u003cxf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"\u003e\u003calignment vertical=\"center\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"1\"/\u003e\u003cxf numFmtId=\"0\" fontId=\"3\" fillId=\"0\" borderId=\"1\" xfId=\"1\" applyFont=\"1\" applyBorder=\"1\"/\u003e\u003cxf numFmtId=\"0\" fontId=\"3\" fillId=\"0\" borderId=\"1\" xfId=\"1\" applyFont=\"1\" applyBorder=\"1\" applyAlignment=\"1\"\u003e\u003calignment horizontal=\"center\" vertical=\"center\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"3\" fillId=\"0\" borderId=\"1\" xfId=\"1\" applyFont=\"1\" applyBorder=\"1\" applyAlignment=\"1\"\u003e\u003calignment horizontal=\"right\" vertical=\"center\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"4\" fillId=\"2\" borderId=\"1\" xfId=\"1\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"\u003e\u003calignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"1\"/\u003e\u003cxf numFmtId=\"0\" fontId=\"6\" fillId=\"3\" borderId=\"0\" xfId=\"1\" applyFont=\"1\" applyFill=\"1\" applyAlignment=\"1\"\u003e\u003calignment vertical=\"center\" wrapText=\"1\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"7\" fillId=\"0\" borderId=\"0\" xfId=\"1\" applyFont=\"1\" applyAlignment=\"1\"\u003e\u003calignment vertical=\"center\" wrapText=\"1\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"8\" fillId=\"0\" borderId=\"0\" xfId=\"1\" applyFont=\"1\" applyAlignment=\"1\"\u003e\u003calignment horizontal=\"right\" vertical=\"center\"/\u003e\u003c/xf\u003e\u003cxf numFmtId=\"0\" fontId=\"9\" fillId=\"0\" borderId=\"0\" xfId=\"1\" applyFont=\"1\"/\u003e\u003c/cellXfs\u003e\u003ccellStyles count=\"2\"\u003e\u003ccellStyle name=\"標準\" xfId=\"0\" builtinId=\"0\"/\u003e\u003ccellStyle name=\"標準 2\" xfId=\"1\" xr:uid=\"{0C33464F-5EF3-4FF4-97E6-A6763E61478C}\"/\u003e\u003c/cellStyles\u003e\u003cdxfs count=\"0\"/\u003e\u003ctableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/\u003e\u003cextLst\u003e\u003cext uri=\"{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}\" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\"\u003e\u003cx14:slicerStyles defaultSlicerStyle=\"SlicerStyleLight1\"/\u003e\u003c/ext\u003e\u003cext uri=\"{9260A510-F301-46a8-8635-F512D64BE5F5}\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\"\u003e\u003cx15:timelineStyles defaultTimelineStyle=\"TimeSlicerStyleLight1\"/\u003e\u003c/ext\u003e\u003c/extLst\u003e\u003c/styleSheet\u003e"],["xl/sharedStrings.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003csst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"168\" uniqueCount=\"46\"\u003e\u003csi\u003e\u003ct\u003e合 ・ 否\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct xml:space=\"preserve\"\u003e      ℃\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e31日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e30日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e29日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e28日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e27日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e26日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e25日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e24日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e23日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e22日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e21日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e20日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e19日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e18日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e17日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e16日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e15日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e14日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e13日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e12日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e11日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e10日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e9日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e8日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e7日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e6日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e5日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e4日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e3日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e2日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e1日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e管理者\r\n確認\u003c/t\u003e\u003crPh sb=\"0\" eb=\"3\"\u003e\u003ct\u003eカンリシャ\u003c/t\u003e\u003c/rPh\u003e\u003cphoneticPr fontId=\"5\"/\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e測定者\r\nサイン\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e基準超過時の処置メモ（該当時のみ記入）\r\n［何回目が何℃・冷却開始〜終了時刻・再測定温度など］\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e判定\r\n(10.0℃以下)\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e3回目\r\n実測温度\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e2回目\r\n実測温度\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e1回目\r\n実測温度\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e曜日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e日\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e【基準超過時の対応】①10.1〜14.9℃：4℃以下冷蔵庫で5時間以上冷却（4℃以下確認後出荷） ②15.0℃以上：廃棄\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e【合格基準】各回とも10.0℃以下（目標6.0℃以下） ※回さない回・製造なしの日は斜線 ※測定前後に温度計をアルコール消毒\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003e2026年　　月分\u003c/t\u003e\u003c/si\u003e\u003csi\u003e\u003ct\u003eからあげ（味付け）タンブリング後 品温【CCP】記録表（1日最大3回）\u003c/t\u003e\u003c/si\u003e\u003c/sst\u003e"],["docProps/core.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003ccp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcmitype=\"http://purl.org/dc/dcmitype/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\u003e\u003cdc:creator\u003e啓太 並木\u003c/dc:creator\u003e\u003ccp:lastModifiedBy\u003e啓太 並木\u003c/cp:lastModifiedBy\u003e\u003cdcterms:created xsi:type=\"dcterms:W3CDTF\"\u003e2026-11-17T05:59:19Z\u003c/dcterms:created\u003e\u003cdcterms:modified xsi:type=\"dcterms:W3CDTF\"\u003e2026-11-17T06:01:32Z\u003c/dcterms:modified\u003e\u003c/cp:coreProperties\u003e"],["docProps/app.xml","\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\r\n\u003cProperties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\"\u003e\u003cApplication\u003eMicrosoft Excel\u003c/Application\u003e\u003cDocSecurity\u003e0\u003c/DocSecurity\u003e\u003cScaleCrop\u003efalse\u003c/ScaleCrop\u003e\u003cHeadingPairs\u003e\u003cvt:vector size=\"2\" baseType=\"variant\"\u003e\u003cvt:variant\u003e\u003cvt:lpstr\u003eワークシート\u003c/vt:lpstr\u003e\u003c/vt:variant\u003e\u003cvt:variant\u003e\u003cvt:i4\u003e1\u003c/vt:i4\u003e\u003c/vt:variant\u003e\u003c/vt:vector\u003e\u003c/HeadingPairs\u003e\u003cTitlesOfParts\u003e\u003cvt:vector size=\"1\" baseType=\"lpstr\"\u003e\u003cvt:lpstr\u003eからあげ_CCP品温記録表_1ヶ月 (2)\u003c/vt:lpstr\u003e\u003c/vt:vector\u003e\u003c/TitlesOfParts\u003e\u003cCompany\u003e\u003c/Company\u003e\u003cLinksUpToDate\u003efalse\u003c/LinksUpToDate\u003e\u003cSharedDoc\u003efalse\u003c/SharedDoc\u003e\u003cHyperlinksChanged\u003efalse\u003c/HyperlinksChanged\u003e\u003cAppVersion\u003e16.0300\u003c/AppVersion\u003e\u003c/Properties\u003e"]];   // エクセルのひな形（白紙の記録表の中身）
+var WD = ['日','月','火','水','木','金','土'];
+var K = { name:'nyk-temp-name-v1', names:'nyk-temp-names-v1', say:'nyk-temp-say-v1', wake:'nyk-temp-wake-v1', key:'nyk-voice-key-v1' };
+function ls(k, v){ try { if (v === undefined) { return localStorage.getItem(k); } if (v === null) { localStorage.removeItem(k); return; } localStorage.setItem(k, v); } catch(e){ return null; } }
+var KEY = ls(K.key) || (function(){ try { return sessionStorage.getItem(K.key); } catch(e){ return null; } })() || '';
+function pad(n){ return (n<10?'0':'')+n; }
+function isoToday(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function dLab(iso, wd){ var d=new Date(iso+'T00:00:00'); return (d.getMonth()+1)+'月'+d.getDate()+'日'+(wd?'('+WD[d.getDay()]+')':''); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function names(){ try { return JSON.parse(ls(K.names)||'[]'); } catch(e){ return []; } }
+function addName(n){ var a=names().filter(function(x){return x!==n;}); a.unshift(n); ls(K.names, JSON.stringify(a.slice(0,10))); ls(K.name, n); $('optName').value = n; }
+
+// ---------- サーバー ----------
+function call(name){
+  var args = [].slice.call(arguments, 1);
+  if (name !== 'login') { args.unshift(KEY); }
+  return new Promise(function(resolve, reject){
+    if (window.__mockApi) { window.__mockApi(name, args).then(resolve, reject); return; }
+    if (window.API_URL) {   // GitHub Pages 版：Google のアプリに直接送る
+      fetch(window.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: name, args: args }) })
+        .then(function(res){ return res.json(); })
+        .then(function(j){ if (j && j.ok) { resolve(j.result); } else { reject(new Error(j && j.error || '通信できませんでした')); } })
+        .catch(function(){ reject(new Error('通信できませんでした')); });
+      return;
+    }
+    var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function(e){ reject(new Error(e && e.message || '通信できませんでした')); });
+    r[name].apply(r, args);
+  }).catch(function(e){
+    if (/AUTH/.test(e && e.message)) { lock('合言葉を入れ直してください'); }
+    throw e;
+  });
+}
+
+// ---------- 合言葉 ----------
+function lock(msg){
+  KEY = ''; ls(K.key, null); try { sessionStorage.removeItem(K.key); } catch(e){}
+  if (typeof cancelFlow === 'function' && flow) { flow = null; }
+  document.body.classList.add('locked'); $('gateMsg').textContent = msg || '';
+}
+function tryLogin(){
+  var p = $('pass').value; if (!p.trim()) { return; }
+  $('passOk').disabled = true; $('gateMsg').textContent = '確かめています…';
+  call('login', p).then(function(r){
+    $('passOk').disabled = false;
+    if (!r || !r.ok) { $('gateMsg').textContent = '合言葉がちがいます'; return; }
+    KEY = r.key; $('pass').value = '';
+    if ($('keep').checked) { ls(K.key, KEY); } else { try { sessionStorage.setItem(K.key, KEY); } catch(e){} }
+    document.body.classList.remove('locked'); $('gateMsg').textContent = '';
+    start();
+  }).catch(function(e){ $('passOk').disabled = false; $('gateMsg').textContent = '通信できませんでした：' + e.message; });
+}
+$('passOk').onclick = tryLogin;
+$('pass').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); tryLogin(); } });
+var month = null, viewYm = isoToday().slice(0,7);
+function load(ym){
+  return call('tempGet', ym || viewYm).then(function(m){ month = m; viewYm = m.ym; render(); return m; })
+    .catch(function(e){ showRes('ng', '読み込めませんでした', esc(e.message)); });
+}
+function todayDay(){
+  var t = isoToday();
+  if (!month || month.ym !== t.slice(0,7)) { return null; }
+  return month.days[String(+t.slice(8))] || {t:['','',''], memo:'', sign:[]};
+}
+function judgeOf(t){
+  var n = t.map(function(x){ return parseFloat(x); }).filter(function(x){ return !isNaN(x); });
+  return n.length ? (n.every(function(x){ return x <= 10; }) ? '合' : '否') : '';
+}
+
+// ---------- 表 ----------
+function render(){
+  if (!month) { return; }
+  var y = +month.ym.slice(0,4), m = +month.ym.slice(5,7), last = new Date(y, m, 0).getDate(), t = isoToday();
+  $('monTitle').textContent = y + '年' + m + '月';
+  var h = '<tr><th>日</th><th></th><th>1回目</th><th>2回目</th><th>3回目</th><th>判定</th><th>測定者</th></tr>';
+  for (var i = 1; i <= last; i++) {
+    var d = month.days[String(i)], iso = month.ym + '-' + pad(i);
+    if (!d && iso > t) { continue; }
+    d = d || {t:['','',''], memo:'', sign:[]};
+    var j = judgeOf(d.t);
+    h += '<tr class="'+(iso===t?'today':'')+'"><td>'+i+'</td><td class="wd">'+WD[new Date(y,m-1,i).getDay()]+'</td>' +
+      d.t.map(function(x){ var n=parseFloat(x); return '<td'+(!isNaN(n)&&n>10?' class="ng"':'')+'>'+esc(x)+'</td>'; }).join('') +
+      '<td class="'+(j==='否'?'ng':j==='合'?'okj':'')+'">'+j+'</td><td class="nm">'+esc(d.sign.join('・'))+'</td></tr>';
+    if (d.memo) { h += '<tr class="memo"><td></td><td colspan="6">処置：'+esc(d.memo)+'</td></tr>'; }
+  }
+  $('tbl').innerHTML = h;
+  $('nextM').disabled = month.ym >= t.slice(0,7);
+}
+$('prevM').onclick = function(){ var y=+viewYm.slice(0,4), m=+viewYm.slice(5,7)-1; if (m<1){m=12;y--;} load(y+'-'+pad(m)); };
+$('nextM').onclick = function(){ var y=+viewYm.slice(0,4), m=+viewYm.slice(5,7)+1; if (m>12){m=1;y++;} load(y+'-'+pad(m)); };
+
+// ---------- 結果 ----------
+function showRes(kind, title, html){
+  var div = document.createElement('div');
+  div.className = 'res ' + kind;
+  div.innerHTML = '<div class="t">'+title+'</div>' + (html||'');
+  $('result').insertBefore(div, $('result').firstChild);
+  while ($('result').children.length > 3) { $('result').removeChild($('result').lastChild); }
+  return div;
+}
+
+// ---------- 読み上げ ----------
+var sayOn = ls(K.say) !== '0', voice = null;
+function pickVoice(){ var v = speechSynthesis.getVoices().filter(function(x){ return /^ja/i.test(x.lang); }); voice = v.filter(function(x){ return /Google|Kyoko|O-ren|Nanami/.test(x.name); })[0] || v[0] || null; }
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text, then){
+  say.last = text;
+  if (!sayOn || !window.speechSynthesis) { if (then) { setTimeout(then, 150); } return; }
+  stopRec();
+  speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text.replace(/℃/g,'度').replace(/／/g,'斜線'));
+  u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.1;
+  var done = false, fin = function(){ if (done) { return; } done = true; if (then) { then(); } };
+  u.onend = fin; u.onerror = fin;
+  setTimeout(fin, 2000 + text.length * 230);
+  speechSynthesis.speak(u);
+}
+
+// ---------- 音声認識 ----------
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var rec = null, listening = false, micBroken = !SR, wakeMode = false;
+function setMicBtn(){
+  var b = $('micBtn');
+  b.classList.toggle('listen', listening);
+  b.textContent = listening ? '🎤 聞いています…' : flow ? '🎤 話す' : '🎤 記録する';
+}
+function stopRec(){ if (rec) { var r = rec; rec = null; try { r.abort(); } catch(e){} } listening = false; setMicBtn(); }
+// 1回だけ聞く（質問のあと）。wake=true の時は「記録する」をずっと待つ
+function listen(wake){
+  if (micBroken) { openType(); return; }
+  stopRec();
+  var r = new SR(); rec = r;
+  r.lang = 'ja-JP'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = !!wake;
+  var got = false;
+  r.onresult = function(ev){
+    for (var i = ev.resultIndex; i < ev.results.length; i++) {
+      var x = ev.results[i];
+      if (!x.isFinal) { $('heard').textContent = '聞き取り中：' + x[0].transcript; continue; }
+      var alts = []; for (var k = 0; k < x.length; k++) { alts.push(x[k].transcript.trim()); }
+      $('heard').textContent = '聞こえた言葉：「' + alts[0] + '」';
+      got = true;
+      if (!wake) { stopRec(); }
+      onHeard(alts);
+    }
+  };
+  r.onerror = function(e){
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+      micBroken = true; rec = null; listening = false; setMicBtn();
+      $('subMsg').textContent = 'このスマホでは画面からマイクが使えませんでした。「⌨️ 文字で入れる」を押して、キーボードのマイクボタンで話してください。';
+      if (flow) { openType(); }
+    }
+  };
+  r.onend = function(){
+    if (rec !== r) { return; }
+    rec = null; listening = false; setMicBtn();
+    if (wake && wakeMode && !flow) { setTimeout(function(){ if (!flow && wakeMode) { listen(true); } }, 300); return; }
+    if (!got && flow && flow.step !== 'save') { $('heard').textContent = '聞き取れませんでした。「🎤 話す」を押してもう一度どうぞ'; }
+  };
+  try { r.start(); listening = true; setMicBtn(); if (!wake) { beep(880, 0.12); } } catch(e){ listening = false; setMicBtn(); }
+}
+// 「ピッ」＝話してくださいの合図
+var actx = null;
+function beep(freq, sec){
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') { actx.resume(); }
+    var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + sec);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + sec + 0.02);
+  } catch(e){}
+}
+
+// ---------- 言葉の判定 ----------
+var KN = {'〇':0,'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
+function kanjiInt(s){
+  if (/^\d+$/.test(s)) { return +s; }
+  var m = s.match(/^([一二三四五六七八九]?)十([一二三四五六七八九]?)$/);
+  if (m) { return (m[1] ? KN[m[1]] : 1) * 10 + (m[2] ? KN[m[2]] : 0); }
+  if (s.length === 1 && KN[s] != null) { return KN[s]; }
+  return NaN;
+}
+function norm(s){ return String(s).replace(/[０-９．－]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[\s、。，]/g, '').replace(/ー/g, '-'); }
+var KANA = [['きゅう',9],['じゅう',10],['いち',1],['さん',3],['よん',4],['ろく',6],['なな',7],['しち',7],['はち',8],['はっ',8],['ろっ',6],['いっ',1],['れい',0],['ぜろ',0],['ゼロ',0],['に',2],['ご',5],['し',4],['く',9]];
+function kanaNum(s){
+  if (!/点|てん/.test(s) || /\d点\d/.test(s)) { return s; }
+  s = s.replace(/てん/g, '点');
+  return s.split('点').map(function(p){
+    var t = p.replace(/(度|ど|です)$/, '');
+    for (var i = 0; i < KANA.length; i++) { t = t.split(KANA[i][0]).join(KANA[i][1] === 10 ? '十' : String(KANA[i][1])); }
+    return t.replace(/^(\d?)十(\d?)$/, function(_, a, b){ return String((a ? +a : 1) * 10 + (b ? +b : 0)); });
+  }).join('点');
+}
+// 温度：「5.8度」「5度8分」「5点8」「五点八」「ごてんはち」「マイナス2」
+function parseTemp(text){
+  var s = kanaNum(norm(text)), neg = /マイナス|-/.test(s), m, v = NaN;
+  s = s.replace(/マイナス|-/g, '').replace(/[123一二三]回目/g, '');
+  var kj = s.match(/([〇零一二三四五六七八九十]+)(?:度|点)([〇零一二三四五六七八九])?/) || s.match(/^([〇零一二三四五六七八九十]+)度?$/);
+  if ((m = s.match(/(\d+)\.(\d)/))) { v = parseFloat(m[1] + '.' + m[2]); }
+  else if ((m = s.match(/(\d+)(?:度|°|℃|点)(\d)/))) { v = parseFloat(m[1] + '.' + m[2]); }
+  else if ((m = s.match(/(\d+)/))) { v = parseFloat(m[1]); }
+  else if (kj) { var a = kanjiInt(kj[1]); v = isNaN(a) ? NaN : a + (kj[2] ? KN[kj[2]] / 10 : 0); }
+  if (isNaN(v)) { return null; }
+  if (neg) { v = -v; }
+  if (v < -40 || v > 60) { return null; }
+  return Math.round(v * 10) / 10;
+}
+function has(alts, re){ return alts.some(function(a){ return re.test(norm(a)); }); }
+var RE_CANCEL = /やめる|やめて|やめます|キャンセル|中止|ストップ/;
+var RE_YES = /^(はい|うん|ええ|そう|オッケー|OK|ok|お願いします|おねがいします|いいです|大丈夫|それで|合ってる|あってる|同じ)/;
+var RE_NO = /^(いいえ|いや|違う|ちがう|だめ|ダメ|ノー)/;
+var RE_NONE = /^(なし|無し|ない|回さない|まわさない|斜線|しゃせん)/;
+function roundIn(alts){
+  for (var i = 0; i < alts.length; i++) { var m = norm(alts[i]).match(/([123一二三])回目/); if (m) { return {'1':1,'2':2,'3':3,'一':1,'二':2,'三':3}[m[1]]; } }
+  return 0;
+}
+function cleanName(s){ return norm(s).replace(/(さん|です|でーす|になります|がやりました|が測りました|測定者は?|名前は?)/g, '').replace(/[。.!！?？]/g, ''); }
+function matchName(alts){
+  var ns = names();
+  for (var i = 0; i < alts.length; i++) { var a = norm(alts[i]); for (var j = 0; j < ns.length; j++) { if (a.indexOf(ns[j]) >= 0) { return ns[j]; } } }
+  var n = cleanName(alts[0]);
+  return n && n.length <= 8 ? n : '';
+}
+
+// ---------- 記録の流れ ----------
+var flow = null;
+var STEP = {temp:'① 温度', memo:'処置', sign:'② 測定者', save:'記録'};
+function renderSteps(){
+  if (!flow) { $('steps').innerHTML = ''; return; }
+  var order = typeof flow.temp === 'number' && flow.temp > 10 ? ['temp','memo','sign','save'] : ['temp','sign','save'];
+  var idx = order.indexOf(flow.step);
+  $('steps').innerHTML = '<span class="done">' + dLab(flow.date, true) + ' ' + flow.round + '回目</span>' + order.map(function(k, i){
+    var v = k==='temp' && flow.temp!=null ? '：' + (flow.temp==='／' ? '／' : flow.temp.toFixed(1) + '℃') : k==='sign' && flow.sign ? '：' + flow.sign : '';
+    return '<span class="'+(i<idx?'done':i===idx?'now':'')+'">'+STEP[k]+esc(v)+'</span>';
+  }).join('');
+}
+function renderChips(){
+  var h = '';
+  if (flow && flow.step === 'temp') { h = '<button data-v="なし">なし（回さない）</button>'; }
+  if (flow && flow.step === 'memo') { h = '<button data-v="はい">基準どおりの処置</button>'; }
+  if (flow && flow.step === 'sign') { h = names().map(function(n){ return '<button data-v="'+esc(n)+'">'+esc(n)+'</button>'; }).join(''); }
+  $('chips').innerHTML = h;
+}
+$('chips').addEventListener('click', function(e){ var b = e.target.closest('button[data-v]'); if (b && flow) { onHeard([b.getAttribute('data-v')]); } });
+function setFlowUi(){
+  $('cancelBtn').style.display = flow ? '' : 'none';
+  $('typeBtn').style.display = flow ? '' : 'none';
+  if (!flow) { $('typeRow').classList.remove('on'); }
+  renderSteps(); renderChips(); setMicBtn();
+}
+var flowTimer = null;
+function arm(){ clearTimeout(flowTimer); flowTimer = setTimeout(function(){ if (flow && flow.step !== 'save') { cancelFlow('返事がなかったので、記録をやめました。'); } }, 60000); }
+function ask(text){
+  $('prompt').textContent = text; $('heard').textContent = ''; $('typeIn').value = '';
+  $('typeIn').inputMode = flow && flow.step === 'temp' ? 'decimal' : 'text';
+  $('typeIn').placeholder = flow && flow.step === 'temp' ? '例 5.8（回さない時は なし）' : flow && flow.step === 'memo' ? '処置の内容' : '名前';
+  setFlowUi(); arm();
+  say(text, function(){ if (flow && flow.step !== 'save') { listen(false); } });
+}
+function startFlow(round){
+  if (flow) { return; }
+  var t = todayDay();
+  if (!month) { load(isoToday().slice(0,7)).then(function(){ if (month) { startFlow(round); } }); return; }
+  if (month.ym !== isoToday().slice(0,7)) { load(isoToday().slice(0,7)).then(function(){ startFlow(round); }); return; }
+  var r = round || (t.t[0] ? t.t[1] ? t.t[2] ? 0 : 3 : 2 : 1);
+  if (!r) { var msg = '今日は3回とも記録済みです。直す時は「2回目を記録する」と言うか、下の表を確かめてください。'; $('prompt').textContent = msg; say(msg); return; }
+  stopRec();
+  flow = { step:'temp', date: isoToday(), round: r, temp: null, memo: '', sign: '', retry: 0, old: t.t[r-1] };
+  ask(dLab(flow.date) + '、' + r + '回目' + (flow.old ? '（今は' + flow.old + '℃と書いてあります。書き直します）' : '') + 'の温度を言ってください。');
+}
+function cancelFlow(msg){
+  flow = null; clearTimeout(flowTimer); stopRec(); setFlowUi();
+  $('prompt').textContent = '下のボタンを押して記録をはじめます';
+  if (msg) { showRes('info', esc(msg)); say(msg); }
+  if (wakeMode) { setTimeout(function(){ if (!flow) { listen(true); } }, 1500); }
+}
+function retry(text){
+  flow.retry++;
+  if (flow.retry > 2) { cancelFlow('うまく聞き取れなかったので、記録をやめました。'); return; }
+  ask(text);
+}
+function onHeard(alts){
+  if (!flow) { if (has(alts, /記録|きろく/)) { quick(alts.filter(function(a){ return /記録|きろく/.test(a); })[0] || alts[0]); } return; }
+  if (has(alts, RE_CANCEL)) { cancelFlow('記録をやめました。何も書いていません。'); return; }
+  arm();
+  if (flow.step === 'temp') {
+    var rr = roundIn(alts);
+    if (rr && rr !== flow.round && !alts.some(function(a){ return parseTemp(a) != null; })) {
+      var t = todayDay(); flow.round = rr; flow.old = t ? t.t[rr-1] : ''; flow.retry = 0;
+      ask(rr + '回目に変えました。温度を言ってください。'); return;
+    }
+    if (has(alts, RE_NONE)) { flow.temp = '／'; goSign('斜線にします。'); return; }
+    var v = null;
+    for (var i = 0; i < alts.length && v == null; i++) { v = parseTemp(alts[i]); }
+    if (v == null) { retry('温度が聞き取れませんでした。もう一度、温度を言ってください。例えば「5.8度」。'); return; }
+    if (!flow.sign) { var qn = parseQuick(alts[0]).name; if (qn) { flow.sign = qn; } }
+    setTemp(v);
+    return;
+  }
+  if (flow.step === 'memo') {
+    var tm = new Date(), hm = tm.getHours() + ':' + pad(tm.getMinutes());
+    var body = has(alts, RE_YES) ? (flow.temp >= 15 ? '廃棄' : '4℃以下冷蔵庫で冷却開始') : norm(alts[0]);
+    flow.memo = flow.round + '回目' + flow.temp.toFixed(1) + '℃：' + body + '（' + hm + '）';
+    goSign('処置は「' + body + '」で書きます。');
+    return;
+  }
+  if (flow.step === 'sign') {
+    if (flow.suggest && has(alts, RE_YES)) { flow.sign = flow.suggest; save(); return; }
+    var n = matchName(alts);
+    if (!n || RE_NO.test(norm(alts[0])) && cleanName(alts[0]).replace(RE_NO, '').length < 2) { retry('測定者の名前を言ってください。'); return; }
+    flow.sign = n; save();
+  }
+}
+function setTemp(v){
+  flow.temp = v; flow.retry = 0;
+  if (v > 10) {
+    flow.step = 'memo';
+    var std = v >= 15 ? '15度以上なので、基準では廃棄です。' : '基準では、4度以下の冷蔵庫で5時間以上冷やして、4度以下を確かめてから出荷です。';
+    ask(v.toFixed(1) + '度。10度を超えています。' + std + 'やった処置を言ってください。基準どおりなら「はい」。');
+    return;
+  }
+  goSign(v.toFixed(1) + '度。');
+}
+// まとめて一言：「2回目 5.8度 山田」「記録する 5度8分 松澤さん」「3回目 なし」
+var RE_QTEMP = /(マイナス)?(\d+(\.\d)?|[〇零一二三四五六七八九十]+点[〇零一二三四五六七八九])(度|℃|°|点\d)?(\d分)?|なし|無し|回さない|斜線/;
+function parseQuick(text){
+  var raw = norm(text).replace(/記録(する|します|して)?|きろく(する)?/g, '');
+  var round = roundIn([raw]);
+  raw = raw.replace(/[123一二三]回目(を|は|の)?/g, '');
+  var none = RE_NONE.test(raw) || /なし|無し|回さない|斜線/.test(raw);
+  var temp = none ? null : parseTemp(raw);
+  var name = '', ns = names();
+  for (var j = 0; j < ns.length; j++) { if (raw.indexOf(ns[j]) >= 0) { name = ns[j]; break; } }
+  if (!name) {
+    var m = raw.match(RE_QTEMP);
+    if (m) {
+      var tail = cleanName(raw.slice(m.index + m[0].length).replace(/^(で|です|、)/, ''));
+      var head = cleanName(raw.slice(0, m.index).replace(/(が|は|で|、)$/, ''));
+      var ok = function(s){ return s && s.length <= 8 && !/\d/.test(s) && !RE_CANCEL.test(s) && !/温度|ど$/.test(s); };
+      name = ok(tail) ? tail : ok(head) ? head : '';
+    }
+  }
+  return { round: round, temp: temp, none: none, name: name };
+}
+function quick(text){
+  if (flow) { onHeard([text]); return; }
+  var q = parseQuick(text);
+  if (q.temp == null && !q.none) {
+    if (has([text], /記録|きろく/)) { startFlow(q.round); return; }
+    var msg = '温度が分かりませんでした。例えば「2回目 5.8度 山田」のように入れてください。';
+    showRes('info', esc(msg)); say(msg); return;
+  }
+  if (!month || month.ym !== isoToday().slice(0,7)) { load(isoToday().slice(0,7)).then(function(){ if (month) { quick(text); } }); return; }
+  var t = todayDay(), r = q.round || (t.t[0] ? t.t[1] ? t.t[2] ? 0 : 3 : 2 : 1);
+  if (!r) { var m2 = '今日は3回とも記録済みです。直す時は「2回目 5.8度」のように回も言ってください。'; showRes('info', esc(m2)); say(m2); return; }
+  stopRec();
+  flow = { step:'temp', date: isoToday(), round: r, temp: null, memo: '', sign: q.name, retry: 0, old: t.t[r-1] };
+  if (q.none) { flow.temp = '／'; goSign('斜線にします。'); return; }
+  setTemp(q.temp);
+}
+$('quickOk').onclick = function(){ var v = $('quickIn').value.trim(); if (!v) { $('quickIn').focus(); return; } $('quickIn').value = ''; $('quickIn').blur(); $('heard').textContent = '入力：「' + v + '」'; quick(v); };
+$('quickIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('quickOk').click(); } });
+function goSign(pre){
+  if (flow.sign) { save(); return; }
+  flow.step = 'sign'; flow.retry = 0;
+  var last = ls(K.name) || names()[0] || '';
+  flow.suggest = last;
+  ask((pre || '') + (last ? '測定者は' + last + 'さんでいいですか？' : '測定者の名前を言ってください。'));
+}
+function save(){
+  flow.step = 'save'; clearTimeout(flowTimer); stopRec(); setFlowUi();
+  $('prompt').textContent = '記録しています…';
+  var f = flow;
+  call('tempRecord', { date: f.date, round: f.round, temp: f.temp === '／' ? '／' : f.temp.toFixed(1), sign: f.sign, memo: f.memo })
+    .then(function(r){
+      addName(f.sign);
+      flow = null; setFlowUi();
+      if (month && month.ym === f.date.slice(0,7)) { month.days[String(+f.date.slice(8))] = r.day; render(); }
+      var j = judgeOf(r.day.t), pj = judgeOf(r.prev.t);
+      var rows = [[f.round + '回目 実測温度', r.day.t[f.round-1] === '／' ? '／（斜線）' : r.day.t[f.round-1] + ' ℃']];
+      if (j && j !== pj) { rows.push(['判定', j]); }
+      if (f.memo) { rows.push(['処置メモ', f.memo]); }
+      rows.push(['測定者サイン', f.sign]);
+      var tv = f.temp !== '／' && f.temp > 10;
+      var div = showRes(tv ? 'ng' : 'ok', '記録しました：' + dLab(f.date, true) + ' ' + f.round + '回目',
+        '<table>' + rows.map(function(x){ return '<tr><td class="c">'+esc(x[0])+'</td><td class="v">'+esc(x[1])+'</td></tr>'; }).join('') + '</table>' +
+        '<button class="undo">↩ この記録を取り消す</button>');
+      div.querySelector('.undo').onclick = function(){ undo(f, r.prev, div); };
+      $('prompt').textContent = '記録しました。次の回もボタンを押してください';
+      say('記録しました。' + dLab(f.date) + '、' + rows.map(function(x){ return x[0] + 'に' + x[1].replace(/（斜線）/, ''); }).join('、') + '。' +
+        (tv ? '判定は否です。管理者に知らせてください。' : ''), function(){ if (wakeMode && !flow) { listen(true); } });
+    })
+    .catch(function(e){
+      flow = null; setFlowUi();
+      showRes('ng', '記録できませんでした', esc(e.message) + '<div style="font-size:13px;margin-top:4px">電波を確かめて、もう一度ボタンを押してください。</div>');
+      $('prompt').textContent = '記録できませんでした';
+      say('記録できませんでした。電波を確かめて、もう一度押してください。');
+    });
+}
+function undo(f, prev, div){
+  if (!confirm(dLab(f.date) + ' ' + f.round + '回目の記録を取り消して、記録する前に戻しますか？')) { return; }
+  call('tempUndo', f.date, prev, f.round).then(function(r){
+    if (month && month.ym === f.date.slice(0,7)) { month.days[String(+f.date.slice(8))] = r.day; render(); }
+    div.className = 'res info'; div.innerHTML = '<div class="t">取り消しました：' + dLab(f.date, true) + ' ' + f.round + '回目</div>記録する前の状態に戻しました。';
+    say('取り消しました。');
+  }).catch(function(e){ showRes('ng', '取り消せませんでした', esc(e.message)); });
+}
+
+// ---------- 文字で入れる（キーボードのマイクも使える） ----------
+function openType(){ $('typeRow').classList.add('on'); setTimeout(function(){ $('typeIn').focus(); }, 50); }
+$('typeBtn').onclick = function(){ stopRec(); openType(); };
+function submitType(){ var v = $('typeIn').value.trim(); if (!v || !flow) { return; } $('typeIn').value = ''; $('heard').textContent = '入力：「' + v + '」'; onHeard([v]); }
+$('typeOk').onclick = submitType;
+$('typeIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); submitType(); } });
+
+// ---------- ボタン・設定 ----------
+$('micBtn').onclick = function(){
+  if (!flow) { startFlow(0); return; }
+  if (listening) { stopRec(); return; }
+  if (flow.step !== 'save') { listen(false); }
+};
+$('cancelBtn').onclick = function(){ cancelFlow('記録をやめました。何も書いていません。'); };
+$('optSay').checked = sayOn;
+$('optSay').onchange = function(){ sayOn = this.checked; ls(K.say, sayOn ? '1' : '0'); };
+$('optWake').checked = ls(K.wake) === '1';
+$('optWake').onchange = function(){ ls(K.wake, this.checked ? '1' : '0'); setWake(this.checked); };
+function setWake(on){ wakeMode = on && !micBroken; if (wakeMode && !flow) { listen(true); } else if (!on && !flow) { stopRec(); } $('subMsg').textContent = wakeMode ? '「記録する」と言うと始まります（ボタンでも始められます）' : '今日のまだ書いていない回（1回目→2回目→3回目）を順番に聞きます'; }
+$('optName').value = ls(K.name) || '';
+$('optName').onchange = function(){ var v = this.value.trim(); if (v) { addName(v); } };
+$('hdDate').textContent = dLab(isoToday(), true);
+if (!SR) { $('subMsg').textContent = 'このブラウザは画面からの声の入力に対応していません。記録を始めたら「⌨️ 文字で入れる」でキーボードのマイクを使ってください。'; }
+
+// ---------- エクセルで保存（ひな形に書き込んでダウンロード） ----------
+var CRC_T = (function(){ var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) { c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; } t[n] = c >>> 0; } return t; })();
+function crc32(b){ var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) { c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); } return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){
+  var enc = new TextEncoder(), parts = [], cen = [], off = 0;
+  files.forEach(function(f){
+    var name = enc.encode(f[0]), data = enc.encode(f[1]), crc = crc32(data);
+    var h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+    h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    parts.push(h.buffer, name, data);
+    var c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, 0, true); c.setUint16(14, 0x21, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    cen.push(c.buffer, name);
+    off += 30 + name.length + data.length;
+  });
+  var csize = cen.reduce(function(s, x){ return s + x.byteLength; }, 0);
+  var e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+  return new Blob(parts.concat(cen, [e.buffer]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+function xesc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function setCell(xml, ref, text){
+  var re = new RegExp('<c r="' + ref + '"(?=[\\s/>])[^>]*?(?:/>|>[\\s\\S]*?</c>)'), m = xml.match(re);
+  if (!m) { return xml; }
+  var st = (m[0].match(/^<c[^>]*\ss="(\d+)"/) || [])[1];
+  var cell = '<c r="' + ref + '"' + (st ? ' s="' + st + '"' : '') + (text === '' ? '/>' : ' t="inlineStr"><is><t xml:space="preserve">' + xesc(text) + '</t></is></c>');
+  return xml.replace(m[0], function(){ return cell; });
+}
+function buildXlsx(m){
+  var y = +m.ym.slice(0,4), mo = +m.ym.slice(5,7), last = new Date(y, mo, 0).getDate();
+  return zipStore(TPL.map(function(f){
+    if (f[0] !== 'xl/worksheets/sheet1.xml') { return f; }
+    var xml = setCell(f[1], 'A2', y + '年' + mo + '月分');
+    for (var i = 1; i <= 31; i++) {
+      var r = 4 + i, d = m.days[String(i)];
+      xml = setCell(xml, 'B' + r, i <= last ? WD[new Date(y, mo-1, i).getDay()] : '');
+      if (!d) { continue; }
+      ['C','D','E'].forEach(function(c, k){ if (d.t[k]) { xml = setCell(xml, c + r, d.t[k] === '／' ? '／' : d.t[k] + ' ℃'); } });
+      var j = judgeOf(d.t); if (j) { xml = setCell(xml, 'F' + r, j); }
+      if (d.memo) { xml = setCell(xml, 'G' + r, d.memo); }
+      if (d.sign.length) { xml = setCell(xml, 'H' + r, d.sign.join('・')); }
+    }
+    return [f[0], xml];
+  }));
+}
+$('xlBtn').onclick = function(){
+  if (!month) { return; }
+  var blob = buildXlsx(month), name = '肉の温度記録_' + month.ym.slice(0,4) + '年' + (+month.ym.slice(5,7)) + '月.xlsx';
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 3000);
+  showRes('info', '「' + esc(name) + '」を保存しました', '<div style="font-size:13px">スマホの「ダウンロード」に入ります。パソコンのエクセルと同じ表の形です。</div>');
+};
+
+window.__temp = { onHeard: onHeard, parseTemp: parseTemp, parseQuick: parseQuick, quick: quick, buildXlsx: buildXlsx, get said(){ return say.last; }, get flow(){ return flow; } };   // 動作確認用
+$('logoutBtn').onclick = function(){ if (confirm('合言葉を入れ直しますか？')) { stopRec(); lock(''); } };
+var started = false;
+function start(){
+  load(viewYm).then(function(){ if (!started && ls(K.wake) === '1') { setWake(true); } started = true; });
+}
+if (KEY) { start(); } else { lock(''); }
+})();
+</script>
+</body>
+</html>
