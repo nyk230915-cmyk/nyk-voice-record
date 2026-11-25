@@ -25,6 +25,16 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 #dates button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 #dates button.on small{color:#dbe8f7}
 #dates button.fin::after{content:" ✓";font-weight:700}
+#tmode{display:flex;border:1px solid var(--acc);border-radius:10px;overflow:hidden}
+#tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:9px 6px}
+#tmode button.on{background:var(--acc);color:#fff}
+#addAlert{display:none;position:fixed;left:0;right:0;top:0;z-index:20;padding:12px}
+#addAlert.on{display:block}
+#addAlert .box{max-width:560px;margin:0 auto;background:#fff;border:3px solid #e67e22;border-radius:14px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+#addAlert .t{font-size:18px;font-weight:800;color:#c0561b;margin-bottom:6px}
+#addAlert ul{margin:4px 0 10px;padding-left:20px;font-size:14px;line-height:1.7}
+#addAlert button{width:100%;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:10px;background:#e67e22;color:#fff;padding:12px}
+.row .new{display:inline-block;background:#e67e22;color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;margin-right:4px}
 .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #fileBtn{font:inherit;font-weight:700;border:1px solid var(--acc);color:var(--acc);background:#fff;border-radius:10px;padding:9px 14px}
 #voice{position:sticky;top:0;z-index:5}
@@ -116,9 +126,13 @@ body.locked #gate{display:block}
 <div id="gateMsg"></div>
 </div></div>
 
+<div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
 <div class="card">
-  <div class="ctitle">納品日を選ぶ <small>2日分まで同時に選べます</small></div>
+  <div class="ctitle">集計のしかた</div>
+  <div id="tmode"><button data-m="one">1日ずつ集計</button><button data-m="both">2日同時に集計</button></div>
+  <div class="sub" id="tmodeHelp" style="margin:4px 0 10px"></div>
+  <div class="ctitle">納品日を選ぶ</div>
   <div id="dates"><span class="sub">読み込んでいます…</span></div>
   <div class="frow">
     <button id="fileBtn">📂 ファイルを読み込む</button>
@@ -154,7 +168,8 @@ body.locked #gate{display:block}
     ・「<b>5番 3.2キロ</b>」… 目方だけ入れる<br>
     ・「<b>全て完了</b>」… 漏れが無いか確かめる<br>
     ・「5番 取り消し」… 完了を取り消す／「もう一度」… 読み上げをくり返す／「終了」… 音声をやめる<br>
-    2日分を選んでいて同じ番号がある時は「<b>26日の5番 完了</b>」のように日にちを付けます（付けないと聞き返します）。<br>
+    <b>1日ずつ集計</b>：選んだ納品日の番号だけを集計します。<b>2日同時に集計</b>：「<b>26日の5番 完了</b>」のように納品日も話します（無い時は「何日の納品ですか」と聞き返すので「26日」と答えます）。<br>
+    <b>追加注文</b>：ファイルを読み込み直して、作業中の納品日に新しい行が増えると、お知らせと「新規注文を追加しました」の声が出ます。「確認しました」を押すと消えます。<br>
     「番」を付けて話すと、番号と目方を聞き違えにくくなります。<br>
     <b>目方が必要な行</b>：発注量が空、または単位がkg以外の行（黄色の欄）。<br>
     <b>ファイル</b>：天柳事業所 管理のファイル（.xlsm）を選ぶと「CSVファイル(印刷)」の表を読み込みます。読み込み直しても、つけた完了・目方は消えません（中身が変わった行には ⚠ が出ます）。
@@ -168,7 +183,7 @@ body.locked #gate{display:block}
 <script>
 var $ = function(id){ return document.getElementById(id); };
 var WD = ['日','月','火','水','木','金','土'];
-var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1' };
+var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1', mode:'nyk-tenryu-mode-v1', ack:'nyk-tenryu-ack-v1' };
 function ls(k, v){ try { if (v === undefined) { return localStorage.getItem(k); } if (v === null) { localStorage.removeItem(k); return; } localStorage.setItem(k, v); } catch(e){ return null; } }
 var KEY = ls(K.key) || (function(){ try { return sessionStorage.getItem(K.key); } catch(e){ return null; } })() || '';
 function pad(n){ return (n<10?'0':'')+n; }
@@ -224,6 +239,7 @@ function loadDates(){
     var saved = []; try { saved = JSON.parse(ls(K.sel) || '[]'); } catch(e){}
     SEL = SEL.length ? SEL : saved;
     SEL = SEL.filter(function(d){ return have.indexOf(d) >= 0; });
+    if (TMODE === 'one' && SEL.length > 1) { SEL = [SEL.slice().sort()[0]]; }
     if (!SEL.length && have.length) {
       // ファイルに番号（センター納品日の数字）が入っている日＝いま作業している日を優先
       var t = r.today || isoToday(), up = DATES.filter(function(x){ return x.date >= t; });
@@ -245,9 +261,26 @@ function renderDates(){
   [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
 }
 function addDays(iso, n){ var d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
+// 集計のしかた：one＝1日ずつ（選んだ日の番号だけ）／ both＝2日同時（納品日も話す）
+var TMODE = ls(K.mode) === 'both' ? 'both' : 'one';
+function both(){ return TMODE === 'both' && SEL.length > 1; }
+function setTMode(m){
+  TMODE = m; ls(K.mode, m);
+  if (m === 'one' && SEL.length > 1) { SEL = [selDates()[0]]; ls(K.sel, JSON.stringify(SEL)); }
+  pending = null; ask2 = null;
+  renderMode(); renderDates(); loadData();
+  if (m === 'both' && SEL.length < 2) { showRes('info', 'もう1日、納品日を押して選んでください', ''); }
+}
+function renderMode(){
+  [].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === TMODE); });
+  $('tmodeHelp').textContent = TMODE === 'one' ? '納品日を1つ選び、その日の番号だけを集計します（例「5番 完了」）' : '納品日を2つ選びます。話す時は納品日も付けます（例「26日の5番 完了」）。納品日が無い時は聞き返します';
+}
+[].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.onclick = function(){ setTMode(b.getAttribute('data-m')); }; });
+renderMode();
 function toggleDate(d){
   var i = SEL.indexOf(d);
-  if (i >= 0) { if (SEL.length > 1) { SEL.splice(i, 1); } }
+  if (TMODE === 'one') { SEL = [d]; }
+  else if (i >= 0) { if (SEL.length > 1) { SEL.splice(i, 1); } }
   else { SEL.push(d); if (SEL.length > 2) { SEL.shift(); } }
   ls(K.sel, JSON.stringify(SEL)); pending = null; ask2 = null;
   renderDates(); loadData();
@@ -260,9 +293,40 @@ function loadData(quiet){
     if (selDates().join(',') !== want) { return; }
     if (quiet && busy) { return; }
     Object.keys(r.days).forEach(function(d){ DATA[d] = r.days[d]; });
-    render(); renderDates();
+    render(); renderDates(); checkAdds();
   }).catch(function(e){ if (!quiet) { $('list').innerHTML = '<div class="empty">読み込めませんでした：'+esc(e.message)+'</div>'; } });
 }
+// ---------- 追加注文のお知らせ（いま選んでいる＝作業中の納品日の分だけ） ----------
+var announced = {};
+function ackSet(){ try { return JSON.parse(ls(K.ack) || '[]'); } catch(e){ return []; } }
+function addKey(d, r){ return d + '|' + r.no + '|' + r.add + '|' + r.item; }
+function unseenAdds(){
+  var ack = ackSet(), out = [];
+  selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ if (r.add && ack.indexOf(addKey(d, r)) < 0) { out.push([d, r]); } }); });
+  return out;
+}
+function checkAdds(){
+  var list = unseenAdds();
+  if (!list.length) { $('addAlert').classList.remove('on'); return; }
+  var two = selDates().length > 1;
+  $('addMsg').textContent = list.length + '件の注文が追加されました。内容を確かめてから「確認しました」を押してください。';
+  $('addList').innerHTML = list.map(function(a){ var r = a[1]; return '<li>'+(two?esc(dLab(a[0]))+' ':'')+'<b>'+r.no+'番</b> '+esc(shortEn(r.en))+' '+esc(r.item)+' '+esc(r.qty||'')+esc(r.unit||'')+'</li>'; }).join('');
+  $('addAlert').classList.add('on');
+  var fresh = list.filter(function(a){ return !announced[addKey(a[0], a[1])]; });
+  if (fresh.length) {
+    fresh.forEach(function(a){ announced[addKey(a[0], a[1])] = 1; });
+    beep(880, 0.15); beep(660, 0.15, 0.2); beep(880, 0.25, 0.4);
+    try { if (navigator.vibrate) { navigator.vibrate([300, 150, 300]); } } catch(e){}
+    setTimeout(function(){ say('新規注文を追加しました'); }, 800);
+  }
+}
+$('addOk').onclick = function(){
+  var ack = ackSet();
+  unseenAdds().forEach(function(a){ ack.push(addKey(a[0], a[1])); });
+  ls(K.ack, JSON.stringify(ack.slice(-500)));
+  $('addAlert').classList.remove('on');
+};
+
 // 開いている間は15秒ごとにほかの人の分を読み直す
 setInterval(function(){ if (KEY && !document.hidden && SEL.length && !busy && !speaking) { loadData(true); } }, 15000);
 
@@ -284,7 +348,7 @@ function rowHtml(d, r){
              : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
   return '<div class="row'+(m.d?' done':'')+(miss?' miss':'')+'" id="'+id+'">' +
     '<div class="no">'+r.no+'</div>' +
-    '<div class="info"><div class="l1">'+esc(shortEn(r.en))+(r.sanchi?'　'+esc(r.sanchi):'')+'</div>' +
+    '<div class="info"><div class="l1">'+(r.add?'<span class="new">追加 '+esc(r.add)+'</span>':'')+esc(shortEn(r.en))+(r.sanchi?'　'+esc(r.sanchi):'')+'</div>' +
     '<div class="l2"><b>'+esc(r.item)+'</b> '+esc(r.memo)+'</div>' +
     '<div class="l3"><span class="q">'+q+'</span>'+extra+(tags?'　'+tags:'')+'</div>'+chg+
     '<div class="why">'+esc(miss||'')+'</div></div>' +
@@ -560,17 +624,36 @@ if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pic
 function speakText(t){
   return String(t).normalize('NFKC').replace(/kg/gi, 'キロ').replace(/(\d)k\b/gi, '$1キロ').replace(/㈱/g, '').replace(/\bp\b/g, 'パック').replace(/[()（）]/g, '、');
 }
+// スマホ（特にiPhone）は、画面を押した時に一度しゃべらせておかないと、あとから読み上げられない
+var speechUnlocked = false;
+function unlockSpeech(){
+  if (speechUnlocked || !window.speechSynthesis) { return; }
+  try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ja-JP'; speechSynthesis.speak(u); speechUnlocked = true; } catch(e){}
+}
+document.addEventListener('click', unlockSpeech, true);
+document.addEventListener('touchend', unlockSpeech, true);
+var sayGen = 0;
 function say(text, then){
   say.last = text;
-  if (!sayOn || !window.speechSynthesis) { if (then) { setTimeout(then, 150); } return; }
+  if (mode !== 'off') { $('prompt').textContent = '🔊 ' + text; }
+  var gen = ++sayGen;
+  var done = false, fin = function(){ if (done || gen !== sayGen) { return; } done = true; speaking = false; if (then) { then(); } else { resume(); } };
+  if (!sayOn || !window.speechSynthesis) { beep(1200, 0.08); setTimeout(fin, 300); return; }
   stopRec(); speaking = true;
-  speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance(speakText(text));
-  u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15;
-  var done = false, fin = function(){ if (done) { return; } done = true; speaking = false; if (then) { then(); } else { resume(); } };
-  u.onend = fin; u.onerror = fin;
-  setTimeout(fin, 2500 + text.length * 220);
-  speechSynthesis.speak(u);
+  try { speechSynthesis.cancel(); } catch(e){}
+  // マイクを止めた直後・cancel 直後にしゃべらせると消えることがあるので少し待つ
+  setTimeout(function(){
+    if (gen !== sayGen) { return; }
+    var u = new SpeechSynthesisUtterance(speakText(text)), started = false;
+    u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15; u.volume = 1;
+    u.onstart = function(){ started = true; };
+    u.onend = fin; u.onerror = function(){ if (!started) { beep(1200, 0.08); } fin(); };
+    say.u = u;   // 途中で消されないように持っておく（Chromeの不具合よけ）
+    speechSynthesis.resume();
+    speechSynthesis.speak(u);
+    setTimeout(function(){ if (!started && !done) { beep(1200, 0.08); fin(); } }, 2500);   // 読み上げが動かない時は「ピッ」だけ
+    setTimeout(fin, 4000 + text.length * 250);
+  }, 350);
 }
 
 // ---------- 音声認識 ----------
@@ -582,7 +665,7 @@ function setMode(m){
   var b = $('micBtn'); b.classList.toggle('wake', m === 'wake'); b.classList.toggle('cmd', m === 'cmd');
   $('voice').classList.toggle('wk', m === 'wake');
   b.textContent = m === 'off' ? '🎤 音声で集計する' : m === 'wake' ? '🎤 「集計」と話してください（押すと止める）' : '🎤 聞いています（押すと止める）';
-  $('prompt').textContent = m === 'off' ? '' : m === 'wake' ? '「集計」または「集計を始める」と話すと始まります' : '番号と「完了」を話してください\n例：5番 完了／5番 3.2キロ 完了';
+  $('prompt').textContent = m === 'off' ? '' : m === 'wake' ? '「集計」または「集計を始める」と話すと始まります' : (both() ? '納品日と番号と「完了」を話してください\n例：26日の5番 完了' : '番号と「完了」を話してください\n例：5番 完了／5番 3.2キロ 完了');
   if (m === 'off') { stopRec(); pending = null; ask2 = null; }
 }
 function stopRec(){ if (rec) { var r = rec; rec = null; try { r.abort(); } catch(e){} } }
@@ -691,12 +774,18 @@ function doCmd(p, raw){
   if (p.type === 'repeat') { say(say.last || '番号と完了を話してください'); return; }
   if (p.type === 'finish') { pending = null; ask2 = null; finish(true); return; }
   // 日にちの聞き返しへの答え（「26日」「26」）
-  if (ask2) {
-    var day = p.day || (p.no != null && !p.w && !p.done ? p.no : null);
+  if (ask2 && !(p.day && p.no != null)) {
+    var day = p.day || (p.no != null && !p.w && !p.done && !p.hasBan ? p.no : null);
     var hit = ask2.cands.filter(function(d){ return +d.slice(8) === day; })[0];
-    if (hit) { var q = ask2.p; ask2 = null; apply(hit, q); return; }
+    if (hit) {
+      var q = ask2.p; ask2 = null;
+      if (!findRow(hit, q.no)) { say(day + '日に' + q.no + '番はありません'); return; }
+      apply(hit, q); return;
+    }
+    if (day != null || !p.hasBan) { say(ask2.cands.map(function(d){ return +d.slice(8) + '日'; }).join('か') + 'で答えてください'); return; }
     ask2 = null;
   }
+  ask2 = null;
   // 目方を聞いている時は、数字だけでも目方として受け取る（「6 完了」のように整数＋完了は番号として扱う）
   var wv = p.no != null && p.w ? null : (p.w || p.glued || (p.no != null ? String(p.no) : null));
   if (pending && !p.hasBan && !p.undo && wv && (p.unit || /\./.test(wv) || !p.done)) {
@@ -714,10 +803,20 @@ function doCmd(p, raw){
     else { say('番号と目方がわかりませんでした。5番、3.2キロ、のように「番」を付けて話してください'); return; }
   }
   if (p.no == null) { say('番号が聞き取れませんでした。もう一度どうぞ'); return; }
-  var ds = selDates().filter(function(d){ return findRow(d, p.no) && (!p.day || +d.slice(8) === p.day); });
-  if (!ds.length) { say(p.no + '番は' + (p.day ? p.day + '日に' : '') + 'ありません'); return; }
-  if (ds.length > 1) { ask2 = { cands: ds, p: p }; say(ds.map(function(d){ return +d.slice(8) + '日'; }).join('と') + 'のどちらの' + p.no + '番ですか'); return; }
-  apply(ds[0], p);
+  var all = selDates();
+  if (both()) {
+    // 2日同時：納品日を必ず聞く
+    if (!p.day) { ask2 = { cands: all, p: p }; say(p.no + '番は、何日の納品ですか。' + all.map(function(d){ return +d.slice(8) + '日'; }).join('か') + 'で答えてください'); return; }
+    var dd = all.filter(function(d){ return +d.slice(8) === p.day; })[0];
+    if (!dd) { ask2 = { cands: all, p: p }; say(p.day + '日は選ばれていません。' + all.map(function(d){ return +d.slice(8) + '日'; }).join('か') + 'で答えてください'); return; }
+    if (!findRow(dd, p.no)) { say(p.day + '日に' + p.no + '番はありません'); return; }
+    apply(dd, p); return;
+  }
+  // 1日ずつ：選んでいる日の番号だけ
+  var d1 = all[0];
+  if (p.day && +d1.slice(8) !== p.day) { say('いまは' + (+d1.slice(8)) + '日の集計中です。ほかの日は画面で納品日を選び直してください'); return; }
+  if (!findRow(d1, p.no)) { say(p.no + '番はありません'); return; }
+  apply(d1, p);
 }
 function apply(d, p){
   pending = null;
