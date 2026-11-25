@@ -193,6 +193,9 @@ body.locked #gate{display:block}
     <div class="dadd"><button class="sbtn" id="dictTry">🔊 読み方を試す</button></div>
     <div class="sub" id="dictMsg"></div>
   </div>
+  <label class="set"><span>話さなかったら集計の聞き取りを止める</span><select id="optIdle" style="font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff">
+    <option value="60">1分</option><option value="300">5分</option><option value="600">10分</option><option value="1800">30分</option><option value="3600">1時間</option><option value="0">止めない</option>
+  </select></label>
   <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
   <div class="help">
     <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
@@ -217,7 +220,7 @@ body.locked #gate{display:block}
 <script>
 var $ = function(id){ return document.getElementById(id); };
 var WD = ['日','月','火','水','木','金','土'];
-var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1', mode:'nyk-tenryu-mode-v1', ack:'nyk-tenryu-ack-v1' };
+var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1', mode:'nyk-tenryu-mode-v1', ack:'nyk-tenryu-ack-v1', idle:'nyk-tenryu-idle-v1' };
 function ls(k, v){ try { if (v === undefined) { return localStorage.getItem(k); } if (v === null) { localStorage.removeItem(k); return; } localStorage.setItem(k, v); } catch(e){ return null; } }
 var KEY = ls(K.key) || (function(){ try { return sessionStorage.getItem(K.key); } catch(e){ return null; } })() || '';
 function pad(n){ return (n<10?'0':'')+n; }
@@ -779,8 +782,22 @@ function unlockAudio(){
   try { if (!silentAudio) { silentAudio = new Audio(silentUrl()); silentAudio.setAttribute('playsinline', ''); } silentAudio.currentTime = 0; var pr = silentAudio.play(); if (pr && pr.catch) { pr.catch(function(){}); } } catch(e){}
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') { actx.resume(); } } catch(e){}
   if (!speechUnlocked && window.speechSynthesis) {
-    try { var u = new SpeechSynthesisUtterance('　'); u.lang = 'ja-JP'; speechSynthesis.speak(u); speechUnlocked = true; } catch(e){}
+    try {
+      speechUnlocked = true;
+      primeSpeech();
+      // iPhone・iPad は1回では声が出るようにならない（読み上げテストを2回押すと出る）→ 自動でもう1回しておく
+      if (IOS) { setTimeout(primeSpeech, 600); }
+    } catch(e){}
   }
+}
+var IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+var iosWarm = !IOS;
+function primeSpeech(){
+  try {
+    var u = new SpeechSynthesisUtterance(IOS ? 'あ' : '　'); u.lang = 'ja-JP'; u.volume = IOS ? 0.01 : 1; u.rate = 2;
+    u.onend = function(){ if (IOS) { iosWarm = true; } };
+    speechSynthesis.speak(u);
+  } catch(e){}
 }
 document.addEventListener('click', unlockAudio, true);
 document.addEventListener('touchend', unlockAudio, true);
@@ -795,7 +812,9 @@ function say(text, then, now){
   speaking = true;
   var go = function(){
     if (gen !== sayGen) { return; }
-    try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); } } catch(e){}
+    // iPhone・iPad でまだ声が出る状態になっていなければ、先に小さな音で1回しゃべらせてから本番を続けて流す
+    if (!iosWarm) { try { speechSynthesis.cancel(); } catch(e){} primeSpeech(); }
+    else { try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); } } catch(e){} }
     var u = new SpeechSynthesisUtterance(speakText(text)), started = false;
     u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15; u.pitch = 1; u.volume = 1;
     say.started = false; say.err = '';
@@ -890,12 +909,15 @@ function beep(freq, sec, delay){
 function readyBeep(){ beep(660, 0.12); beep(990, 0.16, 0.15); }
 var micFail = 0, userOff = false, lastCmdAt = 0;
 function startCmd(){ setMode('cmd'); lastCmdAt = Date.now(); readyBeep(); if (!rec) { listen(); } }
-// 集計の聞き取りは、1分間なにも話されなかったら止めて「集計」待ちに戻す
+// 集計の聞き取りは、決めた時間（設定・初めは1分）なにも話されなかったら止めて「集計」待ちに戻す
+function idleSec(){ var v = ls(K.idle); return v === null || v === '' || isNaN(+v) || [0, 60, 300, 600, 1800, 3600].indexOf(+v) < 0 ? 60 : +v; }
+function idleLab(s){ return s >= 3600 ? (s / 3600) + '時間' : s >= 60 ? (s / 60) + '分間' : s + '秒間'; }
 setInterval(function(){
-  if (mode === 'cmd' && !speaking && !pending && !ask2 && Date.now() - lastCmdAt > 60000) {
+  var lim = idleSec();
+  if (lim && mode === 'cmd' && !speaking && !pending && !ask2 && Date.now() - lastCmdAt > lim * 1000) {
     setMode('wake'); if (!rec) { listen(); }
     beep(660, 0.12); beep(440, 0.16, 0.15);
-    $('prompt').textContent = '1分間話されなかったので聞き取りを止めました。「集計」と話すと再開します';
+    $('prompt').textContent = idleLab(lim) + '話されなかったので聞き取りを止めました。「集計」と話すと再開します';
   }
 }, 3000);
 // 画面を戻した時に聞き取りが止まっていたら再開する
@@ -1098,6 +1120,8 @@ $('cmdOk').onclick = submitCmd;
 $('cmdIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); submitCmd(); } });
 
 // ---------- 設定 ----------
+$('optIdle').value = String(idleSec());
+$('optIdle').onchange = function(){ ls(K.idle, this.value); lastCmdAt = Date.now(); };
 $('optSay').checked = sayOn;
 $('optSay').onchange = function(){ sayOn = this.checked; ls(K.say, sayOn ? '1' : '0'); };
 $('sayTest').onclick = function(){
