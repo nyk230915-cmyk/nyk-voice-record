@@ -77,6 +77,18 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 .row .l2 b{font-weight:700}
 .row .l3{color:var(--sub);font-size:12px}
 .row .l3 .q{color:var(--ink);font-weight:700;font-size:14px}
+.row .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .l1{display:flex;gap:6px}
+.row .l1 .en{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row .l1 .ko{flex:none;color:var(--ink);font-weight:700}
+.row .short{color:#fff;background:var(--ng);border-radius:5px;padding:0 5px;font-weight:700}
+#flt{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:0 0 8px}
+#flt button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 2px;color:var(--ink);min-width:0;white-space:nowrap}
+#flt button small{font-weight:400;color:var(--sub);font-size:11px;margin-left:3px}
+#flt button.on{background:#24384f;border-color:#24384f;color:#fff}
+#flt button.on small{color:#cfe0f5}
+.row .lm{font-size:13px}
+.row .lt{color:var(--sub);font-size:12px}
 .row .wcol{flex:0 0 78px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;font-size:11px;color:var(--warn);text-align:center}
 .row .wcol input{width:100%;font:inherit;font-size:17px;font-weight:700;padding:6px 4px;border:2px solid #f0c36b;border-radius:8px;text-align:center;background:var(--warnbg)}
 .row .wcol input.has{border-color:#b9dfc8;background:#fff}
@@ -123,7 +135,7 @@ details summary{color:var(--sub);cursor:pointer;padding:2px 0}
 body.locked .wrap{display:none}
 body.locked #gate{display:block}
 @media (max-height:900px) and (max-width:600px){#voice{position:static}}
-@media (max-width:420px){.row .wcol{flex-basis:66px}.row .dbtn{flex-basis:62px;font-size:15px}.row .no{flex-basis:38px;font-size:19px}}
+@media (max-width:420px){.row{gap:6px;padding:6px}.row .wcol{flex-basis:62px}.row .dbtn{flex-basis:54px;font-size:15px}.row .no{flex-basis:34px;font-size:18px}}
 </style>
 </head>
 <body>
@@ -164,6 +176,7 @@ body.locked #gate{display:block}
 
 <div class="card">
   <div class="toolbar"><label><input type="checkbox" id="onlyLeft"> まだの分だけ表示</label><span class="sub" id="loadedAt"></span></div>
+  <div id="flt"></div>
   <div id="list"><div class="empty">納品日を選んでください</div></div>
   <button id="finBtn">✅ 全て完了</button>
 </div>
@@ -374,7 +387,24 @@ function stats(){
   selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ var m = markOf(d, r.no) || {}; s.all++; if (m.d) { s.done++; } if (needW(r)) { s.wAll++; if (m.w) { s.w++; } } }); });
   return s;
 }
-function rowHtml(d, r){
+function expLab(s){ var m = String(s).match(/^(\d{4})-(\d\d)-(\d\d)/); return m ? (+m[2])+'/'+(+m[3]) : s; }
+// 今日（集計する日＝製造日）に作ると、使用日まで期限がもたないか
+// 期限：チルド＝製造日を含めて5日（+4日）、真空チルド＝8日（+7日）。冷凍は対象外
+// 使用日は「産地」の列の「11/27(昼)使用」の日付。無ければ納品日で見る
+// もたない時は期限の日（例 '11/29'）を返す
+function useOver(d, r){
+  if (/冷凍/.test(r.ondo || '')) { return ''; }
+  var mfg = TODAY || isoToday(), lim = addDays(mfg, /真空/.test(r.kikaku || '') ? 7 : 4);
+  var use = d, m = String(r.sanchi || '').match(/(\d{1,2})\/(\d{1,2})/);
+  if (m) {
+    var y = +mfg.slice(0, 4), u = y + '-' + pad(+m[1]) + '-' + pad(+m[2]);
+    if (u < addDays(mfg, -60)) { u = (y + 1) + '-' + pad(+m[1]) + '-' + pad(+m[2]); }   // 12月に1月の日付
+    use = u;
+  }
+  return use > lim ? (+lim.slice(5, 7)) + '/' + (+lim.slice(8)) : '';
+}
+function memoOf(r){ return String(r.memo || '').replace(/\s*加熱用\s*/g, ' ').trim(); }
+function rowHtml(d, r, ko){
   var m = markOf(d, r.no) || {}, nw = needW(r), id = 'r-'+d+'-'+r.no, miss = missSet[d+'#'+r.no];
   var q = esc(r.qty || '—') + esc(r.unit || '');
   var extra = (r.sqty && (r.sqty !== r.qty || r.unit2 !== r.unit)) ? '（仕入 '+esc(r.sqty)+esc(r.unit2||'')+'）' : '';
@@ -384,11 +414,21 @@ function rowHtml(d, r){
              : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
   return '<div class="row'+(m.d?' done':'')+(miss?' miss':'')+'" id="'+id+'">' +
     '<div class="no">'+r.no+'</div>' +
-    '<div class="info"><div class="l1">'+(r.add?'<span class="new">追加 '+esc(r.add)+'</span>':'')+esc(shortEn(r.en))+(r.sanchi?'　'+esc(r.sanchi):'')+'</div>' +
-    '<div class="l2"><b>'+esc(r.item)+'</b> '+esc(r.memo)+'</div>' +
-    '<div class="l3"><span class="q">'+q+'</span>'+extra+(tags?'　'+tags:'')+'</div>'+chg+
+    '<div class="info">' +
+    '<div class="ln l1"><span class="en">'+(r.add?'<span class="new">追加 '+esc(r.add)+'</span>':'')+esc(shortEn(r.en))+'</span><span class="ko">'+(ko||1)+'個口</span></div>' +
+    '<div class="ln l2"><b>'+esc(r.item)+'</b></div>' +
+    (memoOf(r) ? '<div class="ln lm">'+esc(memoOf(r))+'</div>' : '') +
+    '<div class="ln l3"><span class="q">'+q+'</span>'+extra+'</div>' +
+    (tags ? '<div class="ln lt">'+tags+'</div>' : '') +
+    (function(){
+      var ov = useOver(d, r);
+      if (!r.sanchi && !r.exp && !ov) { return ''; }
+      var u = r.sanchi ? esc(r.sanchi) : (ov ? esc(chipLab(d))+'納品' : '');
+      return '<div class="ln lt">'+(ov ? '<span class="short">'+u+' 期限'+ov+'</span>' : u)+(r.exp ? (u ? '　' : '')+'賞味 '+esc(expLab(r.exp)) : '')+'</div>';
+    })() +
+    chg+
     '<div class="why">'+esc(miss||'')+'</div></div>' +
-    '<div class="wcol">'+w+'</div>' +
+    (w ? '<div class="wcol">'+w+'</div>' : '') +
     '<button class="dbtn" data-d="'+d+'" data-no="'+r.no+'">'+(m.d?'✓完了':'完了')+'</button></div>';
 }
 function render(){
@@ -400,12 +440,14 @@ function render(){
       h += '<div class="dhead">'+dLab(d, true)+' 納品<small>'+done+'/'+rows.length+'件 完了'+(x.marks&&x.marks._fin?'　✓ 全て完了 '+esc(x.marks._fin.at.slice(5).replace('-','/'))+' '+esc(x.marks._fin.by||''):'')+'</small></div>';
     }
     if (rows.length && rows[0].auto) { h += '<div class="sub" style="margin:-2px 0 6px">※この日はファイルに番号が無かったので、表の並び順で番号を付けました（上から大きい番号）</div>'; }
-    var shown = rows.filter(function(r){ if (!only) { return true; } var m = markOf(d, r.no) || {}; return !m.d || (needW(r) && !m.w); });
+    var shown = rows.filter(function(r){ if (FLT && catOf(r).indexOf(FLT) < 0) { return false; } if (!only) { return true; } var m = markOf(d, r.no) || {}; return !m.d || (needW(r) && !m.w); });
+    var kc = {}; rows.forEach(function(r){ var k = r.id || ('#'+r.no); kc[k] = (kc[k] || 0) + 1; });
     if (!rows.length) { h += '<div class="empty">この日の行がありません</div>'; }
-    else if (!shown.length) { h += '<div class="empty">まだの分はありません 🎉</div>'; }
-    h += shown.map(function(r){ return rowHtml(d, r); }).join('');
+    else if (!shown.length) { h += '<div class="empty">'+(FLT ? '「'+FLTN[FLT]+'」の行はありません' : 'まだの分はありません 🎉')+'</div>'; }
+    h += shown.map(function(r){ return rowHtml(d, r, kc[r.id || ('#'+r.no)]); }).join('');
   });
   $('list').innerHTML = h || '<div class="empty">納品日を選んでください</div>';
+  renderFlt();
   var s = stats();
   $('pDone').textContent = s.done; $('pAll').textContent = s.all; $('pW').textContent = s.w; $('pWAll').textContent = s.wAll;
   $('bar').firstChild.style.width = (s.all ? Math.round(s.done / s.all * 100) : 0) + '%';
@@ -416,6 +458,22 @@ function render(){
     inp.onchange = function(){ setW(inp.getAttribute('data-d'), +inp.getAttribute('data-no'), inp.value); };
     inp.onkeydown = function(e){ if (e.key === 'Enter') { inp.blur(); } };
   });
+}
+// 品目のフィルター：押すとその種類だけ、もう一度押すと解除
+var FLT = '', FLTN = { w:'目方', kiri:'鶏の切身', hiki:'挽肉', etc:'その他' };
+function catOf(r){
+  var c = [], it = String(r.item || '');
+  if (needW(r)) { c.push('w'); }
+  if (/鶏/.test(it) && /切身/.test(it)) { c.push('kiri'); }
+  if (/挽/.test(it)) { c.push('hiki'); }
+  if (!c.length) { c.push('etc'); }
+  return c;
+}
+function renderFlt(){
+  var cnt = { w:0, kiri:0, hiki:0, etc:0 };
+  selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ catOf(r).forEach(function(c){ cnt[c]++; }); }); });
+  $('flt').innerHTML = Object.keys(FLTN).map(function(k){ return '<button data-k="'+k+'" class="'+(FLT===k?'on':'')+'">'+FLTN[k]+'<small>'+cnt[k]+'</small></button>'; }).join('');
+  [].forEach.call($('flt').querySelectorAll('button'), function(b){ b.onclick = function(){ var k = b.getAttribute('data-k'); FLT = FLT === k ? '' : k; renderFlt(); render(); }; });
 }
 $('onlyLeft').checked = ls(K.left) === '1';
 $('onlyLeft').onchange = function(){ ls(K.left, this.checked ? '1' : '0'); render(); };
