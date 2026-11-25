@@ -429,7 +429,7 @@ function rowHtml(d, r, ko){
     chg+
     '<div class="why">'+esc(miss||'')+'</div></div>' +
     (w ? '<div class="wcol">'+w+'</div>' : '') +
-    '<button class="dbtn" data-d="'+d+'" data-no="'+r.no+'">'+(m.d?'✓完了':'完了')+'</button></div>';
+    '<button class="dbtn" data-d="'+d+'" data-no="'+r.no+'">'+'完了'+'</button></div>';
 }
 function render(){
   var only = $('onlyLeft').checked, ds = selDates(), h = '';
@@ -573,13 +573,16 @@ function finish(byVoice){
   });
   $('onlyLeft').checked = false;
   render();
+  // 使用日まで賞味期限がもたない商品
+  var expN = 0; ds.forEach(function(d){ rowsOf(d).forEach(function(r){ if (useOver(d, r)) { expN++; } }); });
+  var expMsg = expN ? '賞味期限が切れる商品が' + expN + '件あります' : '';
   var two = ds.length > 1;
   var lab = function(a){ return (two ? (+a[0].slice(8))+'日の' : '') + a[1].no + '番'; };
   if (!miss.length && !wmiss.length) {
     var s = stats();
     call('tenryuFinish', ds, myName()).then(function(r){ ds.forEach(function(d){ if (DATA[d]) { DATA[d].marks._fin = { at: r.at, by: myName() }; } }); render(); renderDates(); }).catch(function(){});
-    showRes('ok', '✅ 全て完了しました', ds.map(function(d){ return dLab(d, true); }).join('・') + '　' + s.all + '件すべて完了・目方 ' + s.wAll + '件すべて入力済み');
-    say('全て完了しました。集計漏れはありません');
+    showRes(expN ? 'info' : 'ok', '✅ 全て完了しました', ds.map(function(d){ return dLab(d, true); }).join('・') + '　' + s.all + '件すべて完了・目方 ' + s.wAll + '件すべて入力済み' + (expN ? '<div class="mh">⚠ ' + expMsg + '（赤い印の行）</div>' : ''));
+    say('全て完了しました。集計漏れはありません' + (expN ? '。' + expMsg : ''), null, !byVoice);
     return;
   }
   // 日ごとに番号を並べる（押すとその行へ）
@@ -587,18 +590,13 @@ function finish(byVoice){
   var h = '';
   if (miss.length) { h += '<div class="mh">集計漏れ '+miss.length+'件</div>' + ds.map(function(d){ var c = chips(miss, d); return c ? '<div class="mline">'+(two?'<span>'+dLab(d)+'</span>':'')+c+'</div>' : ''; }).join(''); }
   if (wmiss.length) { h += '<div class="mh">目方の入力漏れ '+wmiss.length+'件</div>' + ds.map(function(d){ var c = chips(wmiss, d); return c ? '<div class="mline">'+(two?'<span>'+dLab(d)+'</span>':'')+c+'</div>' : ''; }).join(''); }
+  if (expN) { h += '<div class="mh">⚠ ' + expMsg + '（赤い印の行）</div>'; }
   h += '<div class="sub" style="margin-top:6px">番号を押すとその行へ移ります。赤い枠の行が漏れです。</div>';
   var div = showRes('ng', '⚠ まだ終わっていません', h, true);
   [].forEach.call(div.querySelectorAll('a[data-go]'), function(a){ a.onclick = function(e){ e.preventDefault(); var p = a.getAttribute('data-go').split('|'); flash(p[0], +p[1]); }; });
   var first = (miss[0] || wmiss[0]); flash(first[0], first[1].no);
-  var spoken = function(list){
-    return ds.map(function(d){ var a = list.filter(function(x){ return x[0] === d; }); if (!a.length) { return ''; }
-      return (two ? (+d.slice(8)) + '日は' : '') + a.slice(0, 10).map(function(x){ return x[1].no + '番'; }).join('、') + (a.length > 10 ? '、ほか' + (a.length - 10) + '件' : ''); }).filter(Boolean).join('。');
-  };
-  var t = [];
-  if (miss.length) { t.push('集計漏れが' + miss.length + '件あります。' + spoken(miss)); }
-  if (wmiss.length) { t.push('目方の入力漏れが' + wmiss.length + '件あります。' + spoken(wmiss)); }
-  say(t.join('。'));
+  // 読み上げは件数だけ（番号は画面で見る）
+  say('集計漏れ' + miss.length + '件、目方の入力漏れ' + wmiss.length + '件' + (expN ? '。' + expMsg : ''), null, !byVoice);
 }
 $('finBtn').onclick = function(){ finish(false); };
 
@@ -799,7 +797,7 @@ function say(text, then, now){
     if (gen !== sayGen) { return; }
     try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); } } catch(e){}
     var u = new SpeechSynthesisUtterance(speakText(text)), started = false;
-    u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.1; u.volume = 1;
+    u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15; u.pitch = 1; u.volume = 1;
     say.started = false; say.err = '';
     u.onstart = function(){ started = true; say.started = true; sayFail = 0; };
     u.onend = fin; u.onerror = function(e){ say.err = e && e.error; if (!started) { noVoice(); } fin(); };
@@ -811,7 +809,7 @@ function say(text, then, now){
   };
   if (now && !rec) { go(); return; }
   // マイクをきちんと止め終わってからしゃべる（止めた直後だと声が出ないスマホがある）
-  stopRecThen(function(){ setTimeout(go, 250); });
+  stopRecThen(function(){ setTimeout(go, 120); });
 }
 function noVoice(){
   beep(1200, 0.08);
@@ -825,8 +823,8 @@ function stopRecThen(cb){
   var r = rec, called = false, once = function(){ if (called) { return; } called = true; cb(); };
   rec = null;
   r.onend = once; r.onerror = function(){}; r.onresult = null;
-  try { r.stop(); } catch(e){ once(); return; }
-  setTimeout(once, 800);
+  try { r.abort(); } catch(e){ once(); return; }   // abort の方が stop より早く止まる
+  setTimeout(once, 400);
 }
 
 // ---------- 音声認識 ----------
@@ -848,10 +846,18 @@ function listen(){
   stopRec();
   var r = new SR(); rec = r;
   r.lang = 'ja-JP'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
+  var early = {};   // 聞き取り途中で先に処理した区切り（確定した時に二重にしない）
   r.onresult = function(ev){
     for (var i = ev.resultIndex; i < ev.results.length; i++) {
       var x = ev.results[i];
-      if (!x.isFinal) { $('heard').textContent = '聞き取り中：' + x[0].transcript; continue; }
+      if (!x.isFinal) {
+        var it = x[0].transcript;
+        $('heard').textContent = '聞き取り中：' + it;
+        // 言い終わりが「完了」「集計」なら、確定を待たずにすぐ処理する（速くするため）
+        if (!early[i] && quickReady(it)) { early[i] = 1; $('heard').textContent = '聞こえた言葉：「' + it.trim() + '」'; onHeard([it.trim()]); }
+        continue;
+      }
+      if (early[i]) { continue; }
       var alts = []; for (var k = 0; k < x.length; k++) { alts.push(x[k].transcript.trim()); }
       $('heard').textContent = '聞こえた言葉：「' + alts[0] + '」';
       onHeard(alts);
@@ -924,6 +930,11 @@ function cnorm(s){
   s = String(s).normalize('NFKC');
   s = s.replace(/[〇零一二三四五六七八九十百]+/g, function(x){ return String(kanjiNum(x)); });
   s = s.replace(/(\d)\s*(点|てん)\s*(\d)/g, '$1.$3');
+  // よくある聞き間違いを直す
+  s = s.replace(/(\d)\s*(晩|版|板|盤|ばん|バン)/g, '$1番');
+  s = s.replace(/(官僚|感量|完量|館料|かんりょう|カンリョウ|完了です|完了しました)/g, '完了');
+  s = s.replace(/(キログラム|きろ|㎏)/g, 'キロ');
+  s = s.replace(/(とりけし|取消し|取り消し)/g, '取り消');
   s = s.replace(/[、。,!?！？]/g, ' ');
   return s;
 }
@@ -951,15 +962,32 @@ function parseCmd(text){
   if (o.no == null && o.w && !o.hasBan && !o.unit) { o.glued = o.w; delete o.w; }
   return o;
 }
+// 聞き取り途中の言葉で、もう処理してよいか（「5番 完了」「集計」で言い終わっている）
+function quickReady(text){
+  var c = cnorm(text).replace(/\s+/g, '');
+  if (mode === 'wake') { return /(集計|しゅうけい)(を)?(始める|はじめる|開始)?$/.test(c); }
+  if (mode !== 'cmd' || pending || ask2) { return false; }
+  var p = parseCmd(text);
+  return p.type === 'mark' && p.done && !p.undo && p.no != null && /(完了|かんりょう)$/.test(c) && selDates().some(function(d){ return findRow(d, p.no); });
+}
 function onHeard(alts){
   if (mode === 'wake') {
     if (alts.some(function(a){ var p = parseCmd(a); return p.type === 'wake' || /集計|しゅうけい/.test(a); })) { startCmd(); $('heard').textContent = '集計を始めました'; }
     return;
   }
   if (mode !== 'cmd') { return; }
-  // いちばん意味の通る候補を使う
-  var best = null;
-  for (var i = 0; i < alts.length; i++) { var p = parseCmd(alts[i]); if (p.type !== 'mark' || p.no != null || p.w || p.glued) { best = p; break; } }
+  // いちばん意味の通る候補を使う（選んでいる日に実際にある番号を優先）
+  var best = null, bestScore = -1;
+  for (var i = 0; i < alts.length; i++) {
+    var p = parseCmd(alts[i]), sc = 0;
+    if (p.type !== 'mark') { sc = 5; }
+    else {
+      if (p.no != null) { sc += 1; if (selDates().some(function(d){ return findRow(d, p.no); })) { sc += 2; } }
+      if (p.done || p.undo) { sc += 1; }
+      if (p.w || p.glued) { sc += 1; }
+    }
+    if (sc > bestScore) { best = p; bestScore = sc; }
+  }
   doCmd(best || parseCmd(alts[0]), alts[0]);
 }
 function doCmd(p, raw){
@@ -1028,14 +1056,14 @@ function apply(d, p){
   }
   var q = {}; if (p.w) { q.w = p.w; } if (p.done) { q.done = true; }
   lastUndo = { d: d, no: p.no, before: m };
-  mark(d, p.no, q).then(function(){
-    var mm = markOf(d, p.no) || {};
-    var t = head + (p.w ? '、目方' + p.w + 'キロ' : '') + (p.done ? '、完了' : '、目方を記録しました');
-    if (p.done && needW(r) && !mm.w) { pending = { d: d, no: p.no, done: true }; t += '。目方が未入力です。目方を言ってください'; }
-    if (p.w && !needW(r)) { t += '。この行は目方の入力はいりませんが記録しました'; }
-    showUndo(d, p.no, t.replace(/。.*$/, ''), 'v');
-    say(t);
-  }).catch(function(){ say('記録できませんでした。電波を確かめてください'); });
+  // ボタンと同じく、送る返事を待たずにすぐ読み上げる（送れなかった時だけ知らせる）
+  var hasW = p.w || m.w;
+  var t = head + (p.w ? '、目方' + p.w + 'キロ' : '') + (p.done ? '、完了' : '、目方を記録しました');
+  if (p.done && needW(r) && !hasW) { pending = { d: d, no: p.no, done: true }; t += '。目方が未入力です。目方を言ってください'; }
+  if (p.w && !needW(r)) { t += '。この行は目方の入力はいりませんが記録しました'; }
+  say(t);
+  mark(d, p.no, q).then(function(){ showUndo(d, p.no, t.replace(/。.*$/, ''), 'v'); })
+    .catch(function(){ pending = null; say('記録できませんでした。電波を確かめて、もう一度話してください'); });
 }
 // 文字で入れる（キーボードのマイクでも可）
 function submitCmd(){ var v = $('cmdIn').value.trim(); if (!v) { return; } $('cmdIn').value = ''; $('heard').textContent = '入れた言葉：「' + v + '」'; var p = parseCmd(v); if (p.type === 'wake') { startCmd(); return; } doCmd(p, v); }
