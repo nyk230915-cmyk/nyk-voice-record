@@ -982,7 +982,10 @@ function quickReady(text){
   if (mode === 'wake') { return /(集計|しゅうけい)(を)?(始める|はじめる|開始)?$/.test(c); }
   if (mode !== 'cmd' || pending || ask2) { return false; }
   var p = parseCmd(text);
-  return p.type === 'mark' && p.done && !p.undo && p.no != null && /(完了|かんりょう)$/.test(c) && selDates().some(function(d){ return findRow(d, p.no); });
+  if (p.type === 'finish') { return /(完了|終わり|終了)$/.test(c); }
+  if (p.type !== 'mark' || p.no == null || !selDates().some(function(d){ return findRow(d, p.no); })) { return false; }
+  if (p.undo) { return /(取り消|取消|キャンセル)(して|て)?$/.test(c); }
+  return p.done && /(完了|かんりょう)$/.test(c);
 }
 function onHeard(alts){
   if (mode === 'wake') {
@@ -1065,9 +1068,14 @@ function apply(d, p){
   var head = headOf(d, r);
   if (p.undo) {
     lastUndo = { d: d, no: p.no, before: m };
-    mark(d, p.no, { done: false }).then(function(){ say(head + '、完了を取り消しました'); }).catch(function(e){ say('記録できませんでした'); });
+    say(head + '、完了を取り消しました');   // 完了と同じく返事を待たずに読み上げる
+    mark(d, p.no, { done: false }).catch(function(e){ say('記録できませんでした。電波を確かめて、もう一度話してください'); });
     return;
   }
+  // 目方がいらない行（発注量がkg）には目方を記録しない（数字の聞き間違いで入ってしまうのを防ぐ）
+  var wIgnored = false;
+  if (p.w && !needW(r)) { wIgnored = true; p = Object.assign({}, p, { w: null }); }
+  if (wIgnored && !p.done) { flash(d, p.no); say(head + '。この行は目方の入力はいりません'); return; }
   if (!p.done && !p.w) {   // 番号だけ：内容を読み上げる
     var info = head + (r.qty ? '' : '、発注量なし') + (m.d ? '、完了しています' : '') + (m.w ? '、目方' + m.w + 'キロ' : '');
     if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: false }; info += '。目方を言ってください'; }
@@ -1079,7 +1087,7 @@ function apply(d, p){
   var hasW = p.w || m.w;
   var t = head + (p.w ? '、目方' + p.w + 'キロ' : '') + (p.done ? '、完了' : '、目方を記録しました');
   if (p.done && needW(r) && !hasW) { pending = { d: d, no: p.no, done: true }; t += '。目方が未入力です。目方を言ってください'; }
-  if (p.w && !needW(r)) { t += '。この行は目方の入力はいりませんが記録しました'; }
+  if (wIgnored) { t += '。目方はいらない行なので記録していません'; }
   say(t);
   mark(d, p.no, q).then(function(){ showUndo(d, p.no, t.replace(/。.*$/, ''), 'v'); })
     .catch(function(){ pending = null; say('記録できませんでした。電波を確かめて、もう一度話してください'); });
