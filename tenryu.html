@@ -25,6 +25,12 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 #dates button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 #dates button.on small{color:#dbe8f7}
 #dates button.fin::after{content:" ✓";font-weight:700}
+.drow{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.drow .dw{font-weight:700;min-width:5em}
+.drow .dr{flex:1;color:var(--sub)}
+.drow .sbtn,.dadd .sbtn{padding:5px 10px;font-size:13px}
+.dadd{display:flex;gap:6px;margin-top:8px}
+.dadd input{flex:1;min-width:0;font:inherit;font-size:15px;padding:7px;border:1px solid var(--line);border-radius:8px}
 #tmode{display:flex;border:1px solid var(--acc);border-radius:10px;overflow:hidden}
 #tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:9px 6px}
 #tmode button.on{background:var(--acc);color:#fff}
@@ -134,7 +140,8 @@ body.locked #gate{display:block}
   <div class="sub" id="tmodeHelp" style="margin:4px 0 10px"></div>
   <div class="ctitle">納品日を選ぶ</div>
   <div id="dates"><span class="sub">読み込んでいます…</span></div>
-  <div class="frow">
+  <div class="sub" id="autoInfo">パソコンの天柳事業所のファイルから自動で読み込みます（5分ごと）</div>
+  <div class="frow" style="display:none">
     <button id="fileBtn">📂 ファイルを読み込む</button>
     <input type="file" id="fileIn" accept=".xlsm,.xlsx" style="display:none">
     <span class="sub" id="fileInfo"></span>
@@ -147,7 +154,7 @@ body.locked #gate{display:block}
   <div id="prompt"></div>
   <div id="heard"></div>
   <button class="sbtn" id="nowBtn">すぐに集計を始める</button>
-  <div id="cmdRow"><input id="cmdIn" enterkeyhint="done" autocomplete="off" placeholder="文字でも入れられます 例 5番 3.2 完了"><button id="cmdOk">決定</button></div>
+  <div id="cmdRow" style="display:none"><input id="cmdIn" enterkeyhint="done" autocomplete="off" placeholder="文字でも入れられます 例 5番 3.2 完了"><button id="cmdOk">決定</button></div>
 </div>
 
 <div class="card">
@@ -160,6 +167,14 @@ body.locked #gate{display:block}
 <details><summary>設定・使い方</summary>
   <label class="set"><span>読み上げ（記録した内容を声で知らせる）</span><input type="checkbox" id="optSay"></label>
   <div class="set"><button class="sbtn" id="sayTest">🔊 読み上げテスト</button><span class="sub" id="sayTestMsg" style="flex:1;text-align:right"></span></div>
+  <div class="set" style="display:block">
+    <div style="font-weight:700;margin-bottom:4px">読み方の登録</div>
+    <div class="sub" style="margin-bottom:6px">読み上げの読み方がちがう言葉を登録します（例：鶏挽肉 → とりひきにく）。🔊で聞いて確かめられます。</div>
+    <div id="dictList"></div>
+    <div class="dadd"><input id="dictW" placeholder="言葉（例 鶏挽肉）"><input id="dictR" placeholder="読み方（例 とりひきにく）"><button class="sbtn" id="dictAdd">登録</button></div>
+    <div class="dadd"><button class="sbtn" id="dictTry">🔊 読み方を試す</button></div>
+    <div class="sub" id="dictMsg"></div>
+  </div>
   <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
   <div class="help">
     <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
@@ -173,7 +188,7 @@ body.locked #gate{display:block}
     <b>追加注文</b>：ファイルを読み込み直して、作業中の納品日に新しい行が増えると、お知らせと「新規注文を追加しました」の声が出ます。「確認しました」を押すと消えます。<br>
     「番」を付けて話すと、番号と目方を聞き違えにくくなります。<br>
     <b>目方が必要な行</b>：発注量が空、または単位がkg以外の行（黄色の欄）。<br>
-    <b>ファイル</b>：天柳事業所 管理のファイル（.xlsm）を選ぶと「CSVファイル(印刷)」の表を読み込みます。読み込み直しても、つけた完了・目方は消えません（中身が変わった行には ⚠ が出ます）。
+    <b>データ</b>：パソコンの天柳事業所 管理のファイル（「CSVファイル(印刷)」の表）を5分ごとに自動で読み込みます。エクセルで保存した内容が入ります。つけた完了・目方は読み込み直しても消えません（中身が変わった行には ⚠ が出ます）。
   </div>
   <button class="sbtn" id="logoutBtn" style="margin-top:8px">合言葉を入れ直す</button>
 </details>
@@ -236,28 +251,30 @@ function selDates(){ return SEL.slice().sort(); }
 function loadDates(){
   return call('tenryuDates').then(function(r){
     DATES = r.dates || [];
-    var have = DATES.map(function(x){ return x.date; });
+    if (r.dict) { DICT = r.dict; renderDict(); }
+    if (r.today) { TODAY = r.today; }
+    var win = windowDates();
     var saved = []; try { saved = JSON.parse(ls(K.sel) || '[]'); } catch(e){}
     SEL = SEL.length ? SEL : saved;
-    SEL = SEL.filter(function(d){ return have.indexOf(d) >= 0; });
+    SEL = SEL.filter(function(d){ return win.indexOf(d) >= 0; });
     if (TMODE === 'one' && SEL.length > 1) { SEL = [SEL.slice().sort()[0]]; }
-    if (!SEL.length && have.length) {
-      // ファイルに番号（センター納品日の数字）が入っている日＝いま作業している日を優先
-      var t = r.today || isoToday(), up = DATES.filter(function(x){ return x.date >= t; });
-      var numbered = up.filter(function(x){ return x.numbered; });
-      SEL = [numbered.length ? numbered[0].date : up.length ? up[0].date : have[have.length-1]];
+    if (!SEL.length) {
+      // 明日から順に、行がある最初の日
+      var has = win.filter(function(d){ return countOf(d) > 0; });
+      SEL = [has.length ? has[0] : win[0]];
     }
     renderDates();
     return loadData();
   }).catch(function(e){ $('dates').innerHTML = '<span class="sub">読み込めませんでした：'+esc(e.message)+'</span>'; });
 }
+// 表示する納品日：今日から1日後・2日後・3日後
+var TODAY = '';
+function windowDates(){ var t = TODAY || isoToday(); return [1, 2, 3].map(function(n){ return addDays(t, n); }); }
+function countOf(d){ for (var i = 0; i < DATES.length; i++) { if (DATES[i].date === d) { return DATES[i].count; } } return 0; }
 function renderDates(){
-  if (!DATES.length) { $('dates').innerHTML = '<span class="sub">まだファイルが読み込まれていません。下の「📂 ファイルを読み込む」から読み込んでください。</span>'; return; }
-  var t = isoToday(), list = DATES.filter(function(x){ return x.date >= addDays(t, -14) || SEL.indexOf(x.date) >= 0; });
-  if (!list.length) { list = DATES.slice(-6); }
-  $('dates').innerHTML = list.map(function(x){
-    var fin = DATA[x.date] && DATA[x.date].marks && DATA[x.date].marks._fin;
-    return '<button data-d="'+x.date+'" class="'+(SEL.indexOf(x.date)>=0?'on ':'')+(fin?'fin':'')+'">'+dLab(x.date, true)+'<small>'+x.count+'件</small></button>';
+  $('dates').innerHTML = windowDates().map(function(d){
+    var fin = DATA[d] && DATA[d].marks && DATA[d].marks._fin, n = countOf(d);
+    return '<button data-d="'+d+'" class="'+(SEL.indexOf(d)>=0?'on ':'')+(fin?'fin':'')+'">'+dLab(d, true)+'<small>'+(n ? n+'件' : 'まだありません')+'</small></button>';
   }).join('');
   [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
 }
@@ -329,7 +346,12 @@ $('addOk').onclick = function(){
 };
 
 // 開いている間は15秒ごとにほかの人の分を読み直す
-setInterval(function(){ if (KEY && !document.hidden && SEL.length && !busy && !speaking) { loadData(true); } }, 15000);
+var tick = 0;
+setInterval(function(){
+  if (!KEY || document.hidden || busy || speaking) { return; }
+  if (++tick % 4 === 0) { call('tenryuDates').then(function(r){ DATES = r.dates || DATES; if (r.dict) { DICT = r.dict; renderDict(); } if (r.today) { TODAY = r.today; } renderDates(); }).catch(function(){}); }
+  if (SEL.length) { loadData(true); }
+}, 15000);
 
 // ---------- 表 ----------
 var missSet = {};
@@ -431,7 +453,11 @@ function setW(d, no, raw){
   if (r) { say(headOf(d, r) + (w ? '、目方' + w + 'キロ' : '、目方を消しました'), null, true); }
   mark(d, no, { w: w }).then(function(){ showUndo(d, no, (w ? no+'番 目方 '+w+'kg' : no+'番 目方を消しました'), 'w'); });
 }
-function headOf(d, r){ return (selDates().length > 1 ? (+d.slice(8)) + '日の' : '') + r.no + '番、' + shortEn(r.en) + '、' + r.item; }
+// 読み上げ：番号、納品先、品目、数量、規格、保管温度
+function headOf(d, r){
+  return [(selDates().length > 1 ? (+d.slice(8)) + '日の' : '') + r.no + '番', shortEn(r.en), r.item,
+    r.qty ? r.qty + (r.unit || '') : '', r.kikaku, r.ondo].filter(Boolean).join('、');
+}
 function tapDone(d, no){
   var m = markOf(d, no) || {}, r = findRow(d, no);
   if (m.d) {
@@ -629,8 +655,46 @@ function parseSheet(xml, ss){
 var sayOn = ls(K.say) !== '0', voice = null, speaking = false;
 function pickVoice(){ var v = speechSynthesis.getVoices().filter(function(x){ return /^ja/i.test(x.lang); }); voice = v.filter(function(x){ return /Google/.test(x.name); })[0] || null; say.voices = v.length; }   // iPhoneは声を指定しない方が確実（入っていない声を選ぶと無音になる）
 if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+// ---------- 読み方の辞書（みんなで共有。Googleの保存先に置く） ----------
+var DICT = [];
+function applyDict(s){
+  var list = DICT.filter(function(x){ return x && x.w && x.r; }).slice().sort(function(a, b){ return String(b.w).length - String(a.w).length; });
+  // 長い言葉から置きかえる（置きかえた所をもう一度置きかえないように目印で守る）
+  var keep = [];
+  list.forEach(function(x){
+    var w = String(x.w).normalize('NFKC');
+    if (!w) { return; }
+    s = s.split(w).join('\u0001' + keep.length + '\u0002');
+    keep.push(x.r);
+  });
+  return s.replace(/\u0001(\d+)\u0002/g, function(_, i){ return keep[+i]; });
+}
+function renderDict(){
+  var box = $('dictList'); if (!box) { return; }
+  box.innerHTML = DICT.length ? DICT.map(function(x, i){
+    return '<div class="drow"><span class="dw">'+esc(x.w)+'</span><span class="dr">→ '+esc(x.r)+'</span><button class="sbtn" data-t="'+i+'">🔊</button><button class="sbtn" data-x="'+i+'">削除</button></div>';
+  }).join('') : '<div class="sub">まだ登録がありません</div>';
+  [].forEach.call(box.querySelectorAll('[data-t]'), function(b){ b.onclick = function(){ var x = DICT[+b.getAttribute('data-t')]; say(x.w, null, true); }; });
+  [].forEach.call(box.querySelectorAll('[data-x]'), function(b){ b.onclick = function(){
+    var i = +b.getAttribute('data-x'), x = DICT[i];
+    if (!confirm('「' + x.w + '」の読み方を削除しますか？')) { return; }
+    var next = DICT.slice(); next.splice(i, 1); saveDict(next);
+  }; });
+}
+function saveDict(next){
+  $('dictMsg').textContent = '保存しています…';
+  return call('tenryuDictSet', next).then(function(r){ DICT = r || next; renderDict(); $('dictMsg').textContent = '保存しました（みんなのスマホに反映されます）'; })
+    .catch(function(e){ $('dictMsg').textContent = '保存できませんでした：' + e.message; });
+}
+function addDict(){
+  var w = $('dictW').value.trim(), r = $('dictR').value.trim();
+  if (!w || !r) { $('dictMsg').textContent = '言葉と読み方の両方を入れてください'; return; }
+  var next = DICT.filter(function(x){ return x.w !== w; }); next.push({ w: w, r: r });
+  $('dictW').value = ''; $('dictR').value = '';
+  saveDict(next).then(function(){ say(w, null, true); });
+}
 function speakText(t){
-  return String(t).normalize('NFKC').replace(/kg/gi, 'キロ').replace(/(\d)k\b/gi, '$1キロ').replace(/㈱/g, '').replace(/\bp\b/g, 'パック').replace(/[()（）]/g, '、');
+  return applyDict(String(t).normalize('NFKC')).replace(/kg/gi, 'キロ').replace(/(\d)k\b/gi, '$1キロ').replace(/㈱/g, '').replace(/\bp\b/g, 'パック').replace(/[()（）]/g, '、');
 }
 // スマホ（特にiPhone）は、画面を押した時に一度しゃべらせておかないと、あとから読み上げられない。
 // また iPhone はマナーモード（消音スイッチ）だとページの音が消えるので、無音の音声を一度流して「再生」の状態にしておく。
@@ -709,7 +773,7 @@ function setMode(m){
 function stopRec(){ if (rec) { var r = rec; rec = null; try { r.abort(); } catch(e){} } }
 function resume(){ if (mode !== 'off' && !speaking) { listen(); if (mode === 'cmd') { beep(880, 0.1); } } }
 function listen(){
-  if (micBroken) { $('prompt').textContent = 'このブラウザでは画面のマイクが使えません。下の欄に文字（キーボードのマイク）で入れてください'; return; }
+  if (micBroken) { $('prompt').textContent = 'このブラウザでは画面のマイクが使えません。ChromeかSafariで開いてください（完了ボタンは使えます）'; return; }
   stopRec();
   var r = new SR(); rec = r;
   r.lang = 'ja-JP'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
@@ -725,7 +789,7 @@ function listen(){
   r.onerror = function(e){
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
       micBroken = true; rec = null; setMode('off');
-      $('prompt').textContent = 'マイクが使えませんでした。下の欄に文字（キーボードのマイク）で入れてください';
+      $('prompt').textContent = 'マイクが使えませんでした。マイクの許可を確かめてください（完了ボタンは使えます）';
     }
   };
   r.onend = function(){ if (rec !== r) { return; } rec = null; if (mode !== 'off' && !speaking) { setTimeout(function(){ if (mode !== 'off' && !speaking && !rec) { listen(); } }, 250); } };
@@ -859,14 +923,14 @@ function doCmd(p, raw){
 function apply(d, p){
   pending = null;
   var r = findRow(d, p.no), m = markOf(d, p.no) || {}, two = selDates().length > 1;
-  var head = (two ? (+d.slice(8)) + '日の' : '') + p.no + '番、' + shortEn(r.en) + '、' + r.item;
+  var head = headOf(d, r);
   if (p.undo) {
     lastUndo = { d: d, no: p.no, before: m };
     mark(d, p.no, { done: false }).then(function(){ say(head + '、完了を取り消しました'); }).catch(function(e){ say('記録できませんでした'); });
     return;
   }
   if (!p.done && !p.w) {   // 番号だけ：内容を読み上げる
-    var info = head + '、' + (r.qty ? r.qty + (r.unit || '') : '発注量なし') + (m.d ? '、完了しています' : '') + (m.w ? '、目方' + m.w + 'キロ' : '');
+    var info = head + (r.qty ? '' : '、発注量なし') + (m.d ? '、完了しています' : '') + (m.w ? '、目方' + m.w + 'キロ' : '');
     if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: false }; info += '。目方を言ってください'; }
     flash(d, p.no); say(info); return;
   }
@@ -900,6 +964,9 @@ $('sayTest').onclick = function(){
     msg.textContent = (ok ? '動いています。聞こえなければスマホの音量・マナーモードを確かめてください' : '読み上げが動きませんでした（' + (say.err || '開始しない') + '）') + '　日本語の声：' + (say.voices || 0);
   }, true);
 };
+$('dictAdd').onclick = addDict;
+$('dictR').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); addDict(); } });
+$('dictTry').onclick = function(){ var w = $('dictR').value.trim() || $('dictW').value.trim(); if (w) { say(w, null, true); } else { $('dictMsg').textContent = '試す言葉を入れてください'; } };
 $('optName').value = ls(K.name) || '';
 $('optName').onchange = function(){ ls(K.name, this.value.trim()); };
 
