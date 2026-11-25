@@ -19,8 +19,12 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 .ctitle small{font-weight:400;color:var(--sub);font-size:12px}
 .sub{font-size:12px;color:var(--sub);line-height:1.6}
 .sbtn{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;color:var(--ink)}
-#dates{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
-#dates button{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 11px;color:var(--ink);line-height:1.25;text-align:center}
+#dates{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 4px}
+#dates button{font:inherit;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:10px;padding:5px 2px;color:var(--ink);line-height:1.2;text-align:center;min-width:0}
+#dates button small{font-weight:400}
+.top{padding:10px 12px;margin-bottom:8px}
+.top .ctitle{font-size:13px;margin:0 0 4px}
+.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dates button small{display:block;font-size:11px;color:var(--sub)}
 #dates button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 #dates button.on small{color:#dbe8f7}
@@ -32,7 +36,7 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 .dadd{display:flex;gap:6px;margin-top:8px}
 .dadd input{flex:1;min-width:0;font:inherit;font-size:15px;padding:7px;border:1px solid var(--line);border-radius:8px}
 #tmode{display:flex;border:1px solid var(--acc);border-radius:10px;overflow:hidden}
-#tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:9px 6px}
+#tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:7px 6px}
 #tmode button.on{background:var(--acc);color:#fff}
 #addAlert{display:none;position:fixed;left:0;right:0;top:0;z-index:20;padding:12px}
 #addAlert.on{display:block}
@@ -44,20 +48,21 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #fileBtn{font:inherit;font-weight:700;border:1px solid var(--acc);color:var(--acc);background:#fff;border-radius:10px;padding:9px 14px}
 #voice{position:sticky;top:0;z-index:5}
-#prog{display:flex;gap:10px;align-items:center;font-size:14px;margin-bottom:8px;flex-wrap:wrap}
-#prog b{font-size:18px}
+#prog{display:flex;gap:10px;align-items:center;font-size:13px;margin-bottom:6px;flex-wrap:wrap}
+#prog b{font-size:16px}
 #bar{flex:1;min-width:120px;height:8px;background:#e7ebf0;border-radius:99px;overflow:hidden}
 #bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
-#micBtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:inherit;font-size:19px;font-weight:700}
+#micBtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:10px;border:0;border-radius:12px;background:var(--acc);color:#fff;font:inherit;font-size:16px;font-weight:700}
 #micBtn.wake{background:#5b6f86}
 #micBtn.cmd{background:var(--ok);animation:pulse 1.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 12px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
-#prompt{font-size:17px;font-weight:700;text-align:center;margin-top:8px;min-height:24px;white-space:pre-line}
-#heard{font-size:13px;color:var(--sub);text-align:center;min-height:19px;margin-top:2px}
+#prompt{font-size:15px;font-weight:700;text-align:center;margin-top:6px;white-space:pre-line}
+#prompt:empty,#heard:empty{display:none}
+#heard{font-size:12px;color:var(--sub);text-align:center;margin-top:2px}
 #cmdRow{display:flex;gap:6px;margin-top:8px}
 #cmdIn{flex:1;font:inherit;font-size:16px;padding:9px;border:1px solid var(--line);border-radius:10px;min-width:0}
 #cmdOk{font:inherit;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:0 14px;font-weight:700}
-#nowBtn{display:none;margin:8px auto 0}
+#nowBtn{display:none;margin:6px auto 0;padding:4px 14px;font-size:13px}
 #voice.wk #nowBtn{display:block}
 .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap}
 .toolbar label{font-size:14px;display:flex;align-items:center;gap:6px}
@@ -134,13 +139,13 @@ body.locked #gate{display:block}
 
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div class="card">
+<div class="card top">
   <div class="ctitle">集計のしかた</div>
   <div id="tmode"><button data-m="one">1日ずつ集計</button><button data-m="both">2日同時に集計</button></div>
-  <div class="sub" id="tmodeHelp" style="margin:4px 0 10px"></div>
+  <div class="sub one" id="tmodeHelp" style="margin:2px 0 8px"></div>
   <div class="ctitle">納品日を選ぶ</div>
   <div id="dates"><span class="sub">読み込んでいます…</span></div>
-  <div class="sub" id="autoInfo">パソコンの天柳事業所のファイルから自動で読み込みます（5分ごと）</div>
+  <div class="sub one" id="autoInfo">5分ごとに自動で読み込み・土日は注文がある時だけ表示</div>
   <div class="frow" style="display:none">
     <button id="fileBtn">📂 ファイルを読み込む</button>
     <input type="file" id="fileIn" accept=".xlsm,.xlsx" style="display:none">
@@ -148,7 +153,7 @@ body.locked #gate{display:block}
   </div>
 </div>
 
-<div class="card" id="voice">
+<div class="card top" id="voice">
   <div id="prog"><span>完了 <b id="pDone">0</b>/<span id="pAll">0</span></span><div id="bar"><i></i></div><span>目方 <b id="pW">0</b>/<span id="pWAll">0</span></span></div>
   <button id="micBtn">🎤 音声で集計する</button>
   <div id="prompt"></div>
@@ -267,14 +272,22 @@ function loadDates(){
     return loadData();
   }).catch(function(e){ $('dates').innerHTML = '<span class="sub">読み込めませんでした：'+esc(e.message)+'</span>'; });
 }
-// 表示する納品日：今日から1日後・2日後・3日後
+// 表示する納品日：明日から順に3日分。土日は納品が無いので飛ばす（ファイルに土日の行がある時だけ出す）
 var TODAY = '';
-function windowDates(){ var t = TODAY || isoToday(); return [1, 2, 3].map(function(n){ return addDays(t, n); }); }
+function windowDates(){
+  var t = TODAY || isoToday(), out = [];
+  for (var n = 1; n <= 10 && out.length < 3; n++) {
+    var d = addDays(t, n), wd = new Date(d+'T00:00:00').getDay();
+    if ((wd !== 0 && wd !== 6) || countOf(d) > 0) { out.push(d); }
+  }
+  return out;
+}
+function chipLab(iso){ var d = new Date(iso+'T00:00:00'); return (d.getMonth()+1)+'/'+d.getDate()+'('+WD[d.getDay()]+')'; }
 function countOf(d){ for (var i = 0; i < DATES.length; i++) { if (DATES[i].date === d) { return DATES[i].count; } } return 0; }
 function renderDates(){
   $('dates').innerHTML = windowDates().map(function(d){
     var fin = DATA[d] && DATA[d].marks && DATA[d].marks._fin, n = countOf(d);
-    return '<button data-d="'+d+'" class="'+(SEL.indexOf(d)>=0?'on ':'')+(fin?'fin':'')+'">'+dLab(d, true)+'<small>'+(n ? n+'件' : 'まだありません')+'</small></button>';
+    return '<button data-d="'+d+'" class="'+(SEL.indexOf(d)>=0?'on ':'')+(fin?'fin':'')+'">'+chipLab(d)+'<small>'+(n ? n+'件' : 'まだありません')+'</small></button>';
   }).join('');
   [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
 }
@@ -291,7 +304,7 @@ function setTMode(m){
 }
 function renderMode(){
   [].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === TMODE); });
-  $('tmodeHelp').textContent = TMODE === 'one' ? '納品日を1つ選び、その日の番号だけを集計します（例「5番 完了」）' : '納品日を2つ選びます。話す時は納品日も付けます（例「26日の5番 完了」）。納品日が無い時は聞き返します';
+  $('tmodeHelp').textContent = TMODE === 'one' ? '選んだ1日の番号だけ集計（例「5番 完了」）' : '2日選び、納品日も話す（例「26日の5番 完了」）';
 }
 [].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.onclick = function(){ setTMode(b.getAttribute('data-m')); }; });
 renderMode();
@@ -766,8 +779,8 @@ function setMode(m){
   mode = m;
   var b = $('micBtn'); b.classList.toggle('wake', m === 'wake'); b.classList.toggle('cmd', m === 'cmd');
   $('voice').classList.toggle('wk', m === 'wake');
-  b.textContent = m === 'off' ? '🎤 音声で集計する' : m === 'wake' ? '🎤 「集計」と話してください（押すと止める）' : '🎤 聞いています（押すと止める）';
-  $('prompt').textContent = m === 'off' ? '' : m === 'wake' ? '「集計」または「集計を始める」と話すと始まります' : (both() ? '納品日と番号と「完了」を話してください\n例：26日の5番 完了' : '番号と「完了」を話してください\n例：5番 完了／5番 3.2キロ 完了');
+  b.textContent = m === 'off' ? '🎤 音声で集計する' : m === 'wake' ? '🎤「集計」と話すと始まります' : '🎤 聞いています（押すと止める）';
+  $('prompt').textContent = m === 'off' || m === 'wake' ? '' : (both() ? '納品日と番号と「完了」を話してください\n例：26日の5番 完了' : '番号と「完了」を話してください\n例：5番 完了／5番 3.2キロ 完了');
   if (m === 'off') { stopRec(); pending = null; ask2 = null; }
 }
 function stopRec(){ if (rec) { var r = rec; rec = null; try { r.abort(); } catch(e){} } }
@@ -787,6 +800,11 @@ function listen(){
     }
   };
   r.onerror = function(e){
+    if (e.error === 'not-allowed' && autoTry) {
+      // 開いた直後はタップが無いと始められないスマホがある → 最初のタップで始める
+      autoTry = false; rec = null; setMode('off'); waitTap();
+      return;
+    }
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
       micBroken = true; rec = null; setMode('off');
       $('prompt').textContent = 'マイクが使えませんでした。マイクの許可を確かめてください（完了ボタンは使えます）';
@@ -815,6 +833,22 @@ $('micBtn').onclick = function(){
 };
 $('nowBtn').onclick = function(){ startCmd(); };
 function SELrows(){ return selDates().some(function(d){ return rowsOf(d).length; }); }
+// 開いたら最初から「集計」を待つ（ボタンを押さなくてよい）
+var autoTry = false;
+function autoWake(){
+  if (micBroken || mode !== 'off') { return; }
+  autoTry = true; setMode('wake'); listen();
+  setTimeout(function(){ autoTry = false; }, 4000);
+}
+function waitTap(){
+  $('prompt').textContent = '画面のどこかを1回押すと「集計」を待ち始めます';
+  var go = function(ev){
+    document.removeEventListener('click', go, true);
+    if (ev.target && ev.target.id === 'micBtn') { return; }   // マイクボタンはそのまま
+    if (mode === 'off' && !micBroken) { setMode('wake'); listen(); }
+  };
+  document.addEventListener('click', go, true);
+}
 
 // ---------- 言葉の判定 ----------
 var KN = {'〇':0,'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
@@ -970,7 +1004,7 @@ $('dictTry').onclick = function(){ var w = $('dictR').value.trim() || $('dictW')
 $('optName').value = ls(K.name) || '';
 $('optName').onchange = function(){ ls(K.name, this.value.trim()); };
 
-function start(){ loadDates(); }
+function start(){ var p = loadDates(); if (p && p.then) { p.then(autoWake); } else { autoWake(); } }
 if (KEY) { start(); } else { lock(''); }
 </script>
 </body>
