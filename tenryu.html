@@ -159,6 +159,7 @@ body.locked #gate{display:block}
 <div class="card">
 <details><summary>設定・使い方</summary>
   <label class="set"><span>読み上げ（記録した内容を声で知らせる）</span><input type="checkbox" id="optSay"></label>
+  <div class="set"><button class="sbtn" id="sayTest">🔊 読み上げテスト</button><span class="sub" id="sayTestMsg" style="flex:1;text-align:right"></span></div>
   <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
   <div class="help">
     <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
@@ -426,21 +427,28 @@ function setW(d, no, raw){
   var w = normW(raw);
   if (w === null) { showRes('ng', '目方が正しくありません', esc(raw)); render(); return; }
   lastUndo = { d: d, no: no, before: markOf(d, no) || {} };
+  var r = findRow(d, no);
+  if (r) { say(headOf(d, r) + (w ? '、目方' + w + 'キロ' : '、目方を消しました'), null, true); }
   mark(d, no, { w: w }).then(function(){ showUndo(d, no, (w ? no+'番 目方 '+w+'kg' : no+'番 目方を消しました'), 'w'); });
 }
+function headOf(d, r){ return (selDates().length > 1 ? (+d.slice(8)) + '日の' : '') + r.no + '番、' + shortEn(r.en) + '、' + r.item; }
 function tapDone(d, no){
   var m = markOf(d, no) || {}, r = findRow(d, no);
   if (m.d) {
     if (!confirm(no + '番の完了を取り消しますか？')) { return; }
+    say(headOf(d, r) + '、完了を取り消しました', null, true);
     mark(d, no, { done: false });
     return;
   }
+  var noW = needW(r) && !m.w;
+  // 押した瞬間に読み上げる（スマホはボタンを押した時の方が確実に声が出る）
+  say(headOf(d, r) + (m.w ? '、目方' + m.w + 'キロ' : '') + '、完了' + (noW ? '。目方が未入力です' : ''), null, true);
   mark(d, no, { done: true }).then(function(){
-    if (needW(r) && !(markOf(d, no) || {}).w) {
+    if (noW) {
       showRes('info', no+'番 完了（目方がまだです）', '目方の欄に重さを入れてください');
       var inp = document.querySelector('#r-'+d+'-'+no+' input.w'); if (inp) { inp.focus(); }
     }
-  });
+  }).catch(function(){ say('記録できませんでした。電波を確かめてください', null, true); });
 }
 var lastUndo = null;
 function showUndo(d, no, text, kind){
@@ -619,41 +627,71 @@ function parseSheet(xml, ss){
 
 // ---------- 読み上げ ----------
 var sayOn = ls(K.say) !== '0', voice = null, speaking = false;
-function pickVoice(){ var v = speechSynthesis.getVoices().filter(function(x){ return /^ja/i.test(x.lang); }); voice = v.filter(function(x){ return /Google|Kyoko|O-ren|Nanami/.test(x.name); })[0] || v[0] || null; }
+function pickVoice(){ var v = speechSynthesis.getVoices().filter(function(x){ return /^ja/i.test(x.lang); }); voice = v.filter(function(x){ return /Google/.test(x.name); })[0] || null; say.voices = v.length; }   // iPhoneは声を指定しない方が確実（入っていない声を選ぶと無音になる）
 if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 function speakText(t){
   return String(t).normalize('NFKC').replace(/kg/gi, 'キロ').replace(/(\d)k\b/gi, '$1キロ').replace(/㈱/g, '').replace(/\bp\b/g, 'パック').replace(/[()（）]/g, '、');
 }
-// スマホ（特にiPhone）は、画面を押した時に一度しゃべらせておかないと、あとから読み上げられない
-var speechUnlocked = false;
-function unlockSpeech(){
-  if (speechUnlocked || !window.speechSynthesis) { return; }
-  try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ja-JP'; speechSynthesis.speak(u); speechUnlocked = true; } catch(e){}
+// スマホ（特にiPhone）は、画面を押した時に一度しゃべらせておかないと、あとから読み上げられない。
+// また iPhone はマナーモード（消音スイッチ）だとページの音が消えるので、無音の音声を一度流して「再生」の状態にしておく。
+var speechUnlocked = false, silentAudio = null;
+function silentUrl(){
+  var n = 800, b = new Uint8Array(44 + n), v = new DataView(b.buffer), s = function(o, t){ for (var i = 0; i < t.length; i++) { b[o + i] = t.charCodeAt(i); } };
+  s(0, 'RIFF'); v.setUint32(4, 36 + n, true); s(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); s(36, 'data'); v.setUint32(40, n, true);
+  for (var i = 0; i < n; i++) { b[44 + i] = 128; }
+  return URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
 }
-document.addEventListener('click', unlockSpeech, true);
-document.addEventListener('touchend', unlockSpeech, true);
-var sayGen = 0;
-function say(text, then){
+function unlockAudio(){
+  try { if (!silentAudio) { silentAudio = new Audio(silentUrl()); silentAudio.setAttribute('playsinline', ''); } silentAudio.currentTime = 0; var pr = silentAudio.play(); if (pr && pr.catch) { pr.catch(function(){}); } } catch(e){}
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') { actx.resume(); } } catch(e){}
+  if (!speechUnlocked && window.speechSynthesis) {
+    try { var u = new SpeechSynthesisUtterance('　'); u.lang = 'ja-JP'; speechSynthesis.speak(u); speechUnlocked = true; } catch(e){}
+  }
+}
+document.addEventListener('click', unlockAudio, true);
+document.addEventListener('touchend', unlockAudio, true);
+var sayGen = 0, sayFail = 0, sayWarned = false;
+// now=true：ボタンを押した瞬間に呼ぶ時（その場ですぐしゃべる。スマホはこの方が確実）
+function say(text, then, now){
   say.last = text;
   if (mode !== 'off') { $('prompt').textContent = '🔊 ' + text; }
   var gen = ++sayGen;
   var done = false, fin = function(){ if (done || gen !== sayGen) { return; } done = true; speaking = false; if (then) { then(); } else { resume(); } };
   if (!sayOn || !window.speechSynthesis) { beep(1200, 0.08); setTimeout(fin, 300); return; }
-  stopRec(); speaking = true;
-  try { speechSynthesis.cancel(); } catch(e){}
-  // マイクを止めた直後・cancel 直後にしゃべらせると消えることがあるので少し待つ
-  setTimeout(function(){
+  speaking = true;
+  var go = function(){
     if (gen !== sayGen) { return; }
+    try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); } } catch(e){}
     var u = new SpeechSynthesisUtterance(speakText(text)), started = false;
-    u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15; u.volume = 1;
-    u.onstart = function(){ started = true; };
-    u.onend = fin; u.onerror = function(){ if (!started) { beep(1200, 0.08); } fin(); };
+    u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.1; u.volume = 1;
+    say.started = false; say.err = '';
+    u.onstart = function(){ started = true; say.started = true; sayFail = 0; };
+    u.onend = fin; u.onerror = function(e){ say.err = e && e.error; if (!started) { noVoice(); } fin(); };
     say.u = u;   // 途中で消されないように持っておく（Chromeの不具合よけ）
-    speechSynthesis.resume();
+    try { speechSynthesis.resume(); } catch(e){}
     speechSynthesis.speak(u);
-    setTimeout(function(){ if (!started && !done) { beep(1200, 0.08); fin(); } }, 2500);   // 読み上げが動かない時は「ピッ」だけ
+    setTimeout(function(){ if (!started && !done) { noVoice(); fin(); } }, 3000);   // 読み上げが動かない時は「ピッ」だけ
     setTimeout(fin, 4000 + text.length * 250);
-  }, 350);
+  };
+  if (now && !rec) { go(); return; }
+  // マイクをきちんと止め終わってからしゃべる（止めた直後だと声が出ないスマホがある）
+  stopRecThen(function(){ setTimeout(go, 250); });
+}
+function noVoice(){
+  beep(1200, 0.08);
+  if (++sayFail >= 2 && !sayWarned) {
+    sayWarned = true;
+    showRes('ng', '読み上げの声が出ていません', 'スマホの音量・マナーモード（消音スイッチ）を確かめてください。設定の「🔊 読み上げテスト」で確かめられます。', true);
+  }
+}
+function stopRecThen(cb){
+  if (!rec) { cb(); return; }
+  var r = rec, called = false, once = function(){ if (called) { return; } called = true; cb(); };
+  rec = null;
+  r.onend = once; r.onerror = function(){}; r.onresult = null;
+  try { r.stop(); } catch(e){ once(); return; }
+  setTimeout(once, 800);
 }
 
 // ---------- 音声認識 ----------
@@ -851,6 +889,17 @@ $('cmdIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.p
 // ---------- 設定 ----------
 $('optSay').checked = sayOn;
 $('optSay').onchange = function(){ sayOn = this.checked; ls(K.say, sayOn ? '1' : '0'); };
+$('sayTest').onclick = function(){
+  var msg = $('sayTestMsg');
+  if (!window.speechSynthesis) { msg.textContent = 'このブラウザは読み上げに対応していません'; return; }
+  if (!sayOn) { msg.textContent = '「読み上げ」のチェックが外れています'; return; }
+  msg.textContent = '読み上げています…';
+  sayFail = 0;
+  say('読み上げのテストです。聞こえていますか', function(){
+    var ok = say.started;
+    msg.textContent = (ok ? '動いています。聞こえなければスマホの音量・マナーモードを確かめてください' : '読み上げが動きませんでした（' + (say.err || '開始しない') + '）') + '　日本語の声：' + (say.voices || 0);
+  }, true);
+};
 $('optName').value = ls(K.name) || '';
 $('optName').onchange = function(){ ls(K.name, this.value.trim()); };
 
