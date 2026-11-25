@@ -140,6 +140,37 @@ details summary{color:var(--sub);cursor:pointer;padding:2px 0}
 body.locked .wrap{display:none}
 body.locked #gate{display:block}
 @media (max-height:900px) and (max-width:600px){#voice{position:static}}
+/* 集計のしかた・納品日：選んだ後は小さくたたむ */
+#topSum{display:none;align-items:center;gap:8px;font-size:14px;font-weight:700}
+#topSum span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#topSum .sbtn,#topClose{padding:8px 14px;font-size:14px;min-height:40px}
+#topClose{font-weight:400}
+#topCard.mini #topSum{display:flex}
+#topCard.mini #topFull{display:none}
+#topCard.mini{padding:6px 10px}
+.row .tbr{display:none}
+/* タブレット（横幅が広い画面）：1件を2行に詰めて、たくさん見えるようにする */
+@media (min-width:700px){
+  .wrap{max-width:1200px}
+  .row{padding:6px 8px;margin-bottom:5px;align-items:stretch}
+  .row .info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:1px;align-content:center}
+  .row .ln{flex:0 1 auto;min-width:0}
+  .row .tbr{display:block;flex-basis:100%;height:0}
+  .row .l1{display:flex;gap:8px;font-size:13px}
+  .row .l1 .en{flex:0 1 auto}
+  .row .l2{font-size:17px}
+  .row .lm{font-size:14px}
+  .row .l3 .q{font-size:16px}
+  .row .lt{font-size:13px}
+  .row .no{flex-basis:52px;font-size:22px}
+  .row .dbtn{flex-basis:84px;min-height:52px;font-size:17px}
+  .row .wcol{flex-basis:84px}
+  .row .wcol input{padding:8px 4px}
+  #flt button{padding:9px 4px;font-size:15px}
+}
+@media (min-width:1000px){
+  .rows{display:grid;grid-template-columns:1fr 1fr;column-gap:8px}
+}
 @media (max-width:420px){.row{gap:6px;padding:6px}.row .wcol{flex-basis:62px}.row .dbtn{flex-basis:54px;font-size:15px}.row .no{flex-basis:34px;font-size:18px}}
 </style>
 </head>
@@ -157,13 +188,16 @@ body.locked #gate{display:block}
 <div id="iosTap"><div class="box"><div class="t">🔊 音声集計の準備</div><div class="sub" id="iosMsg">iPhone・iPad は、読み上げの声を出すために最初に1回押す必要があります。</div><button id="iosGo">押して音声集計をはじめる</button></div></div>
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div class="card top">
-  <div class="ctitle">集計のしかた</div>
+<div class="card top" id="topCard">
+  <div id="topSum"><span id="topSumTxt"></span><button class="sbtn" id="topOpen">変更 ▼</button></div>
+  <div id="topFull">
+  <div class="ctitle" style="justify-content:space-between">集計のしかた<button class="sbtn" id="topClose">閉じる ▲</button></div>
   <div id="tmode"><button data-m="one">1日ずつ集計</button><button data-m="both">2日同時に集計</button></div>
   <div class="sub one" id="tmodeHelp" style="margin:2px 0 8px"></div>
   <div class="ctitle">納品日を選ぶ</div>
   <div id="dates"><span class="sub">読み込んでいます…</span></div>
   <div class="sub one" id="autoInfo">5分ごとに自動で読み込み・土日は注文がある時だけ表示</div>
+  </div>
   <div class="frow" style="display:none">
     <button id="fileBtn">📂 ファイルを読み込む</button>
     <input type="file" id="fileIn" accept=".xlsm,.xlsx" style="display:none">
@@ -291,6 +325,8 @@ function loadDates(){
       SEL = [has.length ? has[0] : win[0]];
     }
     renderDates();
+    // 前に選んだ日があり行もあれば、最初からたたんでおく
+    if (SEL.some(function(d){ return countOf(d) > 0; }) && (TMODE === 'one' || SEL.length >= 2)) { setTop(true); }
     return loadData();
   }).catch(function(e){ $('dates').innerHTML = '<span class="sub">読み込めませんでした：'+esc(e.message)+'</span>'; });
 }
@@ -312,6 +348,7 @@ function renderDates(){
     return '<button data-d="'+d+'" class="'+(SEL.indexOf(d)>=0?'on ':'')+(fin?'fin':'')+'">'+chipLab(d)+'<small>'+(n ? n+'件' : 'まだありません')+'</small></button>';
   }).join('');
   [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
+  if ($('topCard').classList.contains('mini')) { renderTopSum(); }
 }
 function addDays(iso, n){ var d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
 // 集計のしかた：one＝1日ずつ（選んだ日の番号だけ）／ both＝2日同時（納品日も話す）
@@ -337,7 +374,18 @@ function toggleDate(d){
   else { SEL.push(d); if (SEL.length > 2) { SEL.shift(); } }
   ls(K.sel, JSON.stringify(SEL)); pending = null; ask2 = null;
   renderDates(); loadData();
+  // 選び終わったら小さくたたむ（1日ずつ＝1つ選んだら／2日同時＝2つ選んだら）
+  if (TMODE === 'one' || SEL.length >= 2) { setTop(true); }
 }
+function setTop(mini){
+  var c = $('topCard'); c.classList.toggle('mini', !!mini);
+  if (mini) { renderTopSum(); }
+}
+function renderTopSum(){
+  $('topSumTxt').textContent = (TMODE === 'both' ? '2日同時' : '1日ずつ') + '　' + selDates().map(function(d){ var n = countOf(d); return chipLab(d) + ' ' + (n ? n + '件' : 'なし'); }).join('・');
+}
+$('topOpen').onclick = function(){ setTop(false); };
+$('topClose').onclick = function(){ setTop(true); };
 function loadData(quiet){
   if (!SEL.length) { render(); return Promise.resolve(); }
   var want = selDates().join(',');
@@ -427,6 +475,7 @@ function rowHtml(d, r, ko){
     '<div class="ln l1"><span class="en">'+(r.add?'<span class="new">追加 '+esc(r.add)+'</span>':'')+esc(shortEn(r.en))+'</span><span class="ko">'+(ko||1)+'個口</span></div>' +
     '<div class="ln l2"><b>'+esc(r.item)+'</b></div>' +
     (memoOf(r) ? '<div class="ln lm">'+esc(memoOf(r))+'</div>' : '') +
+    '<div class="tbr"></div>' +
     '<div class="ln l3"><span class="q">'+q+'</span>'+extra+'</div>' +
     (tags ? '<div class="ln lt">'+tags+'</div>' : '') +
     (function(){
@@ -453,7 +502,7 @@ function render(){
     var kc = {}; rows.forEach(function(r){ var k = r.id || ('#'+r.no); kc[k] = (kc[k] || 0) + 1; });
     if (!rows.length) { h += '<div class="empty">この日の行がありません</div>'; }
     else if (!shown.length) { h += '<div class="empty">'+(FLT ? '「'+FLTN[FLT]+'」の行はありません' : 'まだの分はありません 🎉')+'</div>'; }
-    h += shown.map(function(r){ return rowHtml(d, r, kc[r.id || ('#'+r.no)]); }).join('');
+    h += '<div class="rows">' + shown.map(function(r){ return rowHtml(d, r, kc[r.id || ('#'+r.no)]); }).join('') + '</div>';
   });
   $('list').innerHTML = h || '<div class="empty">納品日を選んでください</div>';
   renderFlt();
