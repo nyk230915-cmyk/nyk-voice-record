@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天柳事業所 集計</title>
+<meta name="robots" content="noindex">
+<script>window.API_URL = "https://script.google.com/macros/s/AKfycbwWltlwQFGzXvHzJ5O-uQo_plTn-8-VkT3m4g75G1IkFw6mVA8jDsgLMI2egTO8xr6n/exec";</script>
+<meta charset="utf-8">
+<style>
+:root{--bg:#f2f4f7;--card:#fff;--ink:#1d2733;--sub:#5b6878;--line:#d8dee6;--acc:#2f6fb2;--acc2:#e8f0fa;--ok:#1f8a4c;--okbg:#e6f4ec;--ng:#c0392b;--ngbg:#fbeaea;--warn:#a86a00;--warnbg:#fff4dd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;font-size:16px}
+header{background:#24384f;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+header h1{font-size:17px;margin:0}
+header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
+.wrap{max-width:760px;margin:0 auto;padding:12px 12px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.ctitle{font-size:15px;font-weight:700;margin:0 0 8px;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:8px}
+.ctitle small{font-weight:400;color:var(--sub);font-size:12px}
+.sub{font-size:12px;color:var(--sub);line-height:1.6}
+.sbtn{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;color:var(--ink)}
+#dates{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
+#dates button{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 11px;color:var(--ink);line-height:1.25;text-align:center}
+#dates button small{display:block;font-size:11px;color:var(--sub)}
+#dates button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#dates button.on small{color:#dbe8f7}
+#dates button.fin::after{content:" ✓";font-weight:700}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#fileBtn{font:inherit;font-weight:700;border:1px solid var(--acc);color:var(--acc);background:#fff;border-radius:10px;padding:9px 14px}
+#voice{position:sticky;top:0;z-index:5}
+#prog{display:flex;gap:10px;align-items:center;font-size:14px;margin-bottom:8px;flex-wrap:wrap}
+#prog b{font-size:18px}
+#bar{flex:1;min-width:120px;height:8px;background:#e7ebf0;border-radius:99px;overflow:hidden}
+#bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+#micBtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:inherit;font-size:19px;font-weight:700}
+#micBtn.wake{background:#5b6f86}
+#micBtn.cmd{background:var(--ok);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 12px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+#prompt{font-size:17px;font-weight:700;text-align:center;margin-top:8px;min-height:24px;white-space:pre-line}
+#heard{font-size:13px;color:var(--sub);text-align:center;min-height:19px;margin-top:2px}
+#cmdRow{display:flex;gap:6px;margin-top:8px}
+#cmdIn{flex:1;font:inherit;font-size:16px;padding:9px;border:1px solid var(--line);border-radius:10px;min-width:0}
+#cmdOk{font:inherit;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:0 14px;font-weight:700}
+#nowBtn{display:none;margin:8px auto 0}
+#voice.wk #nowBtn{display:block}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap}
+.toolbar label{font-size:14px;display:flex;align-items:center;gap:6px}
+.toolbar input{width:20px;height:20px}
+.dhead{font-weight:700;font-size:15px;margin:14px 0 6px;padding-left:8px;border-left:4px solid var(--acc)}
+.dhead small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
+.row{display:flex;align-items:stretch;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;transition:background .3s}
+.row .no{flex:0 0 44px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--acc);background:var(--acc2);border-radius:8px}
+.row .info{flex:1;min-width:0;font-size:13px;line-height:1.45}
+.row .l1{color:var(--sub);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .l2{font-size:15px}
+.row .l2 b{font-weight:700}
+.row .l3{color:var(--sub);font-size:12px}
+.row .l3 .q{color:var(--ink);font-weight:700;font-size:14px}
+.row .wcol{flex:0 0 78px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;font-size:11px;color:var(--warn);text-align:center}
+.row .wcol input{width:100%;font:inherit;font-size:17px;font-weight:700;padding:6px 4px;border:2px solid #f0c36b;border-radius:8px;text-align:center;background:var(--warnbg)}
+.row .wcol input.has{border-color:#b9dfc8;background:#fff}
+.row .wcol .kg{font-size:15px;font-weight:700;color:var(--ink)}
+.row .dbtn{flex:0 0 72px;font:inherit;font-size:16px;font-weight:700;border:2px solid var(--acc);background:#fff;color:var(--acc);border-radius:10px}
+.row.done{background:var(--okbg);border-color:#b9dfc8}
+.row.done .no{background:var(--ok);color:#fff}
+.row.done .dbtn{background:var(--ok);border-color:var(--ok);color:#fff}
+.row.miss{border:2px solid var(--ng);background:var(--ngbg)}
+.row.flash{background:#fff3b0}
+.row .chg{color:var(--ng);font-size:12px;font-weight:700}
+.row .why{display:none;color:var(--ng);font-size:12px;font-weight:700}
+.row.miss .why{display:block}
+#finBtn{width:100%;margin-top:12px;padding:16px;border:0;border-radius:14px;background:#24384f;color:#fff;font:inherit;font-size:19px;font-weight:700}
+#result{position:sticky;bottom:0;z-index:4}
+.res{border-radius:12px;padding:12px 14px;margin-top:10px;border:1px solid;box-shadow:0 2px 10px rgba(0,0,0,.08);max-height:42vh;overflow:auto}
+.res.ok{background:var(--okbg);border-color:#b9dfc8}
+.res.ng{background:var(--ngbg);border-color:#efc2bd}
+.res.info{background:var(--warnbg);border-color:#f0d9a6}
+.res .t{font-weight:700;margin-bottom:4px}
+.res .x{float:right;border:0;background:none;font-size:18px;color:var(--sub);padding:0 4px}
+.res ul{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.7}
+.res a{color:var(--ng);font-weight:700}
+.res .mh{font-weight:700;margin:8px 0 4px;color:var(--ng)}
+.res .mline{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:4px}
+.res .mline span{font-size:12px;color:var(--sub);margin-right:2px}
+.res .nchip{display:inline-block;min-width:36px;text-align:center;padding:5px 7px;border-radius:8px;background:#fff;border:1.5px solid var(--ng);color:var(--ng);font-weight:800;text-decoration:none}
+.res .undo{margin-top:6px;font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px}
+.empty{text-align:center;color:var(--sub);padding:24px 8px;font-size:14px;line-height:1.8}
+details{font-size:14px}
+details summary{color:var(--sub);cursor:pointer;padding:2px 0}
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.set input[type=checkbox]{width:22px;height:22px}
+.help{font-size:13px;color:var(--sub);line-height:1.8;margin-top:8px}
+.help b{color:var(--ink)}
+#gate{display:none;max-width:420px;margin:40px auto;padding:0 16px}
+#gate .card{text-align:center}
+#gate h2{font-size:18px;margin:4px 0 6px}
+#gate p{font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.7}
+#gate input[type=password]{width:100%;font:inherit;font-size:18px;padding:12px;border:1px solid var(--line);border-radius:10px;text-align:center}
+#gate button{width:100%;margin-top:10px;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:10px;background:var(--acc);color:#fff;padding:12px}
+#gate label{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--sub);margin-top:10px}
+#gateMsg{color:var(--ng);font-size:13px;min-height:18px;margin-top:8px}
+body.locked .wrap{display:none}
+body.locked #gate{display:block}
+@media (max-height:900px) and (max-width:600px){#voice{position:static}}
+@media (max-width:420px){.row .wcol{flex-basis:66px}.row .dbtn{flex-basis:62px;font-size:15px}.row .no{flex-basis:38px;font-size:19px}}
+</style>
+</head>
+<body>
+<header><h1>🥩 天柳事業所 集計</h1><a href="./">🎙️ 温度記録へ</a></header>
+<div id="gate"><div class="card">
+<h2>合言葉を入れてください</h2>
+<p>NYKインフォメーションと同じ合言葉です。</p>
+<input type="password" id="pass" autocomplete="current-password" enterkeyhint="go">
+<label><input type="checkbox" id="keep" checked> このスマホで覚えておく</label>
+<button id="passOk">はじめる</button>
+<div id="gateMsg"></div>
+</div></div>
+
+<div class="wrap">
+<div class="card">
+  <div class="ctitle">納品日を選ぶ <small>2日分まで同時に選べます</small></div>
+  <div id="dates"><span class="sub">読み込んでいます…</span></div>
+  <div class="frow">
+    <button id="fileBtn">📂 ファイルを読み込む</button>
+    <input type="file" id="fileIn" accept=".xlsm,.xlsx" style="display:none">
+    <span class="sub" id="fileInfo"></span>
+  </div>
+</div>
+
+<div class="card" id="voice">
+  <div id="prog"><span>完了 <b id="pDone">0</b>/<span id="pAll">0</span></span><div id="bar"><i></i></div><span>目方 <b id="pW">0</b>/<span id="pWAll">0</span></span></div>
+  <button id="micBtn">🎤 音声で集計する</button>
+  <div id="prompt"></div>
+  <div id="heard"></div>
+  <button class="sbtn" id="nowBtn">すぐに集計を始める</button>
+  <div id="cmdRow"><input id="cmdIn" enterkeyhint="done" autocomplete="off" placeholder="文字でも入れられます 例 5番 3.2 完了"><button id="cmdOk">決定</button></div>
+</div>
+
+<div class="card">
+  <div class="toolbar"><label><input type="checkbox" id="onlyLeft"> まだの分だけ表示</label><span class="sub" id="loadedAt"></span></div>
+  <div id="list"><div class="empty">納品日を選んでください</div></div>
+  <button id="finBtn">✅ 全て完了</button>
+</div>
+
+<div class="card">
+<details><summary>設定・使い方</summary>
+  <label class="set"><span>読み上げ（記録した内容を声で知らせる）</span><input type="checkbox" id="optSay"></label>
+  <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
+  <div class="help">
+    <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
+    <b>話し方</b>（番号＝センター納品日の列の数字）<br>
+    ・「<b>5番 完了</b>」… 5番を完了にする<br>
+    ・「<b>5番 3.2キロ 完了</b>」… 目方を入れて完了にする<br>
+    ・「<b>5番 3.2キロ</b>」… 目方だけ入れる<br>
+    ・「<b>全て完了</b>」… 漏れが無いか確かめる<br>
+    ・「5番 取り消し」… 完了を取り消す／「もう一度」… 読み上げをくり返す／「終了」… 音声をやめる<br>
+    2日分を選んでいて同じ番号がある時は「<b>26日の5番 完了</b>」のように日にちを付けます（付けないと聞き返します）。<br>
+    「番」を付けて話すと、番号と目方を聞き違えにくくなります。<br>
+    <b>目方が必要な行</b>：発注量が空、または単位がkg以外の行（黄色の欄）。<br>
+    <b>ファイル</b>：天柳事業所 管理のファイル（.xlsm）を選ぶと「CSVファイル(印刷)」の表を読み込みます。読み込み直しても、つけた完了・目方は消えません（中身が変わった行には ⚠ が出ます）。
+  </div>
+  <button class="sbtn" id="logoutBtn" style="margin-top:8px">合言葉を入れ直す</button>
+</details>
+</div>
+<div id="result"></div>
+</div>
+
+<script>
+var $ = function(id){ return document.getElementById(id); };
+var WD = ['日','月','火','水','木','金','土'];
+var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1' };
+function ls(k, v){ try { if (v === undefined) { return localStorage.getItem(k); } if (v === null) { localStorage.removeItem(k); return; } localStorage.setItem(k, v); } catch(e){ return null; } }
+var KEY = ls(K.key) || (function(){ try { return sessionStorage.getItem(K.key); } catch(e){ return null; } })() || '';
+function pad(n){ return (n<10?'0':'')+n; }
+function isoOf(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function isoToday(){ return isoOf(new Date()); }
+function dLab(iso, wd){ var d=new Date(iso+'T00:00:00'); return (d.getMonth()+1)+'月'+d.getDate()+'日'+(wd?'('+WD[d.getDay()]+')':''); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function myName(){ return ($('optName').value || '').trim().slice(0,20); }
+
+// ---------- サーバー ----------
+function call(name){
+  var args = [].slice.call(arguments, 1);
+  if (name !== 'login') { args.unshift(KEY); }
+  return new Promise(function(resolve, reject){
+    if (window.__mockApi) { window.__mockApi(name, args).then(resolve, reject); return; }
+    fetch(window.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: name, args: args }) })
+      .then(function(res){ return res.json(); })
+      .then(function(j){ if (j && j.ok) { resolve(j.result); } else { reject(new Error(j && j.error || '通信できませんでした')); } })
+      .catch(function(){ reject(new Error('通信できませんでした')); });
+  }).catch(function(e){ if (/AUTH/.test(e && e.message)) { lock('合言葉を入れ直してください'); } throw e; });
+}
+
+// ---------- 合言葉 ----------
+function lock(msg){ KEY = ''; ls(K.key, null); try { sessionStorage.removeItem(K.key); } catch(e){} setMode('off'); document.body.classList.add('locked'); $('gateMsg').textContent = msg || ''; }
+function tryLogin(){
+  var p = $('pass').value; if (!p.trim()) { return; }
+  $('passOk').disabled = true; $('gateMsg').textContent = '確かめています…';
+  call('login', p).then(function(r){
+    $('passOk').disabled = false;
+    if (!r || !r.ok) { $('gateMsg').textContent = '合言葉がちがいます'; return; }
+    KEY = r.key; $('pass').value = '';
+    if ($('keep').checked) { ls(K.key, KEY); } else { try { sessionStorage.setItem(K.key, KEY); } catch(e){} }
+    document.body.classList.remove('locked'); $('gateMsg').textContent = '';
+    start();
+  }).catch(function(e){ $('passOk').disabled = false; $('gateMsg').textContent = '通信できませんでした：' + e.message; });
+}
+$('passOk').onclick = tryLogin;
+$('pass').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); tryLogin(); } });
+$('logoutBtn').onclick = function(){ lock(''); };
+
+// ---------- データ ----------
+var DATES = [], SEL = [], DATA = {}, busy = 0;
+function needW(r){ return !String(r.qty||'').trim() || String(r.unit||'').trim().toLowerCase() !== 'kg'; }
+function sigOf(r){ return [r.en, r.item, r.memo, r.qty, r.unit].join('|').slice(0, 200); }
+function markOf(d, no){ var x = DATA[d]; return (x && x.marks && x.marks[String(no)]) || null; }
+function shortEn(s){ return String(s||'').replace(/^(トヨウケ\s*㈱|㈱\s*天柳|株式会社天柳|トヨウケ株式会社)\s*/, '').replace(/㈱/g, '').trim(); }
+function selDates(){ return SEL.slice().sort(); }
+
+function loadDates(){
+  return call('tenryuDates').then(function(r){
+    DATES = r.dates || [];
+    var have = DATES.map(function(x){ return x.date; });
+    var saved = []; try { saved = JSON.parse(ls(K.sel) || '[]'); } catch(e){}
+    SEL = SEL.length ? SEL : saved;
+    SEL = SEL.filter(function(d){ return have.indexOf(d) >= 0; });
+    if (!SEL.length && have.length) {
+      // ファイルに番号（センター納品日の数字）が入っている日＝いま作業している日を優先
+      var t = r.today || isoToday(), up = DATES.filter(function(x){ return x.date >= t; });
+      var numbered = up.filter(function(x){ return x.numbered; });
+      SEL = [numbered.length ? numbered[0].date : up.length ? up[0].date : have[have.length-1]];
+    }
+    renderDates();
+    return loadData();
+  }).catch(function(e){ $('dates').innerHTML = '<span class="sub">読み込めませんでした：'+esc(e.message)+'</span>'; });
+}
+function renderDates(){
+  if (!DATES.length) { $('dates').innerHTML = '<span class="sub">まだファイルが読み込まれていません。下の「📂 ファイルを読み込む」から読み込んでください。</span>'; return; }
+  var t = isoToday(), list = DATES.filter(function(x){ return x.date >= addDays(t, -14) || SEL.indexOf(x.date) >= 0; });
+  if (!list.length) { list = DATES.slice(-6); }
+  $('dates').innerHTML = list.map(function(x){
+    var fin = DATA[x.date] && DATA[x.date].marks && DATA[x.date].marks._fin;
+    return '<button data-d="'+x.date+'" class="'+(SEL.indexOf(x.date)>=0?'on ':'')+(fin?'fin':'')+'">'+dLab(x.date, true)+'<small>'+x.count+'件</small></button>';
+  }).join('');
+  [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
+}
+function addDays(iso, n){ var d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
+function toggleDate(d){
+  var i = SEL.indexOf(d);
+  if (i >= 0) { if (SEL.length > 1) { SEL.splice(i, 1); } }
+  else { SEL.push(d); if (SEL.length > 2) { SEL.shift(); } }
+  ls(K.sel, JSON.stringify(SEL)); pending = null; ask2 = null;
+  renderDates(); loadData();
+}
+function loadData(quiet){
+  if (!SEL.length) { render(); return Promise.resolve(); }
+  var want = selDates().join(',');
+  if (!quiet) { $('list').innerHTML = '<div class="empty">読み込んでいます…</div>'; }
+  return call('tenryuGet', selDates()).then(function(r){
+    if (selDates().join(',') !== want) { return; }
+    if (quiet && busy) { return; }
+    Object.keys(r.days).forEach(function(d){ DATA[d] = r.days[d]; });
+    render(); renderDates();
+  }).catch(function(e){ if (!quiet) { $('list').innerHTML = '<div class="empty">読み込めませんでした：'+esc(e.message)+'</div>'; } });
+}
+// 開いている間は15秒ごとにほかの人の分を読み直す
+setInterval(function(){ if (KEY && !document.hidden && SEL.length && !busy && !speaking) { loadData(true); } }, 15000);
+
+// ---------- 表 ----------
+var missSet = {};
+function rowsOf(d){ return ((DATA[d] && DATA[d].rows) || []).slice().sort(function(a,b){ return a.no - b.no; }); }
+function stats(){
+  var s = { all:0, done:0, wAll:0, w:0 };
+  selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ var m = markOf(d, r.no) || {}; s.all++; if (m.d) { s.done++; } if (needW(r)) { s.wAll++; if (m.w) { s.w++; } } }); });
+  return s;
+}
+function rowHtml(d, r){
+  var m = markOf(d, r.no) || {}, nw = needW(r), id = 'r-'+d+'-'+r.no, miss = missSet[d+'#'+r.no];
+  var q = esc(r.qty || '—') + esc(r.unit || '');
+  var extra = (r.sqty && (r.sqty !== r.qty || r.unit2 !== r.unit)) ? '（仕入 '+esc(r.sqty)+esc(r.unit2||'')+'）' : '';
+  var tags = [r.kikaku, r.ondo].filter(Boolean).map(esc).join('・');
+  var chg = (m.sig && m.sig !== sigOf(r)) ? '<div class="chg">⚠ ファイルの中身が変わりました。確かめてください</div>' : '';
+  var w = nw ? '<input class="w'+(m.w?' has':'')+'" inputmode="decimal" enterkeyhint="done" placeholder="kg" value="'+esc(m.w||'')+'" data-d="'+d+'" data-no="'+r.no+'"><span>目方(kg)</span>'
+             : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
+  return '<div class="row'+(m.d?' done':'')+(miss?' miss':'')+'" id="'+id+'">' +
+    '<div class="no">'+r.no+'</div>' +
+    '<div class="info"><div class="l1">'+esc(shortEn(r.en))+(r.sanchi?'　'+esc(r.sanchi):'')+'</div>' +
+    '<div class="l2"><b>'+esc(r.item)+'</b> '+esc(r.memo)+'</div>' +
+    '<div class="l3"><span class="q">'+q+'</span>'+extra+(tags?'　'+tags:'')+'</div>'+chg+
+    '<div class="why">'+esc(miss||'')+'</div></div>' +
+    '<div class="wcol">'+w+'</div>' +
+    '<button class="dbtn" data-d="'+d+'" data-no="'+r.no+'">'+(m.d?'✓完了':'完了')+'</button></div>';
+}
+function render(){
+  var only = $('onlyLeft').checked, ds = selDates(), h = '';
+  ds.forEach(function(d){
+    var rows = rowsOf(d), x = DATA[d] || {};
+    if (ds.length > 1 || true) {
+      var done = rows.filter(function(r){ var m = markOf(d, r.no); return m && m.d; }).length;
+      h += '<div class="dhead">'+dLab(d, true)+' 納品<small>'+done+'/'+rows.length+'件 完了'+(x.marks&&x.marks._fin?'　✓ 全て完了 '+esc(x.marks._fin.at.slice(5).replace('-','/'))+' '+esc(x.marks._fin.by||''):'')+'</small></div>';
+    }
+    if (rows.length && rows[0].auto) { h += '<div class="sub" style="margin:-2px 0 6px">※この日はファイルに番号が無かったので、表の並び順で番号を付けました（上から大きい番号）</div>'; }
+    var shown = rows.filter(function(r){ if (!only) { return true; } var m = markOf(d, r.no) || {}; return !m.d || (needW(r) && !m.w); });
+    if (!rows.length) { h += '<div class="empty">この日の行がありません</div>'; }
+    else if (!shown.length) { h += '<div class="empty">まだの分はありません 🎉</div>'; }
+    h += shown.map(function(r){ return rowHtml(d, r); }).join('');
+  });
+  $('list').innerHTML = h || '<div class="empty">納品日を選んでください</div>';
+  var s = stats();
+  $('pDone').textContent = s.done; $('pAll').textContent = s.all; $('pW').textContent = s.w; $('pWAll').textContent = s.wAll;
+  $('bar').firstChild.style.width = (s.all ? Math.round(s.done / s.all * 100) : 0) + '%';
+  var at = ds.map(function(d){ var x = DATA[d] || {}; return x.at ? dLab(d)+'分 '+x.at.slice(5).replace('-','/')+' 読込' : ''; }).filter(Boolean).join('／');
+  $('loadedAt').textContent = at;
+  [].forEach.call($('list').querySelectorAll('.dbtn'), function(b){ b.onclick = function(){ tapDone(b.getAttribute('data-d'), +b.getAttribute('data-no')); }; });
+  [].forEach.call($('list').querySelectorAll('input.w'), function(inp){
+    inp.onchange = function(){ setW(inp.getAttribute('data-d'), +inp.getAttribute('data-no'), inp.value); };
+    inp.onkeydown = function(e){ if (e.key === 'Enter') { inp.blur(); } };
+  });
+}
+$('onlyLeft').checked = ls(K.left) === '1';
+$('onlyLeft').onchange = function(){ ls(K.left, this.checked ? '1' : '0'); render(); };
+function findRow(d, no){ var rs = rowsOf(d); for (var i = 0; i < rs.length; i++) { if (rs[i].no === no) { return rs[i]; } } return null; }
+function flash(d, no){
+  var el = $('r-'+d+'-'+no); if (!el) { return; }
+  el.scrollIntoView({ block:'center', behavior:'smooth' });
+  el.classList.add('flash'); setTimeout(function(){ el.classList.remove('flash'); }, 1200);
+}
+
+// ---------- 記録 ----------
+// p = { done:true|false, w:'3.2'|'' }
+function mark(d, no, p){
+  var r = findRow(d, no); if (!r) { return Promise.reject(new Error(no+'番はありません')); }
+  var x = DATA[d], key = String(no), before = x.marks[key] ? JSON.parse(JSON.stringify(x.marks[key])) : null;
+  var v = Object.assign({}, before || {});
+  if (p.w !== undefined) { if (p.w) { v.w = p.w; } else { delete v.w; } }
+  if (p.done !== undefined) { if (p.done) { v.d = 1; } else { delete v.d; } }
+  v.sig = sigOf(r);
+  if (!v.d && !v.w) { delete x.marks[key]; } else { x.marks[key] = v; }
+  delete x.marks._fin;
+  delete missSet[d+'#'+no];
+  render(); flash(d, no);
+  busy++;
+  return call('tenryuMark', d, no, { done: p.done, w: p.w, sig: sigOf(r), by: myName() }).then(function(res){
+    busy--;
+    if (res.mark) { x.marks[key] = res.mark; } else { delete x.marks[key]; }
+    render(); return { before: before };
+  }).catch(function(e){
+    busy--;
+    if (before) { x.marks[key] = before; } else { delete x.marks[key]; }
+    render();
+    showRes('ng', '記録できませんでした', esc(e.message));
+    throw e;
+  });
+}
+function normW(s){
+  s = String(s||'').replace(/[０-９．]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[^\d.]/g, '');
+  if (!s) { return ''; }
+  var n = parseFloat(s); if (isNaN(n) || n <= 0 || n >= 1000) { return null; }
+  return String(Math.round(n * 1000) / 1000);
+}
+function setW(d, no, raw){
+  var w = normW(raw);
+  if (w === null) { showRes('ng', '目方が正しくありません', esc(raw)); render(); return; }
+  lastUndo = { d: d, no: no, before: markOf(d, no) || {} };
+  mark(d, no, { w: w }).then(function(){ showUndo(d, no, (w ? no+'番 目方 '+w+'kg' : no+'番 目方を消しました'), 'w'); });
+}
+function tapDone(d, no){
+  var m = markOf(d, no) || {}, r = findRow(d, no);
+  if (m.d) {
+    if (!confirm(no + '番の完了を取り消しますか？')) { return; }
+    mark(d, no, { done: false });
+    return;
+  }
+  mark(d, no, { done: true }).then(function(){
+    if (needW(r) && !(markOf(d, no) || {}).w) {
+      showRes('info', no+'番 完了（目方がまだです）', '目方の欄に重さを入れてください');
+      var inp = document.querySelector('#r-'+d+'-'+no+' input.w'); if (inp) { inp.focus(); }
+    }
+  });
+}
+var lastUndo = null;
+function showUndo(d, no, text, kind){
+  var div = showRes('ok', esc(text), '<button class="undo">取り消す</button>');
+  var b = div.querySelector('.undo');
+  b.onclick = function(){ b.disabled = true; undoLast(d, no, kind); div.remove(); };
+}
+function undoLast(d, no, kind){
+  var before = lastUndo && lastUndo.d === d && lastUndo.no === no ? lastUndo.before : null;
+  mark(d, no, { done: !!(before && before.d), w: (before && before.w) || '' });
+  say(no + '番を元に戻しました');
+}
+
+// ---------- 全て完了 ----------
+function finish(byVoice){
+  var miss = [], wmiss = [], ds = selDates();
+  missSet = {};
+  ds.forEach(function(d){
+    rowsOf(d).forEach(function(r){
+      var m = markOf(d, r.no) || {}, why = [];
+      if (!m.d) { why.push('集計漏れ'); miss.push([d, r]); }
+      if (needW(r) && !m.w) { why.push('目方の入力漏れ'); wmiss.push([d, r]); }
+      if (why.length) { missSet[d+'#'+r.no] = '▲ ' + why.join('・'); }
+    });
+  });
+  $('onlyLeft').checked = false;
+  render();
+  var two = ds.length > 1;
+  var lab = function(a){ return (two ? (+a[0].slice(8))+'日の' : '') + a[1].no + '番'; };
+  if (!miss.length && !wmiss.length) {
+    var s = stats();
+    call('tenryuFinish', ds, myName()).then(function(r){ ds.forEach(function(d){ if (DATA[d]) { DATA[d].marks._fin = { at: r.at, by: myName() }; } }); render(); renderDates(); }).catch(function(){});
+    showRes('ok', '✅ 全て完了しました', ds.map(function(d){ return dLab(d, true); }).join('・') + '　' + s.all + '件すべて完了・目方 ' + s.wAll + '件すべて入力済み');
+    say('全て完了しました。集計漏れはありません');
+    return;
+  }
+  // 日ごとに番号を並べる（押すとその行へ）
+  var chips = function(list, d){ return list.filter(function(a){ return a[0] === d; }).map(function(a){ return '<a class="nchip" href="#" data-go="'+a[0]+'|'+a[1].no+'" title="'+esc(shortEn(a[1].en)+' '+a[1].item)+'">'+a[1].no+'</a>'; }).join(''); };
+  var h = '';
+  if (miss.length) { h += '<div class="mh">集計漏れ '+miss.length+'件</div>' + ds.map(function(d){ var c = chips(miss, d); return c ? '<div class="mline">'+(two?'<span>'+dLab(d)+'</span>':'')+c+'</div>' : ''; }).join(''); }
+  if (wmiss.length) { h += '<div class="mh">目方の入力漏れ '+wmiss.length+'件</div>' + ds.map(function(d){ var c = chips(wmiss, d); return c ? '<div class="mline">'+(two?'<span>'+dLab(d)+'</span>':'')+c+'</div>' : ''; }).join(''); }
+  h += '<div class="sub" style="margin-top:6px">番号を押すとその行へ移ります。赤い枠の行が漏れです。</div>';
+  var div = showRes('ng', '⚠ まだ終わっていません', h, true);
+  [].forEach.call(div.querySelectorAll('a[data-go]'), function(a){ a.onclick = function(e){ e.preventDefault(); var p = a.getAttribute('data-go').split('|'); flash(p[0], +p[1]); }; });
+  var first = (miss[0] || wmiss[0]); flash(first[0], first[1].no);
+  var spoken = function(list){
+    return ds.map(function(d){ var a = list.filter(function(x){ return x[0] === d; }); if (!a.length) { return ''; }
+      return (two ? (+d.slice(8)) + '日は' : '') + a.slice(0, 10).map(function(x){ return x[1].no + '番'; }).join('、') + (a.length > 10 ? '、ほか' + (a.length - 10) + '件' : ''); }).filter(Boolean).join('。');
+  };
+  var t = [];
+  if (miss.length) { t.push('集計漏れが' + miss.length + '件あります。' + spoken(miss)); }
+  if (wmiss.length) { t.push('目方の入力漏れが' + wmiss.length + '件あります。' + spoken(wmiss)); }
+  say(t.join('。'));
+}
+$('finBtn').onclick = function(){ finish(false); };
+
+// ---------- 結果の表示 ----------
+function showRes(kind, title, html, sticky){
+  var div = document.createElement('div');
+  div.className = 'res ' + kind;
+  div.innerHTML = '<button class="x" aria-label="閉じる">×</button><div class="t">'+title+'</div>' + (html||'');
+  div.querySelector('.x').onclick = function(){ div.remove(); };
+  var box = $('result');
+  [].forEach.call(box.children, function(c){ c.remove(); });
+  box.appendChild(div);
+  clearTimeout(showRes.t);
+  if (!sticky) { showRes.t = setTimeout(function(){ if (div.parentNode) { div.remove(); } }, 9000); }
+  return div;
+}
+
+// ---------- ファイル読み込み（.xlsm を画面の中で開く。外には中身を送らず、行だけを保存先に送る） ----------
+$('fileBtn').onclick = function(){ $('fileIn').value = ''; $('fileIn').click(); };
+$('fileIn').onchange = function(){
+  var f = this.files && this.files[0]; if (!f) { return; }
+  $('fileInfo').textContent = '開いています…';
+  f.arrayBuffer().then(function(buf){ return parseBook(buf); }).then(function(byDate){
+    var all = Object.keys(byDate).sort();
+    if (!all.length) { throw new Error('「CSVファイル(印刷)」の表に行がありません'); }
+    var t = isoToday(), pick = all.filter(function(d){ return d >= addDays(t, -7); });
+    if (!pick.length) { pick = all.slice(-3); }
+    var days = {}; pick.forEach(function(d){ days[d] = byDate[d]; });
+    $('fileInfo').textContent = '保存しています…';
+    return call('tenryuUpload', { file: f.name, by: myName(), days: days }).then(function(r){
+      DATES = r.dates || [];
+      var nums = pick.map(function(d){ return dLab(d) + ' ' + days[d].length + '件' + (days[d][0] && days[d][0].auto ? '（番号は自動）' : ''); });
+      $('fileInfo').textContent = f.name + ' を読み込みました';
+      showRes('ok', '読み込みました', esc(nums.join('、')));
+      var newest = pick.filter(function(d){ return d >= t; }), numbered = newest.filter(function(d){ return days[d][0] && !days[d][0].auto; });
+      SEL = [numbered.length ? numbered[0] : newest.length ? newest[0] : pick[pick.length-1]]; ls(K.sel, JSON.stringify(SEL));
+      renderDates(); return loadData();
+    });
+  }).catch(function(e){ $('fileInfo').textContent = ''; showRes('ng', 'ファイルを読み込めませんでした', esc(e.message), true); });
+};
+// zip の中から必要なファイルだけ取り出す
+function unzip(buf, wantFn){
+  var dv = new DataView(buf), u8 = new Uint8Array(buf), eocd = -1;
+  for (var i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) { if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; } }
+  if (eocd < 0) { return Promise.reject(new Error('エクセルのファイルではないようです')); }
+  var n = dv.getUint16(eocd + 10, true), p = dv.getUint32(eocd + 16, true), jobs = {}, dec = new TextDecoder();
+  for (var k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) { break; }
+    var method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    var name = dec.decode(u8.subarray(p + 46, p + 46 + nl));
+    p += 46 + nl + el + cl;
+    if (!wantFn(name)) { continue; }
+    var start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true), data = u8.subarray(start, start + csize);
+    jobs[name] = method === 0 ? Promise.resolve(dec.decode(data)) : inflate(data);
+  }
+  var names = Object.keys(jobs);
+  return Promise.all(names.map(function(x){ return jobs[x]; })).then(function(vals){ var o = {}; names.forEach(function(x, i){ o[x] = vals[i]; }); return o; });
+}
+function inflate(data){
+  if (typeof DecompressionStream === 'undefined') { return Promise.reject(new Error('このブラウザでは開けません（新しいChromeかSafariで開いてください）')); }
+  return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+}
+function xdec(s){ return String(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,function(_,n){ return String.fromCharCode(+n); }).replace(/&amp;/g,'&'); }
+function serIso(n){ var t = new Date(Date.UTC(1899, 11, 30) + Math.round(+n) * 864e5); return t.toISOString().slice(0, 10); }
+function numStr(v){ if (v == null || v === '') { return ''; } var n = Number(v); return isNaN(n) ? String(v) : String(parseFloat(n.toPrecision(12))); }
+function parseBook(buf){
+  return unzip(buf, function(nm){ return nm === 'xl/workbook.xml' || nm === 'xl/_rels/workbook.xml.rels' || nm === 'xl/sharedStrings.xml'; }).then(function(f){
+    var wb = f['xl/workbook.xml'] || '', rels = f['xl/_rels/workbook.xml.rels'] || '';
+    var sheets = []; wb.replace(/<sheet\b[^>]*>/g, function(tag){ var nm = (tag.match(/name="([^"]*)"/)||[])[1], id = (tag.match(/r:id="([^"]*)"/)||[])[1]; sheets.push([xdec(nm||''), id]); return tag; });
+    var hit = sheets.filter(function(s){ return /CSV/.test(s[0]) && /印刷/.test(s[0]); })[0];
+    if (!hit) { throw new Error('「CSVファイル(印刷)」のシートが見つかりません'); }
+    var tgt = null; rels.replace(/<Relationship\b[^>]*>/g, function(tag){ if ((tag.match(/Id="([^"]*)"/)||[])[1] === hit[1]) { tgt = (tag.match(/Target="([^"]*)"/)||[])[1]; } return tag; });
+    if (!tgt) { throw new Error('シートの場所がわかりません'); }
+    var path = tgt.replace(/^\/?(xl\/)?/, 'xl/');
+    var ss = [];
+    (f['xl/sharedStrings.xml'] || '').replace(/<si>([\s\S]*?)<\/si>/g, function(_, body){
+      body = body.replace(/<rPh\b[\s\S]*?<\/rPh>/g, '');
+      var t = ''; body.replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g, function(__, x){ t += x; return ''; }); ss.push(xdec(t)); return '';
+    });
+    return unzip(buf, function(nm){ return nm === path; }).then(function(g){ return parseSheet(g[path] || '', ss); });
+  });
+}
+function parseSheet(xml, ss){
+  var rows = [];
+  var rowRe = /<row\b[^>]*?r="(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g, m;
+  while ((m = rowRe.exec(xml))) {
+    var r = {}, body = m[2] || '', cm, cellRe = /<c\b r="([A-Z]+)\d+"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+    while ((cm = cellRe.exec(body))) {
+      var at = cm[2], inner = cm[3] || '', v = (inner.match(/<v>([\s\S]*?)<\/v>/) || [])[1], val = v;
+      if (/t="s"/.test(at) && v != null) { val = ss[+v]; }
+      else if (/t="inlineStr"/.test(at)) { val = ''; inner.replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g, function(_, x){ val += x; return ''; }); val = xdec(val); }
+      else if (v != null) { val = xdec(v); }
+      if (val != null && val !== '') { r[cm[1]] = String(val).trim(); }
+    }
+    rows.push(r);
+  }
+  // 見出しの行を探して、列の名前 → 列の記号
+  var hi = -1, col = {};
+  for (var i = 0; i < Math.min(rows.length, 15); i++) {
+    var vals = Object.keys(rows[i]).map(function(c){ return rows[i][c]; }).join('|');
+    if (/品目/.test(vals) && /納品日/.test(vals) && /発注量/.test(vals)) { hi = i; break; }
+  }
+  if (hi < 0) { throw new Error('表の見出し（品目・発注量・納品日）が見つかりません'); }
+  var names = { '商品ID':'id', 'センター納品日':'n', '園コード':'code', '園名':'en', '産地':'sanchi', '品目':'item', '備考':'memo', '発注量':'qty', '単位':'unit', '仕入数量':'sqty', '単位6':'unit2', '規格':'kikaku', '保管温度':'ondo', '納品日':'date', '賞味期限':'exp' };
+  Object.keys(rows[hi]).forEach(function(c){ var h = rows[hi][c].replace(/[ァ-ヶー]+$/, '').trim(); if (names[h] && !col[names[h]]) { col[names[h]] = c; } });
+  if (!col.item || !col.date) { throw new Error('品目・納品日の列が見つかりません'); }
+  var by = {};
+  rows.slice(hi + 1).forEach(function(r){
+    var g = function(k){ return col[k] ? (r[col[k]] || '') : ''; };
+    if (!g('item') || !/^\d+(\.\d+)?$/.test(g('date'))) { return; }
+    var d = serIso(g('date'));
+    (by[d] = by[d] || []).push({ id: g('id'), n: g('n'), en: g('en'), sanchi: g('sanchi'), item: g('item'), memo: g('memo').replace(/\s+/g, ' '),
+      qty: numStr(g('qty')), unit: g('unit'), sqty: numStr(g('sqty')), unit2: g('unit2'), kikaku: g('kikaku'), ondo: g('ondo'),
+      exp: /^\d+$/.test(g('exp')) ? serIso(g('exp')) : g('exp') });
+  });
+  // 番号：その日の全部の行に「センター納品日」の数字があればそれを使う。無ければ表の並び順（上から大きい番号）
+  Object.keys(by).forEach(function(d){
+    var a = by[d], ok = a.every(function(r){ return /^\d+$/.test(r.n); }) && new Set(a.map(function(r){ return r.n; })).size === a.length;
+    a.forEach(function(r, i){ r.no = ok ? +r.n : a.length - i; r.auto = ok ? 0 : 1; });
+  });
+  return by;
+}
+
+// ---------- 読み上げ ----------
+var sayOn = ls(K.say) !== '0', voice = null, speaking = false;
+function pickVoice(){ var v = speechSynthesis.getVoices().filter(function(x){ return /^ja/i.test(x.lang); }); voice = v.filter(function(x){ return /Google|Kyoko|O-ren|Nanami/.test(x.name); })[0] || v[0] || null; }
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speakText(t){
+  return String(t).normalize('NFKC').replace(/kg/gi, 'キロ').replace(/(\d)k\b/gi, '$1キロ').replace(/㈱/g, '').replace(/\bp\b/g, 'パック').replace(/[()（）]/g, '、');
+}
+function say(text, then){
+  say.last = text;
+  if (!sayOn || !window.speechSynthesis) { if (then) { setTimeout(then, 150); } return; }
+  stopRec(); speaking = true;
+  speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(speakText(text));
+  u.lang = 'ja-JP'; if (voice) { u.voice = voice; } u.rate = 1.15;
+  var done = false, fin = function(){ if (done) { return; } done = true; speaking = false; if (then) { then(); } else { resume(); } };
+  u.onend = fin; u.onerror = fin;
+  setTimeout(fin, 2500 + text.length * 220);
+  speechSynthesis.speak(u);
+}
+
+// ---------- 音声認識 ----------
+// mode: off（止まっている）／ wake（「集計」を待っている）／ cmd（集計の言葉を聞いている）
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var rec = null, mode = 'off', micBroken = !SR, pending = null, ask2 = null;
+function setMode(m){
+  mode = m;
+  var b = $('micBtn'); b.classList.toggle('wake', m === 'wake'); b.classList.toggle('cmd', m === 'cmd');
+  $('voice').classList.toggle('wk', m === 'wake');
+  b.textContent = m === 'off' ? '🎤 音声で集計する' : m === 'wake' ? '🎤 「集計」と話してください（押すと止める）' : '🎤 聞いています（押すと止める）';
+  $('prompt').textContent = m === 'off' ? '' : m === 'wake' ? '「集計」または「集計を始める」と話すと始まります' : '番号と「完了」を話してください\n例：5番 完了／5番 3.2キロ 完了';
+  if (m === 'off') { stopRec(); pending = null; ask2 = null; }
+}
+function stopRec(){ if (rec) { var r = rec; rec = null; try { r.abort(); } catch(e){} } }
+function resume(){ if (mode !== 'off' && !speaking) { listen(); if (mode === 'cmd') { beep(880, 0.1); } } }
+function listen(){
+  if (micBroken) { $('prompt').textContent = 'このブラウザでは画面のマイクが使えません。下の欄に文字（キーボードのマイク）で入れてください'; return; }
+  stopRec();
+  var r = new SR(); rec = r;
+  r.lang = 'ja-JP'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
+  r.onresult = function(ev){
+    for (var i = ev.resultIndex; i < ev.results.length; i++) {
+      var x = ev.results[i];
+      if (!x.isFinal) { $('heard').textContent = '聞き取り中：' + x[0].transcript; continue; }
+      var alts = []; for (var k = 0; k < x.length; k++) { alts.push(x[k].transcript.trim()); }
+      $('heard').textContent = '聞こえた言葉：「' + alts[0] + '」';
+      onHeard(alts);
+    }
+  };
+  r.onerror = function(e){
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+      micBroken = true; rec = null; setMode('off');
+      $('prompt').textContent = 'マイクが使えませんでした。下の欄に文字（キーボードのマイク）で入れてください';
+    }
+  };
+  r.onend = function(){ if (rec !== r) { return; } rec = null; if (mode !== 'off' && !speaking) { setTimeout(function(){ if (mode !== 'off' && !speaking && !rec) { listen(); } }, 250); } };
+  try { r.start(); } catch(e){}
+}
+var actx = null;
+function beep(freq, sec, delay){
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') { actx.resume(); }
+    var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + (delay || 0);
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + sec);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + sec + 0.02);
+  } catch(e){}
+}
+function readyBeep(){ beep(660, 0.12); beep(990, 0.16, 0.15); }
+function startCmd(){ setMode('cmd'); readyBeep(); if (!rec) { listen(); } }
+$('micBtn').onclick = function(){
+  beep(1, 0.01);   // スマホで音を出せるようにする（最初のタップで）
+  if (mode === 'off') { if (!SELrows()) { showRes('info', '先に納品日を選んでください', ''); return; } setMode('wake'); listen(); }
+  else { setMode('off'); }
+};
+$('nowBtn').onclick = function(){ startCmd(); };
+function SELrows(){ return selDates().some(function(d){ return rowsOf(d).length; }); }
+
+// ---------- 言葉の判定 ----------
+var KN = {'〇':0,'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
+function kanjiNum(s){   // 「三十九」→39、「百二」→102
+  var n = 0, cur = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    if (KN[c] != null) { cur = cur * 10 + KN[c]; }
+    else if (c === '十') { n += (cur || 1) * 10; cur = 0; }
+    else if (c === '百') { n += (cur || 1) * 100; cur = 0; }
+  }
+  return n + cur;
+}
+function cnorm(s){
+  s = String(s).normalize('NFKC');
+  s = s.replace(/[〇零一二三四五六七八九十百]+/g, function(x){ return String(kanjiNum(x)); });
+  s = s.replace(/(\d)\s*(点|てん)\s*(\d)/g, '$1.$3');
+  s = s.replace(/[、。,!?！？]/g, ' ');
+  return s;
+}
+// 1回分の言葉 → 何をするか
+function parseCmd(text){
+  var t = cnorm(text), c = t.replace(/\s+/g, '');
+  if (/(全て|すべて|全部|ぜんぶ|集計)(が)?(完了|かんりょう|終わり|おわり|終了)/.test(c)) { return { type:'finish' }; }
+  if (/^(終了|終わり|おわり|ストップ|止めて|とめて|やめる|やめて|音声終了)(です)?$/.test(c)) { return { type:'stop' }; }
+  if (/(もう一度|もう一回|もう1回|もう1度|もういっかい|もういちど)/.test(c)) { return { type:'repeat' }; }
+  if (/^(集計|しゅうけい)(を)?(始める|はじめる|開始|スタート|始めます|はじめます)?$/.test(c)) { return { type:'wake' }; }
+  var o = { type:'mark', done: /(完了|かんりょう|官僚|完璧|オッケー|OK)/i.test(c), undo: /(取り消|取消|とりけし|キャンセル)/.test(c), hasBan: /番/.test(c) };
+  var dm = t.match(/(\d{1,2})\s*日\s*(の)?/);
+  if (dm) { o.day = +dm[1]; t = t.replace(dm[0], ' '); }
+  // 目方：「3キロ200」「3.2キロ」「800グラム」
+  var w = null, km = t.match(/(\d+(?:\.\d+)?)\s*(キロ|kg|KG|Kg|k|K)(?:グラム)?\s*(\d{1,3})?\s*(グラム|g)?/);
+  if (km) { w = parseFloat(km[1]) + (km[3] ? +km[3] / 1000 : 0); t = t.replace(km[0], ' '); o.unit = true; }
+  else { var gm = t.match(/(\d+)\s*(グラム|g)/); if (gm) { w = +gm[1] / 1000; t = t.replace(gm[0], ' '); o.unit = true; } }
+  var nums = (t.replace(/番(号)?/g, ' ').match(/\d+(?:\.\d+)?/g) || []);
+  if (o.hasBan) {
+    var bm = t.match(/(\d+)\s*番/); if (bm) { o.no = +bm[1]; nums.splice(nums.indexOf(bm[1]), 1); }
+  } else if (nums.length && /^\d+$/.test(nums[0])) { o.no = +nums.shift(); }
+  if (w == null && nums.length) { w = parseFloat(nums[0]); nums.shift(); }
+  if (w != null) { o.w = String(Math.round(w * 1000) / 1000); }
+  // 「53.2」のように番号と目方がくっついた時（番が無く数字が1つ）
+  if (o.no == null && o.w && !o.hasBan && !o.unit) { o.glued = o.w; delete o.w; }
+  return o;
+}
+function onHeard(alts){
+  if (mode === 'wake') {
+    if (alts.some(function(a){ var p = parseCmd(a); return p.type === 'wake' || /集計|しゅうけい/.test(a); })) { startCmd(); $('heard').textContent = '集計を始めました'; }
+    return;
+  }
+  if (mode !== 'cmd') { return; }
+  // いちばん意味の通る候補を使う
+  var best = null;
+  for (var i = 0; i < alts.length; i++) { var p = parseCmd(alts[i]); if (p.type !== 'mark' || p.no != null || p.w || p.glued) { best = p; break; } }
+  doCmd(best || parseCmd(alts[0]), alts[0]);
+}
+function doCmd(p, raw){
+  if (p.type === 'wake') { readyBeep(); return; }
+  if (p.type === 'stop') { setMode('off'); say('音声の集計を終わります', function(){}); return; }
+  if (p.type === 'repeat') { say(say.last || '番号と完了を話してください'); return; }
+  if (p.type === 'finish') { pending = null; ask2 = null; finish(true); return; }
+  // 日にちの聞き返しへの答え（「26日」「26」）
+  if (ask2) {
+    var day = p.day || (p.no != null && !p.w && !p.done ? p.no : null);
+    var hit = ask2.cands.filter(function(d){ return +d.slice(8) === day; })[0];
+    if (hit) { var q = ask2.p; ask2 = null; apply(hit, q); return; }
+    ask2 = null;
+  }
+  // 目方を聞いている時は、数字だけでも目方として受け取る（「6 完了」のように整数＋完了は番号として扱う）
+  var wv = p.no != null && p.w ? null : (p.w || p.glued || (p.no != null ? String(p.no) : null));
+  if (pending && !p.hasBan && !p.undo && wv && (p.unit || /\./.test(wv) || !p.done)) {
+    var pd = pending; pending = null;
+    apply(pd.d, { no: pd.no, w: wv, done: pd.done || p.done });
+    return;
+  }
+  if (p.glued) {   // 「53.2」→ 5番の3.2キロ？ 番号として成り立つ分け方を探す
+    var s = p.glued.split('.'), ip = s[0], dp = s[1] || '', cands = [];
+    for (var k = 1; k < ip.length; k++) {
+      var no = +ip.slice(0, k), wt = ip.slice(k) + (dp ? '.' + dp : '');
+      if (selDates().some(function(d){ var r = findRow(d, no); return r && needW(r); })) { cands.push({ no: no, w: String(+wt) }); }
+    }
+    if (cands.length === 1) { p.no = cands[0].no; p.w = cands[0].w; }
+    else { say('番号と目方がわかりませんでした。5番、3.2キロ、のように「番」を付けて話してください'); return; }
+  }
+  if (p.no == null) { say('番号が聞き取れませんでした。もう一度どうぞ'); return; }
+  var ds = selDates().filter(function(d){ return findRow(d, p.no) && (!p.day || +d.slice(8) === p.day); });
+  if (!ds.length) { say(p.no + '番は' + (p.day ? p.day + '日に' : '') + 'ありません'); return; }
+  if (ds.length > 1) { ask2 = { cands: ds, p: p }; say(ds.map(function(d){ return +d.slice(8) + '日'; }).join('と') + 'のどちらの' + p.no + '番ですか'); return; }
+  apply(ds[0], p);
+}
+function apply(d, p){
+  pending = null;
+  var r = findRow(d, p.no), m = markOf(d, p.no) || {}, two = selDates().length > 1;
+  var head = (two ? (+d.slice(8)) + '日の' : '') + p.no + '番、' + shortEn(r.en) + '、' + r.item;
+  if (p.undo) {
+    lastUndo = { d: d, no: p.no, before: m };
+    mark(d, p.no, { done: false }).then(function(){ say(head + '、完了を取り消しました'); }).catch(function(e){ say('記録できませんでした'); });
+    return;
+  }
+  if (!p.done && !p.w) {   // 番号だけ：内容を読み上げる
+    var info = head + '、' + (r.qty ? r.qty + (r.unit || '') : '発注量なし') + (m.d ? '、完了しています' : '') + (m.w ? '、目方' + m.w + 'キロ' : '');
+    if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: false }; info += '。目方を言ってください'; }
+    flash(d, p.no); say(info); return;
+  }
+  var q = {}; if (p.w) { q.w = p.w; } if (p.done) { q.done = true; }
+  lastUndo = { d: d, no: p.no, before: m };
+  mark(d, p.no, q).then(function(){
+    var mm = markOf(d, p.no) || {};
+    var t = head + (p.w ? '、目方' + p.w + 'キロ' : '') + (p.done ? '、完了' : '、目方を記録しました');
+    if (p.done && needW(r) && !mm.w) { pending = { d: d, no: p.no, done: true }; t += '。目方が未入力です。目方を言ってください'; }
+    if (p.w && !needW(r)) { t += '。この行は目方の入力はいりませんが記録しました'; }
+    showUndo(d, p.no, t.replace(/。.*$/, ''), 'v');
+    say(t);
+  }).catch(function(){ say('記録できませんでした。電波を確かめてください'); });
+}
+// 文字で入れる（キーボードのマイクでも可）
+function submitCmd(){ var v = $('cmdIn').value.trim(); if (!v) { return; } $('cmdIn').value = ''; $('heard').textContent = '入れた言葉：「' + v + '」'; var p = parseCmd(v); if (p.type === 'wake') { startCmd(); return; } doCmd(p, v); }
+$('cmdOk').onclick = submitCmd;
+$('cmdIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); submitCmd(); } });
+
+// ---------- 設定 ----------
+$('optSay').checked = sayOn;
+$('optSay').onchange = function(){ sayOn = this.checked; ls(K.say, sayOn ? '1' : '0'); };
+$('optName').value = ls(K.name) || '';
+$('optName').onchange = function(){ ls(K.name, this.value.trim()); };
+
+function start(){ loadDates(); }
+if (KEY) { start(); } else { lock(''); }
+</script>
+</body>
+</html>
