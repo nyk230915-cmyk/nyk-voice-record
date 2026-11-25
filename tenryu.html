@@ -38,6 +38,11 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 #tmode{display:flex;border:1px solid var(--acc);border-radius:10px;overflow:hidden}
 #tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:7px 6px}
 #tmode button.on{background:var(--acc);color:#fff}
+#iosTap{display:none;position:fixed;inset:0;z-index:30;background:rgba(20,30,45,.55);padding:16px;align-items:center;justify-content:center}
+#iosTap.on{display:flex}
+#iosTap .box{max-width:420px;width:100%;background:#fff;border-radius:14px;padding:18px;text-align:center}
+#iosTap .t{font-size:18px;font-weight:800;margin-bottom:8px}
+#iosTap button{width:100%;margin-top:14px;font:inherit;font-size:18px;font-weight:700;border:0;border-radius:12px;background:var(--acc);color:#fff;padding:16px}
 #addAlert{display:none;position:fixed;left:0;right:0;top:0;z-index:20;padding:12px}
 #addAlert.on{display:block}
 #addAlert .box{max-width:560px;margin:0 auto;background:#fff;border:3px solid #e67e22;border-radius:14px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
@@ -149,6 +154,7 @@ body.locked #gate{display:block}
 <div id="gateMsg"></div>
 </div></div>
 
+<div id="iosTap"><div class="box"><div class="t">🔊 音声集計の準備</div><div class="sub" id="iosMsg">iPhone・iPad は、読み上げの声を出すために最初に1回押す必要があります。</div><button id="iosGo">押して音声集計をはじめる</button></div></div>
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
 <div class="card top">
@@ -1103,6 +1109,13 @@ function apply(d, p){
     if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: false }; info += '。目方を言ってください'; }
     flash(d, p.no); say(info); return;
   }
+  // もう完了している番号をまた「完了」と言った時（目方の追加が無ければ）は記録し直さずに知らせる
+  if (p.done && m.d && !p.w) {
+    flash(d, p.no);
+    var dn = (two ? (+d.slice(8)) + '日の' : '') + p.no + '番は完了済みです';
+    if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: true }; dn += '。目方が未入力です。目方を言ってください'; }
+    say(dn); return;
+  }
   var q = {}; if (p.w) { q.w = p.w; } if (p.done) { q.done = true; }
   lastUndo = { d: d, no: p.no, before: m };
   // ボタンと同じく、送る返事を待たずにすぐ読み上げる（送れなかった時だけ知らせる）
@@ -1141,7 +1154,34 @@ $('dictTry').onclick = function(){ var w = $('dictR').value.trim() || $('dictW')
 $('optName').value = ls(K.name) || '';
 $('optName').onchange = function(){ ls(K.name, this.value.trim()); };
 
-function start(){ var p = loadDates(); if (p && p.then) { p.then(autoWake); } else { autoWake(); } }
+// iPhone・iPad：声は「押した瞬間」にしゃべらせないと出ず、しかも1回目は出ないことがある。
+// → 最初に大きなボタンを1回押してもらい、その瞬間に小さな音＋「準備ができました」を続けて流す。
+//    声が始まらなければ「もう一度押してください」と出す（2回目で必ず出る）
+function iosPrepare(){
+  if (!IOS || !window.speechSynthesis || iosWarm) { return false; }
+  $('iosTap').classList.add('on');
+  return true;
+}
+$('iosGo').onclick = function(){
+  var b = $('iosGo'), ok = false;
+  unlockAudio();
+  try {
+    speechSynthesis.cancel();
+    var u0 = new SpeechSynthesisUtterance('あ'); u0.lang = 'ja-JP'; u0.volume = 0.01; u0.rate = 2;
+    var u1 = new SpeechSynthesisUtterance('音声集計の準備ができました'); u1.lang = 'ja-JP'; u1.rate = 1.15;
+    var ready = function(){ if (!$('iosTap').classList.contains('on')) { return; } $('iosTap').classList.remove('on'); if (mode === 'off' && !userOff) { micFail = 0; setMode('wake'); listen(); } };
+    u1.onstart = function(){ ok = true; iosWarm = true; setTimeout(ready, 4000); };
+    u1.onend = function(){ if (ok) { ready(); } };
+    say.u = [u0, u1];
+    speechSynthesis.speak(u0); speechSynthesis.speak(u1);
+  } catch(e){}
+  b.disabled = true;
+  setTimeout(function(){
+    b.disabled = false;
+    if (!ok) { $('iosMsg').textContent = '声がまだ出ていません。もう一度押してください（音量・マナーモードも確かめてください）'; b.textContent = 'もう一度押す'; }
+  }, 1500);
+};
+function start(){ var p = loadDates(); var waitIos = iosPrepare(); if (p && p.then) { p.then(function(){ if (!waitIos) { autoWake(); } }); } else if (!waitIos) { autoWake(); } }
 if (KEY) { start(); } else { lock(''); }
 </script>
 </body>
