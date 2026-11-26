@@ -524,7 +524,8 @@ function fieldParts(d, r, ko){
     exp: r.exp ? '賞味 '+esc(expLab(r.exp)) : ''
   };
 }
-function fmtW(v){ var n = parseFloat(String(v || '').replace(/[^\d.]/g, '')); return isNaN(n) ? '' : n.toFixed(3) + 'kg'; }
+// 目方の表示：小数は3けたまで、末尾の0は付けない（1→1kg、1.2→1.2kg、1.234→1.234kg）
+function fmtW(v){ var n = parseFloat(String(v || '').replace(/[^\d.]/g, '')); return isNaN(n) ? '' : String(Math.round(n * 1000) / 1000) + 'kg'; }
 function customInfo(p, lay){
   return lay.map(function(line){
     var h = line.filter(function(k){ return p[k]; }).map(function(k){ return '<span class="cf cf-'+k+'">'+p[k]+'</span>'; }).join('');
