@@ -160,6 +160,15 @@ body.tab .row .wcol{flex:0 0 68px;height:68px;justify-content:center}
 body.tab .row .wcol input{width:68px;height:68px;padding:0 2px;font-size:18px}
 body.tab .row .wcol .kg{width:68px;height:68px;display:flex;align-items:center;justify-content:center;border:2px solid #b9dfc8;border-radius:8px;background:#fff}
 body.tab .row .wcol span:not(.kg){display:none}
+body.tab .row .wcol .kg{font-size:14px}
+.row .wbox{position:relative;width:68px;height:68px}
+.row .wbox input{display:block}
+.row .wbox .wph,.row .wbox .wval{position:absolute;inset:0;display:none!important;align-items:center;justify-content:center;text-align:center;pointer-events:none;font-weight:700;line-height:1.25}
+.row .wbox .wph{color:#b7791f;font-size:15px}
+.row .wbox .wval{color:var(--ink);font-size:14px;letter-spacing:-.3px}
+.row .wbox input:placeholder-shown ~ .wph{display:flex!important}
+.row .wbox input:not(:placeholder-shown):not(:focus){color:transparent}
+.row .wbox input:not(:placeholder-shown):not(:focus) ~ .wval{display:flex!important}
 body.tab #flt button{padding:9px 4px;font-size:15px}
 body.tab .row{padding:6px 8px;margin-bottom:5px}
 /* 列の数 */
@@ -179,10 +188,11 @@ body.tab .rows{align-items:stretch}
 body.tab .rows .row{margin-bottom:0}
 body.tc2 .rows,body.tc3 .rows{row-gap:5px;margin-bottom:5px}
 .row .cf-en{font-size:14px;font-weight:700;color:var(--ink)}
-.row .cf-item{font-size:17px;font-weight:700;color:var(--ink)}
+/* 太字はすべて納品先と同じ大きさ（14px）にそろえる（ユーザー指定） */
+.row .cf-item{font-size:14px;font-weight:700;color:var(--ink)}
 .row .cf-memo{font-size:14px;color:var(--ink)}
-.row .cf-qty .q{font-size:16px;font-weight:700;color:var(--ink)}
-.row .cf-ondo{font-weight:700;color:var(--ink)}
+.row .cf-qty .q{font-size:14px;font-weight:700;color:var(--ink)}
+.row .cf-ondo{font-size:14px;font-weight:700;color:var(--ink)}
 .row .cf-over{flex:none}
 /* 個口数：賞味期限と同じ大きさ。幅は文字の分だけにして、左の文字を個口数のすぐ横まで使う */
 .row .kocol{flex:0 0 auto;text-align:right;font-size:13px;color:var(--sub);white-space:nowrap;margin-left:-2px}
@@ -514,6 +524,7 @@ function fieldParts(d, r, ko){
     exp: r.exp ? '賞味 '+esc(expLab(r.exp)) : ''
   };
 }
+function fmtW(v){ var n = parseFloat(String(v || '').replace(/[^\d.]/g, '')); return isNaN(n) ? '' : n.toFixed(3) + 'kg'; }
 function customInfo(p, lay){
   return lay.map(function(line){
     var h = line.filter(function(k){ return p[k]; }).map(function(k){ return '<span class="cf cf-'+k+'">'+p[k]+'</span>'; }).join('');
@@ -527,8 +538,10 @@ function rowHtml(d, r, ko){
   var tags = [r.kikaku, r.ondo].filter(Boolean).map(esc).join('・');
   if (CUR_LAY) {
     var chg2 = (m.sig && m.sig !== sigOf(r)) ? '<div class="chg">⚠ ファイルの中身が変わりました。確かめてください</div>' : '';
-    var w2 = nw ? '<input class="w'+(m.w?' has':'')+'" inputmode="decimal" enterkeyhint="done" placeholder="kg" value="'+esc(m.w||'')+'" data-d="'+d+'" data-no="'+r.no+'"><span>目方(kg)</span>'
-               : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
+    // タブレット：未入力は「目方／(kg)」の2行、入力済みは「3.200kg」（触っている間は数字だけ）
+    var w2 = nw ? '<div class="wbox"><input class="w'+(m.w?' has':'')+'" inputmode="decimal" enterkeyhint="done" placeholder=" " value="'+esc(m.w||'')+'" data-d="'+d+'" data-no="'+r.no+'">' +
+                  '<span class="wph">目方<br>(kg)</span><span class="wval">'+esc(fmtW(m.w))+'</span></div>'
+               : (m.w ? '<span class="kg">'+esc(fmtW(m.w))+'</span>' : '');
     return '<div class="row'+(m.d?' done':'')+(miss?' miss':'')+'" id="'+id+'">' +
       '<div class="no">'+r.no+'</div><div class="info">' + customInfo(fieldParts(d, r, ko), CUR_LAY) + chg2 +
       '<div class="why">'+esc(miss||'')+'</div></div>' +
@@ -584,6 +597,7 @@ function render(){
   [].forEach.call($('list').querySelectorAll('.dbtn'), function(b){ b.onclick = function(){ tapDone(b.getAttribute('data-d'), +b.getAttribute('data-no')); }; });
   [].forEach.call($('list').querySelectorAll('input.w'), function(inp){
     inp.onchange = function(){ setW(inp.getAttribute('data-d'), +inp.getAttribute('data-no'), inp.value); };
+    inp.oninput = function(){ var v = inp.parentNode.querySelector('.wval'); if (v) { v.textContent = fmtW(inp.value); } };
     inp.onkeydown = function(e){ if (e.key === 'Enter') { inp.blur(); } };
   });
 }
