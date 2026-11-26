@@ -152,12 +152,16 @@ body.locked #gate{display:block}
 /* タブレット：縦向き・横向きそれぞれ設定（applyView が body に tab / tl2 / tc2 / tc3 / tfs-s / tfs-l を付ける） */
 body.tab .wrap{max-width:1200px}
 body.tab .row .no{flex-basis:52px;font-size:22px}
-body.tab .row .dbtn{flex-basis:84px;min-height:52px;font-size:17px}
-body.tab .row .wcol{flex-basis:84px}
-body.tab .row .wcol input{padding:8px 4px}
+/* 目方の欄・完了ボタン：行の高さいっぱいに伸ばさず、正方形にする（目方は欄＋「目方(kg)」で正方形） */
+body.tab .row{align-items:center}
+body.tab .row .no{align-self:stretch}
+body.tab .row .dbtn{flex:0 0 68px;width:68px;height:68px;min-height:0;font-size:17px;padding:0}
+body.tab .row .wcol{flex:0 0 68px;height:68px;justify-content:space-between}
+body.tab .row .wcol input{height:52px;padding:0 2px;font-size:18px}
+body.tab .row .wcol span{line-height:14px}
 body.tab #flt button{padding:9px 4px;font-size:15px}
 /* 1件を2行に詰める */
-body.tl2 .row{padding:6px 8px;margin-bottom:5px;align-items:stretch}
+body.tl2 .row{padding:6px 8px;margin-bottom:5px}
 body.tl2 .row .info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:1px;align-content:center}
 body.tl2 .row .ln{flex:0 1 auto;min-width:0}
 body.tl2 .row .tbr{display:block;flex-basis:100%;height:0}
