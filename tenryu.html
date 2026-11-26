@@ -524,7 +524,7 @@ $('addOk').onclick = function(){
 // 開いている間は15秒ごとにほかの人の分を読み直す
 var tick = 0;
 setInterval(function(){
-  if (!KEY || document.hidden || busy || speaking) { return; }
+  if (!KEY || document.hidden || busy || speaking || typingInList()) { return; }
   if (++tick % 4 === 0) { call('tenryuDates').then(function(r){ DATES = r.dates || DATES; if (r.dict) { DICT = r.dict; renderDict(); } if (r.today) { TODAY = r.today; } renderDates(); }).catch(function(){}); }
   if (SEL.length) { loadData(true); }
 }, 15000);
@@ -1444,8 +1444,18 @@ function viewConf(){
   var c = {}; try { c = JSON.parse(ls(VIEW_KEY) || '{}') || {}; } catch(e){ c = {}; }
   return { port:Object.assign({}, VIEW_DEF.port, c.port || {}), land:Object.assign({}, VIEW_DEF.land, c.land || {}) };
 }
-function isTablet(){ return Math.min(window.innerWidth, window.innerHeight) >= 600; }
-function orient(){ return window.innerWidth > window.innerHeight ? 'land' : 'port'; }
+// 画面の大きさ・向きは「端末の画面」で見る（キーボードが出て見える高さが縮んでも変わらないように）
+function isTablet(){
+  var s = window.screen || {}, m = Math.min(s.width || 0, s.height || 0);
+  return (m || Math.min(window.innerWidth, window.innerHeight)) >= 600 && window.innerWidth >= 600;   // 横幅はキーボードで変わらない
+}
+function orient(){
+  try { var t = screen.orientation && screen.orientation.type; if (t) { return t.indexOf('landscape') === 0 ? 'land' : 'port'; } } catch(e){}
+  if (typeof window.orientation === 'number') { return Math.abs(window.orientation) === 90 ? 'land' : 'port'; }
+  return window.innerWidth > window.innerHeight ? 'land' : 'port';
+}
+// 目方などを入力中（キーボードが出ている間）は表示を作り直さない（入力欄が消えてしまうため）
+function typingInList(){ var a = document.activeElement; return !!(a && a.tagName === 'INPUT' && $('list') && $('list').contains(a)); }
 var CUR_LAY = null;
 // 固定の配置（ユーザー指定 11/26）。個口数は行の中ではなく目方の左の列（kocol）に出す
 var FIX_LAY = {
@@ -1454,6 +1464,7 @@ var FIX_LAY = {
 };
 function applyView(){
   var b = document.body, tab = isTablet(), o = orient(), c = viewConf()[o], before = JSON.stringify(CUR_LAY);
+  if (typingInList() && (tab ? o : '') !== (applyView.last || '')) { return; }   // 入力が終わってから（blur で）切り替える
   applyView.last = tab ? o : '';
   ['tab','tl2','tc2','tc3','tfs-s','tfs-l'].forEach(function(n){ b.classList.remove(n); });
   CUR_LAY = null;
@@ -1491,6 +1502,8 @@ $('vReset').onclick =function(){ ls(VIEW_KEY, null); applyView(); };
 window.addEventListener('resize', function(){ applyView(); setTimeout(applyView, 300); });
 window.addEventListener('orientationchange', function(){ setTimeout(applyView, 200); setTimeout(applyView, 700); });
 try { window.matchMedia('(orientation: landscape)').addEventListener('change', function(){ setTimeout(applyView, 100); }); } catch(e){}
+try { screen.orientation.addEventListener('change', function(){ setTimeout(applyView, 100); }); } catch(e){}
+document.addEventListener('focusout', function(){ setTimeout(applyView, 300); });
 // 念のため：向きが変わったのに切り替わっていない時は直す
 setInterval(function(){ var want = isTablet() ? orient() : ''; if (want !== (applyView.last || '')) { applyView(); } }, 1500);
 applyView();
