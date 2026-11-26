@@ -149,28 +149,73 @@ body.locked #gate{display:block}
 #topCard.mini #topFull{display:none}
 #topCard.mini{padding:6px 10px}
 .row .tbr{display:none}
-/* タブレット（横幅が広い画面）：1件を2行に詰めて、たくさん見えるようにする */
-@media (min-width:700px){
-  .wrap{max-width:1200px}
-  .row{padding:6px 8px;margin-bottom:5px;align-items:stretch}
-  .row .info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:1px;align-content:center}
-  .row .ln{flex:0 1 auto;min-width:0}
-  .row .tbr{display:block;flex-basis:100%;height:0}
-  .row .l1{display:flex;gap:8px;font-size:13px}
-  .row .l1 .en{flex:0 1 auto}
-  .row .l2{font-size:17px}
-  .row .lm{font-size:14px}
-  .row .l3 .q{font-size:16px}
-  .row .lt{font-size:13px}
-  .row .no{flex-basis:52px;font-size:22px}
-  .row .dbtn{flex-basis:84px;min-height:52px;font-size:17px}
-  .row .wcol{flex-basis:84px}
-  .row .wcol input{padding:8px 4px}
-  #flt button{padding:9px 4px;font-size:15px}
-}
-@media (min-width:1000px){
-  .rows{display:grid;grid-template-columns:1fr 1fr;column-gap:8px}
-}
+/* タブレット：縦向き・横向きそれぞれ設定（applyView が body に tab / tl2 / tc2 / tc3 / tfs-s / tfs-l を付ける） */
+body.tab .wrap{max-width:1200px}
+body.tab .row .no{flex-basis:52px;font-size:22px}
+body.tab .row .dbtn{flex-basis:84px;min-height:52px;font-size:17px}
+body.tab .row .wcol{flex-basis:84px}
+body.tab .row .wcol input{padding:8px 4px}
+body.tab #flt button{padding:9px 4px;font-size:15px}
+/* 1件を2行に詰める */
+body.tl2 .row{padding:6px 8px;margin-bottom:5px;align-items:stretch}
+body.tl2 .row .info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:1px;align-content:center}
+body.tl2 .row .ln{flex:0 1 auto;min-width:0}
+body.tl2 .row .tbr{display:block;flex-basis:100%;height:0}
+body.tl2 .row .l1{display:flex;gap:8px;font-size:13px}
+body.tl2 .row .l1 .en{flex:0 1 auto}
+body.tl2 .row .l2{font-size:17px}
+body.tl2 .row .lm{font-size:14px}
+body.tl2 .row .l3 .q{font-size:16px}
+body.tl2 .row .lt{font-size:13px}
+/* 列の数 */
+body.tc2 .rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:8px}
+body.tc3 .rows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:8px}
+body.tab .rows .row{min-width:0}
+/* 文字の大きさ（集計表だけ） */
+body.tfs-s #list{zoom:.88}
+body.tfs-l #list{zoom:1.15}
+/* 自分で配置（項目ごとに行・順番・大きさを決める） */
+.row .ln.cl{display:flex;align-items:baseline;column-gap:12px;white-space:nowrap;overflow:hidden}
+.row .cf{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row .cf.f-s{font-size:12px;color:var(--sub)}
+.row .cf.f-m{font-size:14px}
+.row .cf.f-l{font-size:17px;font-weight:700}
+.row .cf-ko,.row .cf-qty{color:var(--ink)!important;font-weight:700}
+.row .cf .q{color:var(--ink);font-weight:700}
+#layEd{display:none;position:fixed;inset:0;z-index:60;background:rgba(20,30,40,.45);overflow:auto;padding:16px}
+#layEd.on{display:block}
+#layEd .box{background:#fff;border-radius:14px;max-width:1100px;margin:0 auto;padding:14px}
+#layEd h3{margin:0 0 4px;font-size:17px}
+#layPrev{margin:10px auto;background:var(--bg,#f4f6f8);border-radius:10px;padding:8px}
+#layPrev .row{margin:0}
+#layPrev.tfs-s .row{zoom:.88}
+#layPrev.tfs-l .row{zoom:1.15}
+.lbox{border:2px dashed var(--line);border-radius:10px;padding:6px;margin:6px 0;min-height:52px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;position:relative}
+.lbox .lt0{font-size:12px;color:var(--sub);flex:0 0 auto;min-width:44px}
+.lbox .ldel{margin-left:auto;font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px}
+.lbox.hide{background:#f6f6f6}
+.lbox.over{border-color:var(--acc);background:var(--acc2)}
+.chip{touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid var(--acc);background:#fff;color:var(--acc);border-radius:10px;padding:8px 12px;font-size:15px;font-weight:700;cursor:grab;min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.chip small{font-size:11px;font-weight:400;color:var(--sub);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+.lbox.hide .chip{border-color:#bbb;color:#888}
+.chip.drag{opacity:.35}
+.chip.ghost{position:fixed;z-index:70;pointer-events:none;opacity:.95;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#layEd .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#layEd .btns button{font:inherit;font-size:15px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;min-height:44px}
+#layEd .btns .pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+/* 設定：タブレットの表示 */
+#vJump{display:none;padding:6px 10px;font-size:13px}
+body.tab #vJump{display:inline-block}
+.vset{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.vset .vb{border:1px solid var(--line);border-radius:10px;padding:8px}
+.vset .vb.now{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.vset .vt{font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.vset .vt i{font-style:normal;font-size:12px;color:#fff;background:var(--acc);border-radius:6px;padding:1px 6px}
+.vset .vr{font-size:13px;color:var(--sub);margin:6px 0 3px}
+.vset .seg{display:flex;gap:4px}
+.vset .seg button{flex:1;font:inherit;font-size:14px;padding:8px 2px;border:1px solid var(--line);border-radius:8px;background:#fff;min-height:40px}
+.vset .seg button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+@media (max-width:520px){.vset{grid-template-columns:1fr}}
 @media (max-width:420px){.row{gap:6px;padding:6px}.row .wcol{flex-basis:62px}.row .dbtn{flex-basis:54px;font-size:15px}.row .no{flex-basis:34px;font-size:18px}}
 </style>
 </head>
@@ -186,6 +231,15 @@ body.locked #gate{display:block}
 </div></div>
 
 <div id="iosTap"><div class="box"><div class="t">🔊 音声集計の準備</div><div class="sub" id="iosMsg">iPhone・iPad は、読み上げの声を出すために最初に1回押す必要があります。</div><button id="iosGo">押して音声集計をはじめる</button></div></div>
+<div id="layEd"><div class="box">
+  <h3 id="layTitle">配置を作る</h3>
+  <div class="sub">項目を<b>指で押したまま動かす</b>と、行や順番を変えられます。項目を<b>1回押す</b>と文字の大きさ（小→中→大）が変わります。「表示しない」に入れた項目は出ません。</div>
+  <div id="layPrev"></div>
+  <div id="layLines"></div>
+  <div class="btns"><button id="layAdd">＋ 行を足す</button></div>
+  <div class="lbox hide" id="layHide"><span class="lt0">表示しない</span></div>
+  <div class="btns"><button class="pri" id="laySave">保存する</button><button id="layCancel">やめる</button><button id="layDef">はじめの配置に戻す</button></div>
+</div></div>
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
 <div class="card top" id="topCard">
@@ -215,7 +269,7 @@ body.locked #gate{display:block}
 </div>
 
 <div class="card">
-  <div class="toolbar"><label><input type="checkbox" id="onlyLeft"> まだの分だけ表示</label><span class="sub" id="loadedAt"></span></div>
+  <div class="toolbar"><label><input type="checkbox" id="onlyLeft"> まだの分だけ表示</label><span class="sub" id="loadedAt"></span><button class="sbtn" id="vJump">🖥 表示の設定</button></div>
   <div id="flt"></div>
   <div id="list"><div class="empty">納品日を選んでください</div></div>
   <button id="finBtn">✅ 全て完了</button>
@@ -236,6 +290,12 @@ body.locked #gate{display:block}
   <label class="set"><span>話さなかったら集計の聞き取りを止める</span><select id="optIdle" style="font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff">
     <option value="60">1分</option><option value="300">5分</option><option value="600">10分</option><option value="1800">30分</option><option value="3600">1時間</option><option value="0">止めない</option>
   </select></label>
+  <div class="set" style="display:block">
+    <div style="font-weight:700">タブレットの表示</div>
+    <div class="sub">縦向き・横向きで別々に決められます。押すとすぐ変わります（この端末だけ）。<span id="vNow"></span></div>
+    <div class="vset" id="vset"></div>
+    <div class="dadd"><button class="sbtn" id="vReset">はじめの設定に戻す</button></div>
+  </div>
   <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
   <div class="help">
     <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
@@ -461,11 +521,44 @@ function useOver(d, r){
   return use > lim ? (+lim.slice(5, 7)) + '/' + (+lim.slice(8)) : '';
 }
 function memoOf(r){ return String(r.memo || '').replace(/\s*加熱用\s*/g, ' ').trim(); }
+// 行に出す項目（タブレットの「自分で配置」で並べ替える単位）
+var FIELDS = { en:'納品先', ko:'個口数', item:'品目', memo:'規格（備考）', qty:'発注量', tags:'規格・保管温度', use:'使用日', exp:'賞味期限' };
+function fieldParts(d, r, ko){
+  var q = esc(r.qty || '—') + esc(r.unit || '');
+  var extra = (r.sqty && (r.sqty !== r.qty || r.unit2 !== r.unit)) ? '（仕入 '+esc(r.sqty)+esc(r.unit2||'')+'）' : '';
+  var ov = useOver(d, r), u = r.sanchi ? esc(r.sanchi) : (ov ? esc(chipLab(d))+'納品' : '');
+  return {
+    en: (r.add ? '<span class="new">追加 '+esc(r.add)+'</span>' : '') + esc(shortEn(r.en)),
+    ko: (ko || 1) + '個口',
+    item: esc(r.item),
+    memo: esc(memoOf(r)),
+    qty: '<span class="q">'+q+'</span>'+extra,
+    tags: [r.kikaku, r.ondo].filter(Boolean).map(esc).join('・'),
+    use: ov ? '<span class="short">'+u+' 期限'+ov+'</span>' : u,
+    exp: r.exp ? '賞味 '+esc(expLab(r.exp)) : ''
+  };
+}
+function customInfo(p, lay){
+  return lay.map(function(line){
+    var h = line.filter(function(f){ return p[f.k]; }).map(function(f){ return '<span class="cf f-'+f.s+' cf-'+f.k+'">'+p[f.k]+'</span>'; }).join('');
+    return h ? '<div class="ln cl">'+h+'</div>' : '';
+  }).join('');
+}
 function rowHtml(d, r, ko){
   var m = markOf(d, r.no) || {}, nw = needW(r), id = 'r-'+d+'-'+r.no, miss = missSet[d+'#'+r.no];
   var q = esc(r.qty || '—') + esc(r.unit || '');
   var extra = (r.sqty && (r.sqty !== r.qty || r.unit2 !== r.unit)) ? '（仕入 '+esc(r.sqty)+esc(r.unit2||'')+'）' : '';
   var tags = [r.kikaku, r.ondo].filter(Boolean).map(esc).join('・');
+  if (CUR_LAY) {
+    var chg2 = (m.sig && m.sig !== sigOf(r)) ? '<div class="chg">⚠ ファイルの中身が変わりました。確かめてください</div>' : '';
+    var w2 = nw ? '<input class="w'+(m.w?' has':'')+'" inputmode="decimal" enterkeyhint="done" placeholder="kg" value="'+esc(m.w||'')+'" data-d="'+d+'" data-no="'+r.no+'"><span>目方(kg)</span>'
+               : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
+    return '<div class="row'+(m.d?' done':'')+(miss?' miss':'')+'" id="'+id+'">' +
+      '<div class="no">'+r.no+'</div><div class="info">' + customInfo(fieldParts(d, r, ko), CUR_LAY) + chg2 +
+      '<div class="why">'+esc(miss||'')+'</div></div>' +
+      (w2 ? '<div class="wcol">'+w2+'</div>' : '') +
+      '<button class="dbtn" data-d="'+d+'" data-no="'+r.no+'">完了</button></div>';
+  }
   var chg = (m.sig && m.sig !== sigOf(r)) ? '<div class="chg">⚠ ファイルの中身が変わりました。確かめてください</div>' : '';
   var w = nw ? '<input class="w'+(m.w?' has':'')+'" inputmode="decimal" enterkeyhint="done" placeholder="kg" value="'+esc(m.w||'')+'" data-d="'+d+'" data-no="'+r.no+'"><span>目方(kg)</span>'
              : (m.w ? '<span class="kg">'+esc(m.w)+'</span><span>目方(kg)</span>' : '');
@@ -1180,6 +1273,183 @@ function apply(d, p){
 function submitCmd(){ var v = $('cmdIn').value.trim(); if (!v) { return; } $('cmdIn').value = ''; $('heard').textContent = '入れた言葉：「' + v + '」'; var p = parseCmd(v); if (p.type === 'wake') { startCmd(); return; } doCmd(p, v); }
 $('cmdOk').onclick = submitCmd;
 $('cmdIn').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); submitCmd(); } });
+
+// ---------- タブレットの表示（縦向き・横向き別・端末ごと） ----------
+var VIEW_KEY = 'nyk-tenryu-view-v1';
+var VIEW_DEF = { port:{ lines:2, cols:1, fs:'m' }, land:{ lines:2, cols:2, fs:'m' } };
+var VIEW_OPT = [
+  { k:'lines', lab:'1件の表示', v:[[1,'1項目1行'],[2,'2行'],['c','自分で配置']] },
+  { k:'cols', lab:'列の数', v:[[1,'1列'],[2,'2列'],[3,'3列']] },
+  { k:'fs', lab:'文字の大きさ', v:[['s','小'],['m','ふつう'],['l','大']] }
+];
+function viewConf(){
+  var c = {}; try { c = JSON.parse(ls(VIEW_KEY) || '{}') || {}; } catch(e){ c = {}; }
+  return { port:Object.assign({}, VIEW_DEF.port, c.port || {}), land:Object.assign({}, VIEW_DEF.land, c.land || {}) };
+}
+function isTablet(){ return Math.min(window.innerWidth, window.innerHeight) >= 600; }
+function orient(){ return window.innerWidth > window.innerHeight ? 'land' : 'port'; }
+var CUR_LAY = null;
+var LAY_DEF = [
+  [{k:'en',s:'s'},{k:'ko',s:'s'},{k:'item',s:'l'},{k:'memo',s:'m'}],
+  [{k:'qty',s:'m'},{k:'tags',s:'s'},{k:'use',s:'s'},{k:'exp',s:'s'}]
+];
+function layOf(o){
+  var l = viewConf()[o].lay;
+  return (l && l.length) ? l : JSON.parse(JSON.stringify(LAY_DEF));
+}
+function applyView(){
+  var b = document.body, tab = isTablet(), o = orient(), c = viewConf()[o], before = JSON.stringify(CUR_LAY);
+  ['tab','tl2','tc2','tc3','tfs-s','tfs-l'].forEach(function(n){ b.classList.remove(n); });
+  CUR_LAY = null;
+  if (tab) {
+    b.classList.add('tab');
+    if (c.lines === 2) { b.classList.add('tl2'); }
+    if (c.lines === 'c') { CUR_LAY = layOf(o); }
+    if (c.cols > 1) { b.classList.add('tc' + c.cols); }
+    if (c.fs !== 'm') { b.classList.add('tfs-' + c.fs); }
+  }
+  if (JSON.stringify(CUR_LAY) !== before) { try { render(); } catch(e){} }
+  renderViewSet();
+}
+function renderViewSet(){
+  var box = $('vset'); if (!box) { return; }
+  var c = viewConf(), o = orient(), tab = isTablet();
+  $('vNow').textContent = tab ? '（今は' + (o === 'land' ? '横向き' : '縦向き') + '）' : '（この画面はスマホの大きさなので、スマホの表示のままです）';
+  box.innerHTML = [['port','📱 縦向き'],['land','💻 横向き']].map(function(p){
+    var cur = c[p[0]];
+    return '<div class="vb' + (tab && o === p[0] ? ' now' : '') + '"><div class="vt">' + p[1] + (tab && o === p[0] ? '<i>今この向き</i>' : '') + '</div>' +
+      VIEW_OPT.map(function(op){
+        return '<div class="vr">' + op.lab + '</div><div class="seg">' + op.v.map(function(v){
+          return '<button data-o="' + p[0] + '" data-k="' + op.k + '" data-v="' + v[0] + '"' + (String(cur[op.k]) === String(v[0]) ? ' class="on"' : '') + '>' + v[1] + '</button>';
+        }).join('') + '</div>';
+      }).join('') +
+      '<div class="dadd"><button class="sbtn" data-lay="' + p[0] + '">✏ 配置を作る・直す</button></div></div>';
+  }).join('');
+}
+// ---------- 配置を作る画面（指で動かす） ----------
+var LAY_O = 'port', LAY_SIZES = ['s','m','l'], LAY_SN = { s:'小', m:'中', l:'大' };
+function chipHtml(f){ return '<span class="chip" data-k="' + f.k + '" data-s="' + f.s + '">' + FIELDS[f.k] + '<small>' + LAY_SN[f.s] + '</small></span>'; }
+function openLay(o){
+  LAY_O = o;
+  $('layTitle').textContent = '配置を作る（' + (o === 'land' ? '横向き' : '縦向き') + '）';
+  var lay = layOf(o), used = {};
+  lay.forEach(function(l){ l.forEach(function(f){ used[f.k] = 1; }); });
+  $('layLines').innerHTML = '';
+  lay.forEach(function(l){ addLine(l); });
+  var hide = $('layHide'); [].slice.call(hide.querySelectorAll('.chip')).forEach(function(c){ c.remove(); });
+  Object.keys(FIELDS).forEach(function(k){ if (!used[k]) { hide.insertAdjacentHTML('beforeend', chipHtml({ k:k, s:'s' })); } });
+  $('layEd').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  layPreview();
+}
+function addLine(fields){
+  var box = document.createElement('div');
+  box.className = 'lbox';
+  box.innerHTML = '<span class="lt0"></span>' + (fields || []).map(chipHtml).join('') + '<button class="ldel">行を消す</button>';
+  $('layLines').appendChild(box);
+  numLines();
+}
+function numLines(){ [].forEach.call($('layLines').children, function(b, i){ b.querySelector('.lt0').textContent = (i + 1) + '行目'; }); }
+function layRead(){
+  return [].map.call($('layLines').children, function(b){
+    return [].map.call(b.querySelectorAll('.chip'), function(c){ return { k:c.getAttribute('data-k'), s:c.getAttribute('data-s') }; });
+  }).filter(function(l){ return l.length; });
+}
+function layPreview(){
+  var d = selDates()[0], rows = d ? rowsOf(d) : [], r = rows[0];
+  if (!r) { d = isoToday(); r = { no:1, en:'愛知県庁 食堂', item:'鶏もも皮なし小間', memo:'1.5cmカット', qty:'2', unit:'kg', kikaku:'チルド', ondo:'冷蔵', sanchi:'11/28(金)使用', exp:'' }; }
+  var save = CUR_LAY; CUR_LAY = layRead();
+  if (!CUR_LAY.length) { CUR_LAY = [[{ k:'item', s:'l' }]]; }
+  var h = rowHtml(d, r, 1); CUR_LAY = save;
+  var c = viewConf()[LAY_O], cols = c.cols || 1, W = Math.min(LAY_O === 'land' ? Math.max(window.innerWidth, window.innerHeight) : Math.min(window.innerWidth, window.innerHeight), 1200) - 40;
+  var pv = $('layPrev');
+  pv.style.maxWidth = Math.round((W - (cols - 1) * 8) / cols) + 'px';
+  pv.className = c.fs !== 'm' ? 'tfs-' + c.fs : '';
+  pv.innerHTML = '<div class="sub" style="margin-bottom:4px">見本（' + (LAY_O === 'land' ? '横向き' : '縦向き') + '・' + cols + '列の幅）</div>' + h;
+  var bt = pv.querySelector('.dbtn'); if (bt) { bt.disabled = true; }
+}
+(function(){
+  var ed = $('layEd'), drag = null;
+  ed.addEventListener('click', function(e){
+    if (e.target.classList.contains('ldel')) {
+      var box = e.target.parentNode;
+      [].slice.call(box.querySelectorAll('.chip')).forEach(function(c){ $('layHide').appendChild(c); });
+      box.remove(); numLines(); layPreview();
+    }
+  });
+  ed.addEventListener('pointerdown', function(e){
+    var c = e.target.closest('.chip'); if (!c || !ed.contains(c)) { return; }
+    e.preventDefault();
+    drag = { c:c, x:e.clientX, y:e.clientY, moved:false, ghost:null, id:e.pointerId };
+    try { c.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  ed.addEventListener('pointermove', function(e){
+    if (!drag || e.pointerId !== drag.id) { return; }
+    if (!drag.moved && Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 8) { return; }
+    if (!drag.moved) {
+      drag.moved = true;
+      var g = drag.c.cloneNode(true), rc = drag.c.getBoundingClientRect();
+      g.classList.add('ghost'); g.style.width = rc.width + 'px'; document.body.appendChild(g);
+      drag.ghost = g; drag.dx = e.clientX - rc.left; drag.dy = e.clientY - rc.top;
+      drag.c.classList.add('drag');
+    }
+    drag.ghost.style.left = (e.clientX - drag.dx) + 'px'; drag.ghost.style.top = (e.clientY - drag.dy) + 'px';
+    [].forEach.call(ed.querySelectorAll('.lbox.over'), function(b){ b.classList.remove('over'); });
+    var el = document.elementFromPoint(e.clientX, e.clientY); if (!el) { return; }
+    var box = el.closest('.lbox'); if (!box || !ed.contains(box)) { return; }
+    box.classList.add('over');
+    // 指の位置に一番近い項目の前か後ろに入れる
+    var chips = [].filter.call(box.querySelectorAll('.chip'), function(x){ return x !== drag.c; }), before = null;
+    for (var i = 0; i < chips.length; i++) {
+      var r = chips[i].getBoundingClientRect();
+      if (e.clientY < r.top - 4) { before = chips[i]; break; }
+      if (e.clientY <= r.bottom + 4 && e.clientX < r.left + r.width / 2) { before = chips[i]; break; }
+    }
+    if (before) { box.insertBefore(drag.c, before); }
+    else { var del = box.querySelector('.ldel'); if (del) { box.insertBefore(drag.c, del); } else { box.appendChild(drag.c); } }
+    // 自動スクロール（画面の上下の端に来たら）
+    if (e.clientY < 60) { ed.scrollTop -= 12; } else if (e.clientY > window.innerHeight - 60) { ed.scrollTop += 12; }
+  });
+  function end(e){
+    if (!drag || e.pointerId !== drag.id) { return; }
+    var c = drag.c;
+    if (drag.moved) { c.classList.remove('drag'); if (drag.ghost) { drag.ghost.remove(); } }
+    else { // 押しただけ＝大きさを変える
+      var s = LAY_SIZES[(LAY_SIZES.indexOf(c.getAttribute('data-s')) + 1) % 3];
+      c.setAttribute('data-s', s); c.querySelector('small').textContent = LAY_SN[s];
+    }
+    [].forEach.call(ed.querySelectorAll('.lbox.over'), function(b){ b.classList.remove('over'); });
+    drag = null; layPreview();
+  }
+  ed.addEventListener('pointerup', end);
+  ed.addEventListener('pointercancel', end);
+})();
+function closeLay(){ $('layEd').classList.remove('on'); document.body.style.overflow = ''; }
+$('layAdd').onclick = function(){ addLine([]); };
+$('layCancel').onclick = closeLay;
+$('layDef').onclick = function(){
+  $('layLines').innerHTML = ''; LAY_DEF.forEach(function(l){ addLine(JSON.parse(JSON.stringify(l))); });
+  [].slice.call($('layHide').querySelectorAll('.chip')).forEach(function(c){ c.remove(); });
+  layPreview();
+};
+$('laySave').onclick = function(){
+  var lay = layRead();
+  if (!lay.length) { alert('項目を1つ以上、行に入れてください'); return; }
+  var c = viewConf(); c[LAY_O].lay = lay; c[LAY_O].lines = 'c';
+  ls(VIEW_KEY, JSON.stringify(c)); closeLay(); CUR_LAY = 'x'; applyView();
+};
+$('vset').addEventListener('click', function(e){
+  var L = e.target.closest('button[data-lay]'); if (L) { openLay(L.getAttribute('data-lay')); return; }
+  var t = e.target.closest('button[data-o]'); if (!t) { return; }
+  var c = viewConf(), v = t.getAttribute('data-v');
+  c[t.getAttribute('data-o')][t.getAttribute('data-k')] = /^\d+$/.test(v) ? Number(v) : v;
+  ls(VIEW_KEY, JSON.stringify(c)); applyView();
+});
+$('vJump').onclick = function(){ var d = $('vset').closest('details'); if (d) { d.open = true; } $('vset').parentNode.scrollIntoView({ behavior:'smooth', block:'center' }); };
+$('vReset').onclick =function(){ ls(VIEW_KEY, null); applyView(); };
+window.addEventListener('resize', applyView);
+window.addEventListener('orientationchange', function(){ setTimeout(applyView, 200); });
+applyView();
 
 // ---------- 設定 ----------
 $('optIdle').value = String(idleSec());
