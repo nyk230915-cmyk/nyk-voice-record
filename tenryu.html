@@ -261,12 +261,18 @@ body.planOn #plan{display:block}
 #plan tbody th .mk{display:flex;align-items:center;gap:8px;justify-content:space-between}
 #plan .itb{font:inherit;font-size:12px;font-weight:700;border:1px solid #b9d3c4;background:#f3f8f5;color:#2f6f4f;border-radius:12px;padding:2px 9px;white-space:nowrap}
 @media (max-width:640px){
-  #plan tbody th{white-space:normal;min-width:96px;max-width:118px;font-size:13px;padding:6px 8px;line-height:1.3;overflow-wrap:anywhere}
-  #plan thead th:first-child{max-width:118px;white-space:normal}
-  #plan tbody th .mk{flex-direction:column;align-items:flex-start;gap:3px}
-  #plan .itb{font-size:11px;padding:1px 7px}
-  #plan tr.it th{padding-left:14px;font-size:12px}
-  #plan td{min-width:74px;padding:6px 7px}
+  body #plan tbody th{white-space:normal;min-width:96px;max-width:118px;font-size:13px;padding:6px 8px;line-height:1.3;overflow-wrap:anywhere}
+  body #plan thead th:first-child{max-width:118px;white-space:normal}
+  body #plan tbody th .mk{flex-direction:column;align-items:flex-start;gap:3px}
+  body #plan .itb{font-size:11px;padding:1px 7px}
+  body #plan tr.it th{padding-left:14px;font-size:12px}
+  body #plan td{min-width:74px;padding:6px 7px}
+  body #plan td.hz{font-size:13px;line-height:1.5;min-width:0;padding:5px 6px}
+  body #plan td.hz .kq b,body #plan td.hz .tc b,body #plan td.hz .en,body #plan td.hz .en b{font-size:13px}
+  body #plan td.hz .tc i{font-size:10px;padding:0 3px;margin-right:2px}
+  body #plan td.hz .oth{font-size:11px;padding:0 4px}
+  body #plan td.miss span{font-size:11px;padding:1px 4px}
+  body #plan .en-sub{font-size:10px}
 }
 #plan .itb.on{background:#2f6f4f;color:#fff;border-color:#2f6f4f}
 #plan tr.it th,#plan tr.it td{background:#fbfcf8;font-size:13px;border-bottom:1px dashed #e6ebef}
