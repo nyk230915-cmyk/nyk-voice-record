@@ -232,6 +232,9 @@ body.planOn #plan{display:block}
 #plan .psel .lb{font-weight:700;font-size:14px}
 #plan .psel button{font:inherit;font-size:13px;background:#fff;border:2px solid #c6d3dc;color:#66788a;border-radius:16px;padding:4px 10px}
 #plan .psel button.on{border-color:#2f6f4f;background:#2f6f4f;color:#fff;font-weight:700}
+#plan .psel .rng{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:#3c4f61}
+#plan .psel select{font:inherit;font-size:15px;font-weight:700;color:#2f6f4f;background:#fff;border:2px solid #2f6f4f;border-radius:8px;padding:5px 8px}
+#plan .psel .qk{display:inline-flex;gap:6px;flex-wrap:wrap}
 #plan .psel .mini{border:0;background:none;color:#2563eb;text-decoration:underline;padding:4px}
 #plan .pnote{color:#66788a;font-size:12px;margin-bottom:8px;line-height:1.7}
 #plan .pnote b{color:#2f6f4f}
@@ -249,6 +252,12 @@ body.planOn #plan{display:block}
 #plan tr.gh th{background:#f6f8fa;color:#3c4f61;font-size:13px;padding:5px 10px} #plan tr.gh td{background:#f6f8fa}
 #plan tr.tot th,#plan tr.tot td{background:#2f6f4f;color:#fff;border:0} #plan tr.tot td small{color:#d6ebe0} #plan tr.tot td.sum{background:#24583e}
 #plan td.has{text-align:center} #plan td.has .n{display:inline-block;background:#2f6f4f;color:#fff;border-radius:12px;padding:1px 10px;font-weight:700}
+#plan tbody th .mk{display:flex;align-items:center;gap:8px;justify-content:space-between}
+#plan .itb{font:inherit;font-size:12px;font-weight:700;border:1px solid #b9d3c4;background:#f3f8f5;color:#2f6f4f;border-radius:12px;padding:2px 9px;white-space:nowrap}
+#plan .itb.on{background:#2f6f4f;color:#fff;border-color:#2f6f4f}
+#plan tr.it th,#plan tr.it td{background:#fbfcf8;font-size:13px;border-bottom:1px dashed #e6ebef}
+#plan tr.it th{font-weight:400;color:#3c4f61;padding-left:22px}
+#plan tr.it td b{font-size:14px}
 #plan td.has small,#plan td .sm{display:block;font-size:11px;margin:0}
 #plan td.miss{text-align:center;background:#fff7ec} #plan td.miss span{color:#b45309;font-weight:700;font-size:12px;border:1.5px dashed #e0a458;border-radius:10px;padding:1px 6px}
 #plan .en-sub{display:block;font-size:11px;color:#66788a;font-weight:400}
@@ -269,10 +278,9 @@ body.planOn #plan{display:block}
 
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 肉の種類別<span class="lg2">の使用数量</span></button><button data-v="en">🚚 納品先ごと<span class="lg2">の注文</span></button></div>
+<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 注文数</button><button data-v="en">🚚 納品先ごと<span class="lg2">の注文</span></button></div>
 <div id="plan">
   <div class="pwrap">
-    <div class="ptitle">先の注文の確認（配送一覧から）</div>
     <div class="psel" id="planSel"></div>
     <div class="pnote" id="planNote"></div>
     <div class="tw" id="planTbl"><div class="empty">読み込んでいます…</div></div>
@@ -835,16 +843,18 @@ $('fileIn').onchange = function(){
   }).catch(function(e){ $('fileInfo').textContent = ''; showRes('ng', 'ファイルを読み込めませんでした', esc(e.message), true); });
 };
 // ---------- 先の注文の確認（エクセルの「配送一覧」から。パソコンが5分ごとに送る） ----------
-var PLAN = null, PLAN_SEL = null, PLAN_TAB = 'meat';
+var PLAN = null, PLAN_FROM = null, PLAN_TO = null, PLAN_TAB = 'meat', PLAN_OPEN = {};
 var PLAN_HIDE = ['㈱天柳 港北みどり', '㈱天柳 グリーンライフ', '㈱天柳 敬愛の園(養護)'];   // 注文がある時だけ出す
-var PLAN_ORDER = ['国産鶏もも','国産鶏むね','国産鶏ささみ','輸入鶏もも180-200','輸入鶏もも260-280','国産豚うで','国産豚バラ','国産豚ロース','国産豚肩ロース','国産豚ヒレ','輸入豚うで','輸入豚バラ','輸入豚ロース','輸入豚肩ロース','輸入豚ヒレ','輸入豚うで/輸入牛端材(カウミート)','輸入牛端材(カウミート)'];
-function planGrp(k){ return /鶏/.test(k) ? '鶏' : (/牛/.test(k) && !/豚/.test(k)) ? '牛' : '豚'; }
+var PLAN_ORDER = ['国産鶏もも','国産鶏むね','鶏挽肉','国産鶏ささみ','輸入鶏もも180-200','輸入鶏もも260-280','唐揚げ下味付','国産豚うで','国産豚バラ','国産豚ロース','国産豚肩ロース','国産豚ヒレ','輸入豚うで','輸入豚バラ','輸入豚ロース','輸入豚肩ロース','輸入豚ヒレ','輸入豚うで/輸入牛端材(カウミート)','輸入牛端材(カウミート)'];
+// 品目で別の行に分けるもの（肉の種類の行には入れない）
+function planMeat(r){ var it = String(r.item || ''); if (/唐揚げ下味/.test(it)) { return '唐揚げ下味付'; } if (/鶏(粗)?挽肉/.test(it)) { return '鶏挽肉'; } return r.meat || '肉の種類が不明'; }
+function planGrp(k){ return /鶏|唐揚げ/.test(k) ? '鶏' : (/牛/.test(k) && !/豚/.test(k)) ? '牛' : '豚'; }
 function planRank(k){ var i = PLAN_ORDER.indexOf(k); return ({鶏:0, 豚:1000, 牛:2000})[planGrp(k)] + (i < 0 ? 500 : i); }
 function planLab(d){ var t = new Date(d+'T00:00:00'); return (t.getMonth()+1)+'/'+t.getDate()+'('+WD[t.getDay()]+')'; }
-// 明日から7日先まで。土日は注文がある日だけ
+// 明日から2週間。土日は注文がある日だけ
 function planDates(){
   var t = (PLAN && PLAN.today) || TODAY || isoToday(), out = [];
-  for (var n = 1; n <= 7; n++) {
+  for (var n = 1; n <= 14; n++) {
     var d = addDays(t, n), w = new Date(d+'T00:00:00').getDay();
     if ((w !== 0 && w !== 6) || (PLAN && PLAN.days[d] && PLAN.days[d].length)) { out.push(d); }
   }
@@ -873,25 +883,26 @@ function openPlan(){
   call('tenryuPlanGet').then(function(r){
     PLAN = r || { days: {}, nd: [] };
     var win = planDates();
-    PLAN_SEL = (PLAN_SEL || win).filter(function(d){ return win.indexOf(d) >= 0; });
-    if (!PLAN_SEL.length) { PLAN_SEL = win.slice(); }
     renderPlan();
   }).catch(function(e){ $('planTbl').innerHTML = '<div class="empty">読み込めませんでした：'+esc(e.message)+'</div>'; });
 }
 function renderPlan(){
   if (!PLAN) { return; }
   var win = planDates();
-  $('planSel').innerHTML = '<span class="lb">納品日（明日から7日先・複数選べます）</span>' + win.map(function(d){
-    var on = PLAN_SEL.indexOf(d) >= 0;
-    return '<button data-d="'+d+'" class="'+(on?'on':'')+'">'+(on?'✓ ':'')+planLab(d)+'</button>';
-  }).join('') + '<button class="mini" id="planAll">'+(PLAN_SEL.length ? '全部外す' : '全部選ぶ')+'</button>';
-  [].forEach.call($('planSel').querySelectorAll('[data-d]'), function(b){ b.onclick = function(){
-    var d = b.getAttribute('data-d'), i = PLAN_SEL.indexOf(d);
-    if (i >= 0) { PLAN_SEL.splice(i, 1); } else { PLAN_SEL.push(d); }
-    renderPlan();
+  // 表示する範囲：「から」「まで」のプルダウン（同じ日にすればその日だけ）
+  if (win.indexOf(PLAN_FROM) < 0) { PLAN_FROM = win[0]; }
+  if (win.indexOf(PLAN_TO) < 0) { PLAN_TO = win[win.length - 1]; }
+  if (PLAN_TO < PLAN_FROM) { PLAN_TO = PLAN_FROM; }
+  var opt = function(v){ return win.map(function(d){ return '<option value="'+d+'"'+(d === v ? ' selected' : '')+'>'+planLab(d)+'</option>'; }).join(''); };
+  $('planSel').innerHTML = '<span class="lb">納品日（2週間先まで表示）</span><span class="qk"><button data-q="1">明日だけ</button></span><span style="flex-basis:100%;height:0"></span>'
+    + '<span class="rng"><select id="planFrom">'+opt(PLAN_FROM)+'</select> から <select id="planTo">'+opt(PLAN_TO)+'</select> まで</span>';
+  $('planFrom').onchange = function(){ PLAN_FROM = this.value; if (PLAN_TO < PLAN_FROM) { PLAN_TO = PLAN_FROM; } renderPlan(); };
+  $('planTo').onchange = function(){ PLAN_TO = this.value; if (PLAN_TO < PLAN_FROM) { PLAN_FROM = PLAN_TO; } renderPlan(); };
+  [].forEach.call($('planSel').querySelectorAll('[data-q]'), function(b){ b.onclick = function(){
+    var q = b.getAttribute('data-q'); PLAN_FROM = win[0];
+    PLAN_TO = win[0]; renderPlan();
   }; });
-  $('planAll').onclick = function(){ PLAN_SEL = PLAN_SEL.length ? [] : win.slice(); renderPlan(); };
-  var days = win.filter(function(d){ return PLAN_SEL.indexOf(d) >= 0; });
+  var days = win.filter(function(d){ return d >= PLAN_FROM && d <= PLAN_TO; });
   var at = PLAN.at ? '（' + PLAN.at.slice(5).replace('-', '/') + ' に読み込み）' : '';
   if (!days.length) { $('planNote').textContent = ''; $('planTbl').innerHTML = '<div class="empty">納品日を選んでください</div>'; return; }
   var head = '<thead><tr><th>' + (PLAN_TAB === 'meat' ? '肉の種類' : '納品先') + '</th>' + days.map(function(d){ return '<th>'+planLab(d)+'</th>'; }).join('') + '<th class="sum">合計</th></tr></thead>';
@@ -900,7 +911,11 @@ function renderPlan(){
   if (PLAN_TAB === 'meat') {
     $('planNote').innerHTML = '配送一覧の「数量/kg」で足しています。kg が空の行は規格の「2本」などをそのまま別に出します' + esc(at) + '　<b>← 表は横にスクロールできます →</b>';
     var T = {}, tot = {}, all = pNew();
-    days.forEach(function(d){ rowsOfDay(d).forEach(function(r){ var k = r.meat || '肉の種類が不明'; var t = T[k] = T[k] || {}; pAdd(t[d] = t[d] || pNew(), r); }); });
+    var I = {};   // 肉の種類 → 品目 → 日
+    days.forEach(function(d){ rowsOfDay(d).forEach(function(r){
+      var k = planMeat(r); var t = T[k] = T[k] || {}; pAdd(t[d] = t[d] || pNew(), r);
+      var it = r.item || '品目なし', ii = (I[k] = I[k] || {}), x = ii[it] = ii[it] || {}; pAdd(x[d] = x[d] || pNew(), r);
+    }); });
     var keys = Object.keys(T).sort(function(a, b){ return (a === '肉の種類が不明') - (b === '肉の種類が不明') || planRank(a) - planRank(b); }), g = '';
     keys.forEach(function(k){
       var gg = k === '肉の種類が不明' ? '？' : planGrp(k);
@@ -908,7 +923,12 @@ function renderPlan(){
       var s = pNew();
       days.forEach(function(d){ var x = T[k][d]; if (x) { pMerge(s, x); pMerge(tot[d] = tot[d] || pNew(), x); } });
       pMerge(all, s);
-      h += '<tr><th>'+esc(k)+'</th>'+days.map(function(d){ return pCell(T[k][d]); }).join('')+pCell(s, 'sum')+'</tr>';
+      var op = !!PLAN_OPEN[k], its = Object.keys(I[k] || {}).sort();
+      h += '<tr><th><span class="mk">'+esc(k)+'<button type="button" class="itb'+(op?' on':'')+'" data-k="'+esc(k)+'">'+(op?'▲ 閉じる':'▼ 品目 '+its.length)+'</button></span></th>'+days.map(function(d){ return pCell(T[k][d]); }).join('')+pCell(s, 'sum')+'</tr>';
+      if (op) { its.forEach(function(it){
+        var si = pNew(); days.forEach(function(d){ if (I[k][it][d]) { pMerge(si, I[k][it][d]); } });
+        h += '<tr class="it"><th>'+esc(it)+'</th>'+days.map(function(d){ return pCell(I[k][it][d]); }).join('')+pCell(si, 'sum')+'</tr>';
+      }); }
     });
     if (!keys.length) { h += '<tr><th>注文なし</th>'+days.map(function(){ return '<td class="z">—</td>'; }).join('')+'<td class="z sum">—</td></tr>'; }
     h += '<tr class="tot"><th>合計</th>'+days.map(function(d){ return pCell(tot[d]); }).join('')+pCell(all, 'sum')+'</tr>';
@@ -946,6 +966,9 @@ function renderPlan(){
   var sx = $('planTbl').scrollLeft;
   $('planTbl').innerHTML = '<table>'+head+'<tbody>'+h+'</tbody></table>';
   $('planTbl').scrollLeft = sx;
+  [].forEach.call($('planTbl').querySelectorAll('.itb'), function(b){ b.onclick = function(){
+    var k = b.getAttribute('data-k'); PLAN_OPEN[k] = !PLAN_OPEN[k]; renderPlan();
+  }; });
 }
 // 上のタブ：集計／肉の種類別の使用数量／納品先ごとの注文
 [].forEach.call(document.querySelectorAll('#vtabs button'), function(b){ b.onclick = function(){
