@@ -30,9 +30,9 @@
   /* 注文タブ：天柳事業所管理（同じ場所の tenryu.html）を中に表示する */
   .tyv { position: relative; background: #fff; }
   .tyv[hidden] { display: none; }
+  body.tyOn .app { min-height: 0; }
   .tyv iframe { display: block; width: 100%; height: 100%; border: 0; }
   .tyld { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 14px; }
-  body.tyOn { overflow: hidden; }
   .ordc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; text-align: center; line-height: 1.6; }
   .ordc h3 { margin: 0 0 6px; font-size: 18px; }
   .ordc p { margin: 0 0 14px; font-size: 13.5px; color: var(--faint); }
@@ -1601,14 +1601,20 @@
             // スマホ幅では上の4つのボタン（注文数・製造・集計・配送）を1行に収める（はみ出して「配送」が切れないように）
             '@media (max-width: 440px) { #vtabs button { flex: 1 1 0; min-width: 0; padding: 9px 2px; font-size: 13.5px; text-align: center; } }' +
             '@media (max-width: 350px) { #vtabs { gap: 4px; } #vtabs button { font-size: 12px; } }'; d.head.appendChild(st); } catch (e) {}
-        f.style.visibility = ''; var ld = w.querySelector('.tyld'); if (ld) { ld.remove(); }
+        f.style.visibility = ''; tySize(); var ld = w.querySelector('.tyld'); if (ld) { ld.remove(); }
       });
       w.appendChild(f);
     }
     tySize();
   }
-  function tySize() { var w = $('tyv'); if (w.hidden) { return; } var t = document.querySelector('.top').getBoundingClientRect().bottom; w.style.height = Math.max(320, window.innerHeight - Math.max(0, t)) + 'px'; }
-  window.addEventListener('resize', tySize);
+  // 高さ＝画面の高さ−上の帯。文字「大」（zoom 1.15）のときは割り戻す（そのままだと下がはみ出して見えない）
+  function tySize() {
+    var w = $('tyv'); if (w.hidden) { return; }
+    var z = parseFloat(getComputedStyle($('app')).zoom) || 1, t = document.querySelector('.top').getBoundingClientRect().bottom;
+    var vh = document.documentElement.clientHeight || window.innerHeight;
+    w.style.height = Math.max(300, Math.floor((Math.min(vh, window.innerHeight) - Math.max(0, t)) / z)) + 'px';
+  }
+  window.addEventListener('resize', tySize); window.addEventListener('orientationchange', function () { setTimeout(tySize, 300); });
   function ordLinkHtml() {
     return '<div class="ordc"><h3>🥩 天柳事業所管理</h3><p>集計・先の注文の確認ができます。<br>新しい入口（iPhone用のURL）から開くと、このタブの中に表示されます。</p>' +
       '<a class="btn" href="' + TY_URL + '">天柳事業所管理を開く</a></div>';
@@ -1617,7 +1623,7 @@
     S.screen = ''; S.tab = tab;
     if (tab === 'min') { S.minDate = date || S.minDate; }
     if (tab === 'cal') { S.calSel = date || S.calSel; }
-    render(); window.scrollTo(0, 0); setTimeout(tySize, 0);
+    render(); window.scrollTo(0, 0); setTimeout(tySize, 0); setTimeout(tySize, 400);
     var el = tab === 'cal' && sec ? $('sec-' + sec) : tab === 'cal' && date ? $('day-' + date) : null;
     if (el) { setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); }
   }
