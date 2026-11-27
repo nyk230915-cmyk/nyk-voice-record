@@ -251,9 +251,23 @@ body.planOn #plan{display:block}
 #plan .oth{display:inline-block;background:#fff4dd;color:#9a5b00;border-radius:6px;padding:0 6px;font-weight:700;font-size:13px}
 #plan tr.gh th{background:#f6f8fa;color:#3c4f61;font-size:13px;padding:5px 10px} #plan tr.gh td{background:#f6f8fa}
 #plan tr.tot th,#plan tr.tot td{background:#2f6f4f;color:#fff;border:0} #plan tr.tot td small{color:#d6ebe0} #plan tr.tot td.sum{background:#24583e}
+#plan td.hz{text-align:left;font-size:15px;line-height:1.6;color:#3c4f61}
+#plan td.hz .tc{display:block;white-space:nowrap} #plan td.hz .tc i{font-style:normal;font-weight:700;border-radius:6px;padding:0 5px;margin-right:4px;font-size:13px}
+#plan td.hz .tc.c i{background:#e0f0fb;color:#1f5f8b} #plan td.hz .tc.f i{background:#e6e3fb;color:#4b3f9e} #plan td.hz .tc.x i{background:#eee;color:#555}
+#plan td.hz .kq{display:block;margin-top:2px} #plan td.hz .kq b,#plan td.hz .tc b{font-size:15px}
+#plan td.hz .en{display:block;font-weight:700;font-size:15px;margin-bottom:2px} #plan td.hz .en b{font-size:15px}
+#plan tr.tot td.hz{color:#fff} #plan tr.tot td.hz .tc i{background:#ffffff33;color:#fff}
 #plan td.has{text-align:center} #plan td.has .n{display:inline-block;background:#2f6f4f;color:#fff;border-radius:12px;padding:1px 10px;font-weight:700}
 #plan tbody th .mk{display:flex;align-items:center;gap:8px;justify-content:space-between}
 #plan .itb{font:inherit;font-size:12px;font-weight:700;border:1px solid #b9d3c4;background:#f3f8f5;color:#2f6f4f;border-radius:12px;padding:2px 9px;white-space:nowrap}
+@media (max-width:640px){
+  #plan tbody th{white-space:normal;min-width:96px;max-width:118px;font-size:13px;padding:6px 8px;line-height:1.3;overflow-wrap:anywhere}
+  #plan thead th:first-child{max-width:118px;white-space:normal}
+  #plan tbody th .mk{flex-direction:column;align-items:flex-start;gap:3px}
+  #plan .itb{font-size:11px;padding:1px 7px}
+  #plan tr.it th{padding-left:14px;font-size:12px}
+  #plan td{min-width:74px;padding:6px 7px}
+}
 #plan .itb.on{background:#2f6f4f;color:#fff;border-color:#2f6f4f}
 #plan tr.it th,#plan tr.it td{background:#fbfcf8;font-size:13px;border-bottom:1px dashed #e6ebef}
 #plan tr.it th{font-weight:400;color:#3c4f61;padding-left:22px}
@@ -278,7 +292,7 @@ body.planOn #plan{display:block}
 
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 注文数</button><button data-v="en">🚚 納品先ごと<span class="lg2">の注文</span></button></div>
+<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 注文数</button><button data-v="en">🚚 配送</button></div>
 <div id="plan">
   <div class="pwrap">
     <div class="psel" id="planSel"></div>
@@ -879,6 +893,24 @@ function pQty(x){
   return p.join(' ');
 }
 function pCell(x, cls){ return pEmpty(x) ? '<td class="z '+(cls||'')+'">—</td>' : '<td class="'+(cls||'')+'">'+pQty(x).replace('</small> <span', '</small><br><span')+'</td>'; }
+// 配送：チルド／冷凍の件数と個口数
+function hzNew(){ return { c: 0, ck: 0, f: 0, fk: 0, x: 0, xk: 0, q: pNew(), en: {} }; }
+function hzAdd(h, r){
+  var t = String(r.tmp || ''), k = parseFloat(r.ko); k = isNaN(k) ? 0 : k;
+  if (/ﾁﾙﾄﾞ|チルド/.test(t)) { h.c++; h.ck += k; } else if (/冷凍/.test(t)) { h.f++; h.fk += k; } else { h.x++; h.xk += k; }
+  pAdd(h.q, r); h.en[r.en] = 1;
+}
+function hzMerge(a, b){ ['c','ck','f','fk','x','xk'].forEach(function(n){ a[n] += b[n]; }); pMerge(a.q, b.q); Object.keys(b.en).forEach(function(e){ a.en[e] = 1; }); }
+function hzCell(h, cls, all, withEn){
+  if (!all && (!h || (!h.c && !h.f && !h.x))) { return '<td class="z '+(cls||'')+'">—</td>'; }
+  var line = function(c, lab, n, k){ return '<span class="tc '+c+'"><i>'+lab+'</i><b>'+pNum(k)+'</b>個口</span>'; }, o = '';
+  if (withEn) { o += '<span class="en">納品先：<b>'+Object.keys(h.en).length+'</b>件</span>'; }
+  if (all || h.c) { o += line('c', 'チルド', h.c, h.ck); }
+  if (all || h.f) { o += line('f', '冷凍', h.f, h.fk); }
+  if (h.x) { o += line('x', 'その他', h.x, h.xk); }
+  o += '<span class="kq">'+(pEmpty(h.q) ? '—' : pQty(h.q))+'</span>';
+  return '<td class="hz '+(cls||'')+'">'+o+'</td>';
+}
 function openPlan(){
   document.body.classList.add('planOn');
   $('planTbl').innerHTML = '<div class="empty">読み込んでいます…</div>';
@@ -935,35 +967,32 @@ function renderPlan(){
     if (!keys.length) { h += '<tr><th>注文なし</th>'+days.map(function(){ return '<td class="z">—</td>'; }).join('')+'<td class="z sum">—</td></tr>'; }
     h += '<tr class="tot"><th>合計</th>'+days.map(function(d){ return pCell(tot[d]); }).join('')+pCell(all, 'sum')+'</tr>';
   } else {
-    $('planNote').innerHTML = '<span class="chipN">○件</span> 注文あり　<span class="chipM">納品日</span> 納品先の納品日なのに、まだ注文がない日　— 注文なし' + esc(at) + '　<b>← 表は横にスクロールできます →</b>';
+    $('planNote').innerHTML = 'チルド・冷凍の個口数と合計kg です。kg が空の行は「2本」などを別に出します　<span class="chipM">納品日</span> 納品先の納品日なのに、まだ注文がない日　— 注文なし' + esc(at) + '　<b>← 表は横にスクロールできます →</b>';
     var list = (PLAN.nd || []).slice();
     // 納品先別納品日に無い納品先でも、注文があれば下に足す
     days.forEach(function(d){ rowsOfDay(d).forEach(function(r){ if (!list.some(function(n){ return n.en === r.en; })) { list.push({ en: r.en, wd: [0,0,0,0,0] }); } }); });
-    var dayT = {}, dayC = {}, dayE = {}, allT = pNew(), allC = 0;
+    var dayH = {}, allH = hzNew();
     list.forEach(function(n){
       var rs = {}, any = false;
       days.forEach(function(d){ rs[d] = rowsOfDay(d).filter(function(r){ return r.en === n.en; }); if (rs[d].length) { any = true; } });
       if (PLAN_HIDE.indexOf(n.en) >= 0 && !any) { return; }
-      var enT = pNew(), c = 0;
+      var enH = hzNew(), c = 0;
       var tds = days.map(function(d){
         var w = new Date(d+'T00:00:00').getDay();
         if (rs[d].length) {
-          var x = pNew(); rs[d].forEach(function(r){ pAdd(x, r); });
-          pMerge(enT, x); pMerge(dayT[d] = dayT[d] || pNew(), x); pMerge(allT, x);
-          c += rs[d].length; dayC[d] = (dayC[d] || 0) + rs[d].length; dayE[d] = (dayE[d] || 0) + 1;
-          return '<td class="has"><span class="n">'+rs[d].length+'件</span><small>'+pQty(x).replace(/<[^>]+>/g, '')+'</small></td>';
+          var x = hzNew(); rs[d].forEach(function(r){ hzAdd(x, r); });
+          hzMerge(enH, x); hzMerge(dayH[d] = dayH[d] || hzNew(), x); hzMerge(allH, x);
+          c += rs[d].length;
+          return hzCell(x);
         }
         if (w >= 1 && w <= 5 && n.wd && n.wd[w-1]) { return '<td class="miss"><span>納品日</span></td>'; }
         return '<td class="z">—</td>';
       });
-      allC += c;
       var wds = ['月','火','水','木','金'].filter(function(x, i){ return n.wd && n.wd[i]; }).join('・') || '決まりなし';
       h += '<tr><th>'+esc(shortEn(n.en))+'<span class="en-sub">納品日 '+wds+'</span></th>'+tds.join('')
-        +(c ? '<td class="sum">'+pQty(enT)+'<span class="sm" style="color:#66788a">'+c+'件</span></td>' : '<td class="z sum">—</td>')+'</tr>';
+        +hzCell(c ? enH : null, 'sum')+'</tr>';
     });
-    h += '<tr class="tot"><th>合計</th>'+days.map(function(d){
-      return '<td>'+(dayT[d] ? pQty(dayT[d]) : '—')+'<span class="sm">'+(dayC[d]||0)+'件・'+(dayE[d]||0)+'納品先</span></td>';
-    }).join('')+'<td class="sum">'+(allC ? pQty(allT) : '—')+'<span class="sm">'+allC+'件</span></td></tr>';
+    h += '<tr class="tot"><th>合計</th>'+days.map(function(d){ return hzCell(dayH[d] || hzNew(), '', true, true); }).join('')+hzCell(allH, 'sum', true, true)+'</tr>';
   }
   var sx = $('planTbl').scrollLeft;
   $('planTbl').innerHTML = '<table>'+head+'<tbody>'+h+'</tbody></table>';
