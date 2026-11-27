@@ -26,14 +26,17 @@
   .logo-en { font-family: Montserrat, sans-serif; font-weight: 900; font-size: 21px; color: #fff; letter-spacing: 2px; }
   .logo-jp { font-weight: 900; font-size: 15px; color: #dbe4ee; border-left: 2px solid rgba(255,255,255,.3); padding-left: 10px; flex: 1; white-space: nowrap; }
   .me { font-size: 12px; color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); border-radius: 14px; padding: 4px 10px; font-weight: 700; white-space: nowrap; }
-  .menu { position: relative; display: inline-flex; }
-  .menu[hidden], .menu-pop[hidden] { display: none; }
-  .menuBtn { font-size: 18px; line-height: 1; color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); border-radius: 10px; padding: 5px 10px; font-weight: 700; }
-  .menu-pop { position: absolute; right: 0; top: calc(100% + 8px); min-width: 220px; background: #fff; border-radius: 12px; box-shadow: 0 8px 26px rgba(0,0,0,.25); padding: 6px; z-index: 40; display: grid; gap: 2px; }
-  .menu-pop a { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; color: var(--ink, #1d2733); text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap; }
-  .menu-pop a:active, .menu-pop a:hover { background: #eef2f6; }
-  .menu-pop small { display: block; font-weight: 400; font-size: 11px; color: #6b7785; }
   .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  /* 注文タブ：天柳事業所管理（同じ場所の tenryu.html）を中に表示する */
+  .tyv { position: relative; background: #fff; }
+  .tyv[hidden] { display: none; }
+  .tyv iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .tyld { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 14px; }
+  body.tyOn { overflow: hidden; }
+  .ordc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; text-align: center; line-height: 1.6; }
+  .ordc h3 { margin: 0 0 6px; font-size: 18px; }
+  .ordc p { margin: 0 0 14px; font-size: 13.5px; color: var(--faint); }
+  .ordc a.btn { display: block; text-decoration: none; }
   .tabs button { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px 0 5px; font-size: 12px; color: var(--faint); font-weight: 700; background: none; border: 0; border-bottom: 3px solid transparent; }
   .tabs em { font-style: normal; font-size: 17px; line-height: 1.25; }
   .tabs .on { color: var(--accent); border-bottom-color: var(--accent); }
@@ -453,6 +456,7 @@
   .ntf-bt { display: flex; gap: 8px; padding: 0 16px 16px; }
   .ntf-bt button { flex: 1; border-radius: 12px; font-size: 16px; font-weight: 800; padding: 12px 0; border: 2px solid var(--accent); background: #fff; color: var(--accent); }
   .ntf-bt .ok { background: var(--accent); color: #fff; }
+  @media (max-width: 400px) { .ntf-bt button { font-size: 14px; padding: 12px 4px; white-space: nowrap; } .ntf-bt button.ok { flex: 1.25; } }
   .ftn-bd li { margin-bottom: 6px; } .ftn-bd li small { display: block; font-size: 13px; color: var(--faint); font-weight: 700; line-height: 1.55; }
   .ftn-note { margin: 0 16px 14px; background: #eef4fb; color: var(--blue); border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 800; line-height: 1.6; }
   .toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(29,35,41,.92); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 18px; z-index: 30; white-space: nowrap; }
@@ -462,11 +466,12 @@
 <body>
 <div class="app" id="app">
   <div class="top">
-    <div class="bar"><span class="logo-en">NYK</span><span class="logo-jp">インフォメーション</span><button type="button" class="me" id="me" hidden></button><span class="menu" id="menuWrap" hidden><button type="button" class="menuBtn" id="menuBtn" aria-haspopup="true" aria-expanded="false" title="メニュー">☰</button><span class="menu-pop" id="menuPop" hidden><a href="https://nyk230915-cmyk.github.io/nyk-voice-record/tenryu.html">🥩<span>天柳事業所管理<small>集計・先の注文の確認</small></span></a></span></span></div>
+    <div class="bar"><span class="logo-en">NYK</span><span class="logo-jp">インフォメーション</span><button type="button" class="me" id="me" hidden></button></div>
     <nav class="tabs" id="tabs" hidden>
       <button type="button" data-tab="home"><em>🏠</em>ホーム</button>
-      <button type="button" data-tab="min"><em>📝</em>議事録</button>
+      <button type="button" data-tab="ord"><em>🥩</em>注文</button>
       <button type="button" data-tab="cal"><em>🗓</em>カレンダー</button>
+      <button type="button" data-tab="min"><em>📝</em>議事録</button>
       <button type="button" data-tab="search"><em>🔍</em>検索</button>
     </nav>
     <div class="strip" id="strip" hidden></div>
@@ -486,6 +491,7 @@
   </form>
 
   <div class="pad" id="view" hidden></div>
+  <div class="tyv" id="tyv" hidden><div class="tyld">天柳事業所管理を読み込み中…</div></div>
 </div>
 <div id="layer"></div>
 <div id="upd"></div>
@@ -1499,7 +1505,7 @@
   // 📖 使い方（合言葉の前でも見られる）
   // ============================================================
   // 画像マニュアル（使い方の一番上）。画像はサーバーの manuals シートから押したときに読む
-  var MANUALS = [['kg', '🍗', 'からあげの数量の入れ方'], ['kd', '🚚', '店舗直送の入れ方'], ['ty', '🏭', '天柳事業所の使用数の入れ方'], ['mv', '🐔', '在庫の動きの直し方'], ['st', '🐔', '鶏もも200upの在庫'], ['tm', '🥩', '天柳事業所管理の開き方']];
+  var MANUALS = [['kg', '🍗', 'からあげの数量の入れ方'], ['kd', '🚚', '店舗直送の入れ方'], ['ty', '🏭', '天柳事業所の使用数の入れ方'], ['mv', '🐔', '在庫の動きの直し方'], ['st', '🐔', '鶏もも200upの在庫']];
   function manOpen(id) {
     var m = MANUALS.filter(function (x) { return x[0] === id; })[0]; if (!m) { return; }
     S.manC = S.manC || {};
@@ -1520,7 +1526,7 @@
       '<div class="hpl">議事録・作業予定・仕入・要発注をまとめて見られる社内アプリです。チェックは全員で共有されます。</div>' +
       sec('📘', '画像マニュアル（押すと開きます）', '<div class="mnl">' + MANUALS.map(function (m) { return '<button type="button" class="mnb" data-man="' + m[0] + '"><span class="ic">' + m[1] + '</span>' + esc(m[2]) + '<span class="ar">開く ›</span></button>'; }).join('') + '</div>') +
       sec('🔑', 'はじめて開くとき', ol(['URLを開いて <b>合言葉</b> を入れ「開く」（合言葉はNYK全体チャットで確認）', '<b>自分の名前</b> を選んで「○○ で始める」', '次からは開くだけでホーム画面が出ます'])) +
-      sec('📱', '画面の上の切り替え（タブ）', ul(['<b>🏠 ホーム</b>：今日やること・明日やること・予定のまとめ', '<b>📝 議事録</b>：ミーティングの内容（過去の分も）', '<b>🗓 カレンダー</b>：今日から7日間の作業・納品・仕入、要発注、今後の予定、方針', '<b>🔍 検索</b>：言葉で過去の議事録・カレンダーを探す'])) +
+      sec('📱', '画面の上の切り替え（タブ）', ul(['<b>🏠 ホーム</b>：今日やること・明日やること・予定のまとめ', '<b>🥩 注文</b>：天柳事業所管理（注文数・製造・集計・配送）。合言葉はもう一度聞かれません（新しい入口のとき）', '<b>🗓 カレンダー</b>：今日から7日間の作業・納品・仕入、要発注、今後の予定、方針', '<b>📝 議事録</b>：ミーティングの内容（過去の分も）', '<b>🔍 検索</b>：言葉で過去の議事録・カレンダーを探す'])) +
       sec('🏠', 'ホームの見方', ul(['一番上の <b>要確認・要発注・単価未登録</b> は押すと中身が開きます', '<b>昨日の残り</b>：前の日にチェックが付かなかった作業・納品・仕入（黄色い点線の枠）。前の日にチェックする項目がなければ、その前の日の分', '<b>今日の作業</b>：終わったら□を押してチェック。円グラフで進み具合がわかります', '<b>明日の作業</b>・<b>先の予定</b>（日付を押すとカレンダーへ）・<b>今後の予定</b>・<b>方針の変更</b>', '<span class="new">新規</span> は前回のミーティングで新しく入ったもの（次のミーティングで消えます）'])) +
       sec('✅', 'チェックの付け方', ul(['□を押すと ✓ が付き、<b>「✓ 関 13:52」</b> のように名前と時刻が全員に見えます', 'もう一度押すと外れます。ほかの人が付けたものを外すときは確認が出ます', '議事録のToDoとカレンダーの作業は同じものなので、どちらで付けても両方に付きます'])) +
       sec('📝', '議事録の見方', ul(['上の日付の帯を<b>横にスクロール</b>して、見たい日を押す（🗣＝ミーティングがあった日）', '下の「‹ ○○の議事録」で前後のミーティングへ', '<b>カレンダー</b>も同じように日付の帯を横にスクロールできます。灰色の7日分を押すと「今日から7日間」、それより前（過去）や先の日を押すと、その日の情報だけが出ます', '新しい議事録が入ると、議事録タブに <b style="color:#e0342a">●</b> が付きます'])) +
@@ -1551,7 +1557,9 @@
   function render() {
     if (!S.data) { return; }
     var named = S.screen === 'name1' || S.screen === 'name';
-    $('me').hidden = !S.name; $('me').textContent = '👤 ' + (S.name || ''); $('menuWrap').hidden = !S.name;
+    var tyIn = !named && S.screen !== 'help' && S.tab === 'ord' && !!window.NYK_API;
+    tyShow(tyIn); $('view').hidden = tyIn;
+    $('me').hidden = !S.name; $('me').textContent = '👤 ' + (S.name || '');
     $('tabs').hidden = S.screen === 'name1';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var tab = b.getAttribute('data-tab');
@@ -1575,13 +1583,41 @@
     if (named) { v.innerHTML = nameHtml(S.screen === 'name1'); return; }
     if (S.screen === 'help') { strip.hidden = true; document.querySelectorAll('#tabs button').forEach(function (b) { b.classList.remove('on'); }); v.innerHTML = helpHtml(); return; }
     if (S.tab === 'min') { store.set('nykMinSeen', minStamp()); document.querySelector('#tabs [data-tab="min"]').classList.remove('dot'); }
-    v.innerHTML = S.tab === 'home' ? homeHtml() : S.tab === 'min' ? minHtml() : S.tab === 'cal' ? calHtml() : searchHtml();
+    v.innerHTML = S.tab === 'home' ? homeHtml() : S.tab === 'ord' ? (tyIn ? '' : ordLinkHtml()) : S.tab === 'min' ? minHtml() : S.tab === 'cal' ? calHtml() : searchHtml();
+  }
+  // ---------- 注文タブ（天柳事業所管理）----------
+  // GitHub Pages 版（info.html）では同じ場所の tenryu.html を中に表示（かぎも共通なので合言葉は聞かない）。
+  // 1回作った枠は消さずに残す（タブを行き来しても入力中・表示中のものが消えないように）
+  var TY_URL = 'https://nyk230915-cmyk.github.io/nyk-voice-record/tenryu.html';
+  function tyShow(on) {
+    var w = $('tyv'); w.hidden = !on; document.body.classList.toggle('tyOn', on);
+    if (!on) { return; }
+    if (!w.querySelector('iframe')) {
+      var f = document.createElement('iframe');
+      f.src = 'tenryu.html?in=nyk'; f.title = '天柳事業所管理'; f.setAttribute('allow', 'microphone; autoplay'); f.style.visibility = 'hidden';
+      f.addEventListener('load', function () {
+        // 天柳事業所管理の上の見出し（← NYKインフォメーション・温度記録へ）は中では要らないので隠す
+        try { var d = f.contentDocument, st = d.createElement('style'); st.textContent = 'body > header { display: none !important; }' +
+            // スマホ幅では上の4つのボタン（注文数・製造・集計・配送）を1行に収める（はみ出して「配送」が切れないように）
+            '@media (max-width: 440px) { #vtabs button { flex: 1 1 0; min-width: 0; padding: 9px 2px; font-size: 13.5px; text-align: center; } }' +
+            '@media (max-width: 350px) { #vtabs { gap: 4px; } #vtabs button { font-size: 12px; } }'; d.head.appendChild(st); } catch (e) {}
+        f.style.visibility = ''; var ld = w.querySelector('.tyld'); if (ld) { ld.remove(); }
+      });
+      w.appendChild(f);
+    }
+    tySize();
+  }
+  function tySize() { var w = $('tyv'); if (w.hidden) { return; } var t = document.querySelector('.top').getBoundingClientRect().bottom; w.style.height = Math.max(320, window.innerHeight - Math.max(0, t)) + 'px'; }
+  window.addEventListener('resize', tySize);
+  function ordLinkHtml() {
+    return '<div class="ordc"><h3>🥩 天柳事業所管理</h3><p>集計・先の注文の確認ができます。<br>新しい入口（iPhone用のURL）から開くと、このタブの中に表示されます。</p>' +
+      '<a class="btn" href="' + TY_URL + '">天柳事業所管理を開く</a></div>';
   }
   function go(tab, date, sec) {
     S.screen = ''; S.tab = tab;
     if (tab === 'min') { S.minDate = date || S.minDate; }
     if (tab === 'cal') { S.calSel = date || S.calSel; }
-    render(); window.scrollTo(0, 0);
+    render(); window.scrollTo(0, 0); setTimeout(tySize, 0);
     var el = tab === 'cal' && sec ? $('sec-' + sec) : tab === 'cal' && date ? $('day-' + date) : null;
     if (el) { setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); }
   }
@@ -1627,7 +1663,7 @@
     { id: 'kd-1124', d: '2026-11-24', t: '店舗直送の入力', s: '「今日の納品数」の「✎編集」で、からやま各店への直送の数を入れられます', man: 'kd' },
     { id: 'mv-1124', d: '2026-11-24', t: '在庫の動きの直し方', s: '鶏もものボードを押して出る「在庫の動き」の「✎編集」で、解凍・仕入・アメスク納品などの数を直せます（カレンダーの文字も変わります）', man: 'mv' },
     { id: 'st200-1127', d: '2026-11-27', t: '鶏もも200upの在庫', s: 'ホームの「鶏ももの在庫」に鶏もも200upのボードが増えました（260/280の左）。押すと在庫の動き、「入力」で天柳事業所で使った数を入れられます', man: 'st' },
-    { id: 'tm-1127', d: '2026-11-27', t: '天柳事業所管理', s: '右上の「☰」から「🥩 天柳事業所管理」を開けます（集計・先の注文の確認）', man: 'tm' }
+    { id: 'ord-1127', d: '2026-11-27', t: '「注文」タブ（天柳事業所管理）', s: '下のタブに「🥩 注文」が増え、天柳事業所管理をこのアプリの中で開けるようになりました。タブの並びは ホーム・注文・カレンダー・議事録・検索 です' }
   ];
   function featNew() {
     var seen = (store.get('nykFeatSeen') || '').split(','), lim = addDays(today(), -14);
@@ -1716,7 +1752,7 @@
   }
   function showLock() {
     store.del('nykKey'); S.key = ''; S.data = null;
-    $('lock').hidden = false; $('tabs').hidden = true; $('strip').hidden = true; $('view').hidden = true; $('me').hidden = true; $('menuWrap').hidden = true;
+    $('lock').hidden = false; $('tabs').hidden = true; $('strip').hidden = true; $('view').hidden = true; $('me').hidden = true;
     setTimeout(function () { $('pass').focus(); }, 50);
   }
   $('lock').addEventListener('submit', function (ev) {
@@ -1739,9 +1775,6 @@
   $('tabs').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) { go(b.getAttribute('data-tab')); } });
   $('me').addEventListener('click', function () { showName(false); });
   // 右上のメニュー（天柳事業所管理を開く）
-  function menuSet(on) { $('menuPop').hidden = !on; $('menuBtn').setAttribute('aria-expanded', on ? 'true' : 'false'); }
-  $('menuBtn').addEventListener('click', function (ev) { ev.stopPropagation(); menuSet($('menuPop').hidden); });
-  document.addEventListener('click', function (ev) { if (!$('menuPop').hidden && !ev.target.closest('#menuWrap')) { menuSet(false); } });
   // 店舗直送の入力（選んだ店舗・数を覚える。合計だけ書き直す）
   function mvInput(ev) {
     var el = ev.target, e = S.mvEdit; if (!e || !el.hasAttribute) { return; }
