@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>天柳事業所 集計</title>
+<title>天柳事業所管理</title>
 <meta name="robots" content="noindex">
 <script>window.API_URL = "https://script.google.com/macros/s/AKfycbwWltlwQFGzXvHzJ5O-uQo_plTn-8-VkT3m4g75G1IkFw6mVA8jDsgLMI2egTO8xr6n/exec";</script>
 <meta charset="utf-8">
@@ -211,16 +211,23 @@ body.tab #vJump{display:inline-block}
 @media (max-width:520px){.vset{grid-template-columns:1fr}}
 /* 先の注文の確認（配送一覧から） */
 header .hbtns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-#planBtn{font:inherit;font-size:13px;font-weight:700;color:#fff;background:#2f6f4f;border:1px solid #8fc3a6;border-radius:8px;padding:5px 10px;white-space:nowrap}
-body.locked #planBtn{display:none}
+header a.hb{color:#fff;background:#ffffff1f;border:1px solid #ffffff55;border-radius:8px;padding:5px 10px;font-weight:700}
+#vtabs{display:flex;gap:6px;margin:0 0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#vtabs::-webkit-scrollbar{display:none}
+@media (max-width:640px){#vtabs .lg2{display:none} #vtabs button{padding:9px 11px;font-size:14px}}
+#vtabs button{font:inherit;flex:none;padding:9px 14px;border:0;border-radius:10px;background:#dfe6ec;color:#56687a;font-weight:700;font-size:15px;white-space:nowrap}
+#vtabs button.on{background:#fff;color:var(--acc);box-shadow:0 -3px 0 var(--acc) inset,0 1px 3px #0002}
+#vtabs button[data-v=meat].on,#vtabs button[data-v=en].on{color:#2f6f4f;box-shadow:0 -3px 0 #2f6f4f inset,0 1px 3px #0002}
+body.planOn .wrap>.card,body.planOn #result{display:none}
 header h1{white-space:nowrap}
-@media (max-width:480px){header{padding:10px 12px} header h1{font-size:15px} #planBtn .lg{display:none} header .hbtns{gap:8px;flex-wrap:nowrap}}
-#plan{display:none;position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
-body.planOn #plan{display:block} body.planOn{overflow:hidden}
+@media (max-width:480px){header{padding:10px 12px} header h1{font-size:15px} header .lg{display:none} header .hbtns{gap:8px;flex-wrap:nowrap}}
+#plan{display:none}
+body.planOn #plan{display:block}
+#plan .ptitle{font-weight:700;color:#2f6f4f;font-size:15px;margin:2px 0 8px}
 #plan .pbar{position:sticky;top:0;z-index:3;background:#2f6f4f;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px}
 #plan .pbar button{font:inherit;font-size:14px;background:#ffffff22;color:#fff;border:1px solid #ffffff66;border-radius:8px;padding:6px 12px}
 #plan .pbar h2{font-size:17px;margin:0;flex:1}
-#plan .pwrap{padding:10px 16px 24px}
+#plan .pwrap{padding:0 0 24px}
 #plan .ptabs{display:flex;gap:6px;margin-bottom:10px}
 #plan .ptabs button{font:inherit;padding:8px 14px;border:0;border-radius:8px 8px 0 0;background:#dfe6ec;color:#56687a;font-weight:700;font-size:15px}
 #plan .ptabs button.on{background:#fff;color:#2f6f4f;box-shadow:0 -3px 0 #2f6f4f inset}
@@ -253,7 +260,7 @@ body.planOn #plan{display:block} body.planOn{overflow:hidden}
 </style>
 </head>
 <body>
-<header><h1>🥩 天柳事業所 集計</h1><span class="hbtns"><button id="planBtn">📅 先の注文<span class="lg">の確認</span></button><a href="./">🎙️ 温度記録へ</a></span></header>
+<header><h1>🥩 天柳事業所管理</h1><span class="hbtns"><a class="hb" href="https://script.google.com/macros/s/AKfycbyPyrxRmq0bkNTfc2An1kmiNYEf6FEtfsQ411QPHxh98MYoT839gxq-z0ZmVAxKB0pxlA/exec">← NYK<span class="lg">インフォメーション</span></a><a href="./">🎙️ 温度記録<span class="lg">へ</span></a></span></header>
 <div id="gate"><div class="card">
 <h2>合言葉を入れてください</h2>
 <p>NYKインフォメーションと同じ合言葉です。</p>
@@ -266,6 +273,15 @@ body.planOn #plan{display:block} body.planOn{overflow:hidden}
 <div id="iosTap"><div class="box"><div class="t">🔊 音声集計の準備</div><div class="sub" id="iosMsg">iPhone・iPad は、読み上げの声を出すために最初に1回押す必要があります。</div><button id="iosGo">押して音声集計をはじめる</button></div></div>
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
+<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 肉の種類別<span class="lg2">の使用数量</span></button><button data-v="en">🚚 納品先ごと<span class="lg2">の注文</span></button></div>
+<div id="plan">
+  <div class="pwrap">
+    <div class="ptitle">先の注文の確認（配送一覧から）</div>
+    <div class="psel" id="planSel"></div>
+    <div class="pnote" id="planNote"></div>
+    <div class="tw" id="planTbl"><div class="empty">読み込んでいます…</div></div>
+  </div>
+</div>
 <div class="card top" id="topCard">
   <div id="topSum"><span id="topSumTxt"></span><button class="sbtn" id="topOpen">変更 ▼</button></div>
   <div id="topFull">
@@ -339,15 +355,6 @@ body.planOn #plan{display:block} body.planOn{overflow:hidden}
 </details>
 </div>
 <div id="result"></div>
-</div>
-<div id="plan">
-  <div class="pbar"><button id="planBack">← 集計表に戻る</button><h2>先の注文の確認（配送一覧から）</h2></div>
-  <div class="pwrap">
-    <div class="ptabs"><button data-t="meat">肉の種類別の使用数量</button><button data-t="en">納品先ごとの注文</button></div>
-    <div class="psel" id="planSel"></div>
-    <div class="pnote" id="planNote"></div>
-    <div class="tw" id="planTbl"><div class="empty">読み込んでいます…</div></div>
-  </div>
 </div>
 
 <script>
@@ -875,7 +882,6 @@ function openPlan(){
 }
 function renderPlan(){
   if (!PLAN) { return; }
-  [].forEach.call(document.querySelectorAll('#plan .ptabs button'), function(b){ b.classList.toggle('on', b.getAttribute('data-t') === PLAN_TAB); });
   var win = planDates();
   $('planSel').innerHTML = '<span class="lb">納品日（明日から7日先・複数選べます）</span>' + win.map(function(d){
     var on = PLAN_SEL.indexOf(d) >= 0;
@@ -943,9 +949,15 @@ function renderPlan(){
   $('planTbl').innerHTML = '<table>'+head+'<tbody>'+h+'</tbody></table>';
   $('planTbl').scrollLeft = sx;
 }
-$('planBtn').onclick = openPlan;
-$('planBack').onclick = function(){ document.body.classList.remove('planOn'); };
-[].forEach.call(document.querySelectorAll('#plan .ptabs button'), function(b){ b.onclick = function(){ PLAN_TAB = b.getAttribute('data-t'); $('planTbl').scrollLeft = 0; renderPlan(); }; });
+// 上のタブ：集計／肉の種類別の使用数量／納品先ごとの注文
+[].forEach.call(document.querySelectorAll('#vtabs button'), function(b){ b.onclick = function(){
+  var v = b.getAttribute('data-v');
+  [].forEach.call(document.querySelectorAll('#vtabs button'), function(x){ x.classList.toggle('on', x === b); });
+  if (v === 'tally') { document.body.classList.remove('planOn'); return; }
+  var was = document.body.classList.contains('planOn');
+  PLAN_TAB = v; $('planTbl').scrollLeft = 0;
+  if (was && PLAN) { renderPlan(); } else { openPlan(); }
+}; });
 
 // zip の中から必要なファイルだけ取り出す
 function unzip(buf, wantFn){
