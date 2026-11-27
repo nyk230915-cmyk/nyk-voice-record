@@ -38,11 +38,6 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 #tmode{display:flex;border:1px solid var(--acc);border-radius:10px;overflow:hidden}
 #tmode button{flex:1;font:inherit;font-size:15px;font-weight:700;border:0;background:#fff;color:var(--acc);padding:7px 6px}
 #tmode button.on{background:var(--acc);color:#fff}
-#iosTap{display:none;position:fixed;inset:0;z-index:30;background:rgba(20,30,45,.55);padding:16px;align-items:center;justify-content:center}
-#iosTap.on{display:flex}
-#iosTap .box{max-width:420px;width:100%;background:#fff;border-radius:14px;padding:18px;text-align:center}
-#iosTap .t{font-size:18px;font-weight:800;margin-bottom:8px}
-#iosTap button{width:100%;margin-top:14px;font:inherit;font-size:18px;font-weight:700;border:0;border-radius:12px;background:var(--acc);color:#fff;padding:16px}
 #addAlert{display:none;position:fixed;left:0;right:0;top:0;z-index:20;padding:12px}
 #addAlert.on{display:block}
 #addAlert .box{max-width:560px;margin:0 auto;background:#fff;border:3px solid #e67e22;border-radius:14px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
@@ -61,6 +56,8 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 #micBtn.wake{background:#5b6f86}
 #micBtn.cmd{background:var(--ok);animation:pulse 1.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,76,.45)}70%{box-shadow:0 0 0 12px rgba(31,138,76,0)}100%{box-shadow:0 0 0 0 rgba(31,138,76,0)}}
+#iosHint{display:none;font-size:13px;color:var(--sub);background:var(--acc2);border-radius:10px;padding:8px 10px;margin-top:8px;line-height:1.6}
+body.iosCold #iosHint{display:block}
 #prompt{font-size:15px;font-weight:700;text-align:center;margin-top:6px;white-space:pre-line}
 #prompt:empty,#heard:empty{display:none}
 #heard{font-size:12px;color:var(--sub);text-align:center;margin-top:2px}
@@ -270,7 +267,6 @@ body.planOn #plan{display:block}
 <div id="gateMsg"></div>
 </div></div>
 
-<div id="iosTap"><div class="box"><div class="t">🔊 音声集計の準備</div><div class="sub" id="iosMsg">iPhone・iPad は、読み上げの声を出すために最初に1回押す必要があります。</div><button id="iosGo">押して音声集計をはじめる</button></div></div>
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
 <div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 肉の種類別<span class="lg2">の使用数量</span></button><button data-v="en">🚚 納品先ごと<span class="lg2">の注文</span></button></div>
@@ -302,6 +298,7 @@ body.planOn #plan{display:block}
 <div class="card top" id="voice">
   <div id="prog"><span>完了 <b id="pDone">0</b>/<span id="pAll">0</span></span><div id="bar"><i></i></div><span>目方 <b id="pW">0</b>/<span id="pWAll">0</span></span></div>
   <button id="micBtn">🎤 音声で集計する</button>
+  <div id="iosHint">🔊 開いたあと、最初にこのボタンを1回押してください。<br>押すと「音声集計の準備ができました」と声が出て、「集計」を待ち始めます。</div>
   <div id="prompt"></div>
   <div id="heard"></div>
   <button class="sbtn" id="nowBtn">すぐに集計を始める</button>
@@ -339,6 +336,7 @@ body.planOn #plan{display:block}
   <label class="set"><span>名前（だれが集計したか残します）</span><input id="optName" style="width:9em;font:inherit;padding:6px;border:1px solid var(--line);border-radius:8px"></label>
   <div class="help">
     <b>はじめ方</b>：「🎤 音声で集計する」を押して、「<b>集計</b>」か「<b>集計を始める</b>」と話します。「ピピッ」と鳴ったら話せます。<br>
+    <b>開いたとき</b>：自動では始まりません。最初に「🎤 音声で集計する」を1回押すと「音声集計の準備ができました」と声が出て、「集計」を待ち始めます（声が出ないときはもう一度押します）。<br>
     <b>話し方</b>（番号＝センター納品日の列の数字）<br>
     ・「<b>5番 完了</b>」… 5番を完了にする<br>
     ・「<b>5番 3.2キロ 完了</b>」… 目方を入れて完了にする<br>
@@ -1246,6 +1244,11 @@ document.addEventListener('visibilitychange', function(){
   else if (!userOff && KEY) { micFail = 0; autoWake(); }
 });
 $('micBtn').onclick = function(){
+  if (mode === 'off' && iosCold()) {
+    if (!SELrows()) { showRes('info', '先に納品日を選んでください', ''); return; }
+    iosWarmUp(function(){ userOff = false; micFail = 0; setMode('wake'); listen(); });
+    return;
+  }
   beep(1, 0.01);   // スマホで音を出せるようにする（最初のタップで）
   if (mode === 'off') { if (!SELrows()) { showRes('info', '先に納品日を選んでください', ''); return; } userOff = false; micFail = 0; setMode('wake'); listen(); }
   else { userOff = true; setMode('off'); }
@@ -1255,7 +1258,7 @@ function SELrows(){ return selDates().some(function(d){ return rowsOf(d).length;
 // 開いたら最初から「集計」を待つ（ボタンを押さなくてよい）
 var autoTry = false;
 function autoWake(){
-  if (micBroken || mode !== 'off') { return; }
+  if (micBroken || mode !== 'off' || iosCold()) { return; }
   autoTry = true; setMode('wake'); listen();
   setTimeout(function(){ autoTry = false; }, 4000);
 }
@@ -1545,31 +1548,37 @@ $('optName').onchange = function(){ ls(K.name, this.value.trim()); };
 // iPhone・iPad：声は「押した瞬間」にしゃべらせないと出ず、しかも1回目は出ないことがある。
 // → 最初に大きなボタンを1回押してもらい、その瞬間に小さな音＋「準備ができました」を続けて流す。
 //    声が始まらなければ「もう一度押してください」と出す（2回目で必ず出る）
-function iosPrepare(){
-  if (!IOS || !window.speechSynthesis || iosWarm) { return false; }
-  $('iosTap').classList.add('on');
-  return true;
-}
-$('iosGo').onclick = function(){
-  var b = $('iosGo'), ok = false;
-  unlockAudio();
+// 開いたあと最初の1回は「音声で集計する」を押してもらう（パソコン・Android・iPhone・iPad 共通）
+var micReady = false;
+function iosCold(){ return !micReady; }
+function iosHint(){ document.body.classList.toggle('iosCold', iosCold()); }
+var iosBusy = false, warmFail = 0;
+function iosWarmUp(then){
+  if (iosBusy) { return; }
+  var ok = false, b = $('micBtn');
+  if (!window.speechSynthesis) { micReady = true; iosHint(); then(); return; }
+  iosBusy = true; unlockAudio();
+  b.textContent = '🔊 準備しています…';
   try {
     speechSynthesis.cancel();
     var u0 = new SpeechSynthesisUtterance('あ'); u0.lang = 'ja-JP'; u0.volume = 0.01; u0.rate = 2;
     var u1 = new SpeechSynthesisUtterance('音声集計の準備ができました'); u1.lang = 'ja-JP'; u1.rate = 1.15;
-    var ready = function(){ if (!$('iosTap').classList.contains('on')) { return; } $('iosTap').classList.remove('on'); if (mode === 'off' && !userOff) { micFail = 0; setMode('wake'); listen(); } };
-    u1.onstart = function(){ ok = true; iosWarm = true; setTimeout(ready, 4000); };
+    var fired = false, ready = function(){ if (fired) { return; } fired = true; iosBusy = false; iosHint(); if (mode === 'off') { then(); } };
+    u1.onstart = function(){ ok = true; iosWarm = true; micReady = true; setTimeout(ready, 4000); };
     u1.onend = function(){ if (ok) { ready(); } };
     say.u = [u0, u1];
     speechSynthesis.speak(u0); speechSynthesis.speak(u1);
   } catch(e){}
-  b.disabled = true;
   setTimeout(function(){
-    b.disabled = false;
-    if (!ok) { $('iosMsg').textContent = '声がまだ出ていません。もう一度押してください（音量・マナーモードも確かめてください）'; b.textContent = 'もう一度押す'; }
+    if (ok) { return; }
+    iosBusy = false;
+    // 2回押しても声が出ないときは、声なしで始める（読み上げが使えない端末でも集計できるように）
+    if (++warmFail >= 2) { micReady = true; iosHint(); if (mode === 'off') { then(); } return; }
+    b.textContent = '🎤 もう一度押してください';
+    $('prompt').textContent = '声がまだ出ていません。もう一度ボタンを押してください\n（音量・マナーモードも確かめてください）';
   }, 1500);
-};
-function start(){ var p = loadDates(); var waitIos = iosPrepare(); if (p && p.then) { p.then(function(){ if (!waitIos) { autoWake(); } }); } else if (!waitIos) { autoWake(); } }
+}
+function start(){ iosHint(); var p = loadDates(); if (p && p.then) { p.then(autoWake); } else { autoWake(); } }
 if (KEY) { start(); } else { lock(''); }
 </script>
 </body>
