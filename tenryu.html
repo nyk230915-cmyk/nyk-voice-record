@@ -266,7 +266,7 @@ body.planOn #plan{display:block}
 </style>
 </head>
 <body>
-<header><h1>🥩 天柳事業所管理</h1><span class="hbtns"><a class="hb" href="https://script.google.com/macros/s/AKfycbyPyrxRmq0bkNTfc2An1kmiNYEf6FEtfsQ411QPHxh98MYoT839gxq-z0ZmVAxKB0pxlA/exec">← NYK<span class="lg">インフォメーション</span></a><a href="./">🎙️ 温度記録<span class="lg">へ</span></a></span></header>
+<header><h1>🥩 天柳事業所管理</h1><span class="hbtns"><a class="hb" href="./info.html">← NYK<span class="lg">インフォメーション</span></a><a href="./">🎙️ 温度記録<span class="lg">へ</span></a></span></header>
 <div id="gate"><div class="card">
 <h2>合言葉を入れてください</h2>
 <p>NYKインフォメーションと同じ合言葉です。</p>
@@ -369,6 +369,8 @@ var WD = ['日','月','火','水','木','金','土'];
 var K = { key:'nyk-voice-key-v1', name:'nyk-temp-name-v1', say:'nyk-tenryu-say-v1', sel:'nyk-tenryu-sel-v1', left:'nyk-tenryu-left-v1', mode:'nyk-tenryu-mode-v1', ack:'nyk-tenryu-ack-v1', idle:'nyk-tenryu-idle-v1' };
 function ls(k, v){ try { if (v === undefined) { return localStorage.getItem(k); } if (v === null) { localStorage.removeItem(k); return; } localStorage.setItem(k, v); } catch(e){ return null; } }
 var KEY = ls(K.key) || (function(){ try { return sessionStorage.getItem(K.key); } catch(e){ return null; } })() || '';
+// NYKインフォメーション（同じ場所の info.html）で合言葉を入れた人は、そのかぎで開ける（サーバーも受け付ける）
+if (!KEY) { KEY = ls('nykKey') || (function(){ try { return sessionStorage.getItem('nykKey'); } catch(e){ return null; } })() || ''; }
 function pad(n){ return (n<10?'0':'')+n; }
 function isoOf(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
 function isoToday(){ return isoOf(new Date()); }
