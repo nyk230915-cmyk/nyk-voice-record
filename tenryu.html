@@ -214,12 +214,57 @@ header a.hb{color:#fff;background:#ffffff1f;border:1px solid #ffffff55;border-ra
 @media (max-width:640px){#vtabs .lg2{display:none} #vtabs button{padding:9px 11px;font-size:14px}}
 #vtabs button{font:inherit;flex:none;padding:9px 14px;border:0;border-radius:10px;background:#dfe6ec;color:#56687a;font-weight:700;font-size:15px;white-space:nowrap}
 #vtabs button.on{background:#fff;color:var(--acc);box-shadow:0 -3px 0 var(--acc) inset,0 1px 3px #0002}
-#vtabs button[data-v=meat].on,#vtabs button[data-v=en].on{color:#2f6f4f;box-shadow:0 -3px 0 #2f6f4f inset,0 1px 3px #0002}
+#vtabs button[data-v=meat].on,#vtabs button[data-v=mfg].on,#vtabs button[data-v=en].on{color:#2f6f4f;box-shadow:0 -3px 0 #2f6f4f inset,0 1px 3px #0002}
 body.planOn .wrap>.card,body.planOn #result{display:none}
 header h1{white-space:nowrap}
 @media (max-width:480px){header{padding:10px 12px} header h1{font-size:15px} header .lg{display:none} header .hbtns{gap:8px;flex-wrap:nowrap}}
 #plan{display:none}
 body.planOn #plan{display:block}
+/* 製造 */
+#mfgSet{display:none} body.mfgOn #mfgSet{display:block}
+body.mfgOn #planTbl{background:none;box-shadow:none;overflow:visible}
+#plan .mcat{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;flex-basis:100%}
+#plan .mcat button{font:inherit;font-size:16px;font-weight:700;padding:9px 18px;border-radius:10px;border:2px solid #c6d3dc;background:#fff;color:#56687a}
+#plan .mcat button.on{background:#2f6f4f;border-color:#2f6f4f;color:#fff}
+#plan .mcat .mhint{font-size:12px;color:#66788a;align-self:center}
+.msec{margin-bottom:14px}
+.msec .mh{font-weight:700;font-size:16px;color:#fff;background:#3c4f61;border-radius:10px 10px 0 0;padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+.msec .mh small{font-weight:400;font-size:12px;opacity:.85}
+.msec .mh.none{background:#9aa7b3}
+.msec .tw2{overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border-radius:0 0 10px 10px;box-shadow:0 1px 3px #0002}
+#plan .msec tr.mi th{font-size:15px}
+#plan .msec tr.mi td{background:#fafcfb}
+#plan .msec .mai{display:block;font-size:12px;color:#66788a}
+#mfgSet .card{margin-top:18px}
+#mfgSet h3{margin:0 0 4px;font-size:17px}
+#mfgSet h3.ms-top{display:flex;align-items:center;justify-content:space-between;margin:0}
+#mfgSet #msTog{font:inherit;font-size:14px;font-weight:700;padding:6px 12px;border-radius:8px;border:2px solid #2f6f4f;background:#fff;color:#2f6f4f}
+#mfgSet #msBody{margin-top:6px}
+#mfgSet .ms-note{font-size:12px;color:#66788a;margin-bottom:10px;line-height:1.6}
+#mfgSet .ms-row{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid #eef1f4}
+#mfgSet .ms-row .nm{flex:1;font-weight:700;min-width:0;overflow-wrap:anywhere}
+#mfgSet .ms-row button{font:inherit;font-size:14px;width:34px;height:32px;border-radius:8px;border:1px solid #c6d3dc;background:#fff;color:#3c4f61;padding:0}
+#mfgSet .ms-row button:disabled{opacity:.3}
+#mfgSet .ms-row select{font:inherit;font-size:14px;padding:5px 6px;border-radius:8px;border:2px solid #c6d3dc;background:#fff;max-width:120px}
+#mfgSet .ms-row select.un{border-color:#e0a458;background:#fff7ec}
+#mfgSet .ms-g{font-weight:700;margin:14px 0 2px;color:#2f6f4f}
+#mfgSet .ms-st{font-size:13px;color:#2f6f4f;min-height:1.4em;margin-top:8px}
+#mfgSet .ms-inline{display:flex;gap:6px;flex-wrap:wrap}
+body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
+#plan .msec tr.sz th,#plan .msec tr.sz td{background:#e9f2fb;color:#1f4f7a;font-size:14px;font-weight:700;border-top:2px solid #b9d0e6}
+#plan .msec tr.sz.un th,#plan .msec tr.sz.un td{background:#fff3e2;color:#9a5b00;border-top-color:#e9c48f}
+#mfgSet .ms-row .nm small{display:block;font-weight:400;font-size:12px;color:#66788a}
+#mfgSet .ms-row button.del{color:#b42318}
+#mfgSet .ms-sz{border:1px solid #e1e7ec;border-radius:10px;padding:6px 8px;margin-bottom:8px}
+#mfgSet .ms-szh{font-weight:700;color:#3c4f61;margin-bottom:2px}
+#mfgSet .ms-add{display:flex;gap:6px;margin-top:6px}
+#mfgSet .ms-add input{flex:1;min-width:0;font:inherit;font-size:15px;padding:7px 9px;border:2px solid #c6d3dc;border-radius:8px}
+#mfgSet .ms-add button{font:inherit;font-weight:700;padding:7px 14px;border-radius:8px;border:0;background:#2f6f4f;color:#fff}
+#mfgSet .ms-none{font-size:13px;color:#9aa7b3;padding:6px 4px}
+#mfgSet .ms-cnt{font-size:12px;background:#fff3e2;color:#9a5b00;border-radius:10px;padding:1px 8px;margin-left:6px}
+#mfgSet .ms-done{margin-top:10px} #mfgSet .ms-done summary{cursor:pointer;color:#2563eb;font-size:14px;padding:6px 0}
+#mfgSet .ms-row select{max-width:150px}
+#mfgSet .ms-inline .ms-row{border:1px solid #e1e7ec;border-radius:10px;padding:4px 6px}
 #plan .ptitle{font-weight:700;color:#2f6f4f;font-size:15px;margin:2px 0 8px}
 #plan .pbar{position:sticky;top:0;z-index:3;background:#2f6f4f;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px}
 #plan .pbar button{font:inherit;font-size:14px;background:#ffffff22;color:#fff;border:1px solid #ffffff66;border-radius:8px;padding:6px 12px}
@@ -298,12 +343,13 @@ body.planOn #plan{display:block}
 
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div id="vtabs"><button data-v="tally" class="on">🎙️ 集計</button><button data-v="meat">🥩 注文数</button><button data-v="en">🚚 配送</button></div>
+<div id="vtabs"><button data-v="meat">🥩 注文数</button><button data-v="mfg">🏭 製造</button><button data-v="tally" class="on">🎙️ 集計</button><button data-v="en">🚚 配送</button></div>
 <div id="plan">
   <div class="pwrap">
     <div class="psel" id="planSel"></div>
     <div class="pnote" id="planNote"></div>
     <div class="tw" id="planTbl"><div class="empty">読み込んでいます…</div></div>
+    <div id="mfgSet"></div>
   </div>
 </div>
 <div class="card top" id="topCard">
@@ -928,6 +974,7 @@ function openPlan(){
 }
 function renderPlan(){
   if (!PLAN) { return; }
+  if (PLAN_TAB === 'mfg') { renderMfg(); return; }
   var win = planDates();
   // 表示する範囲：「から」「まで」のプルダウン（同じ日にすればその日だけ）
   if (win.indexOf(PLAN_FROM) < 0) { PLAN_FROM = win[0]; }
@@ -1007,10 +1054,219 @@ function renderPlan(){
     var k = b.getAttribute('data-k'); PLAN_OPEN[k] = !PLAN_OPEN[k]; renderPlan();
   }; });
 }
-// 上のタブ：集計／肉の種類別の使用数量／納品先ごとの注文
+// ---------- 製造：品目ごと・規格ごとに、機械（チョップ・カット・挽肉）別にまとめる ----------
+var MFG = null, MFG_AT = '', MFG_FROM = null, MFG_TO = null, MFG_CAT = '', MFG_TIMER = null;
+var MFG_NONE = '未分類';
+var MFG_GL = { 鶏: '🐔 鶏', 豚: '🐷 豚', 牛: '🐮 牛' };
+function mfgDefault(){ return { grp: ['鶏','牛','豚'], cats: ['チョップ','カット','挽肉','その他'], items: {}, ord: [], sizes: { 'チョップ': ['3mmスライス','2mmスライス','1mmスライス'] }, spec: {} }; }
+var MFG_NOK = '（規格なし）';
+function mfgKey(it, k){ return it + '|' + (k || MFG_NOK); }
+// その規格のサイズ（その種類のサイズ一覧に無ければ未登録＝''）
+function mfgSz(c, it, k){ var v = MFG.spec[mfgKey(it, k)], l = MFG.sizes[c] || []; return v && l.indexOf(v) >= 0 ? v : ''; }
+function mfgLoad(){
+  if (MFG) { return Promise.resolve(); }
+  return call('tenryuMfgGet').then(function(r){
+    var d = mfgDefault(), c = (r && r.conf) || {};
+    MFG = { grp: c.grp && c.grp.length === 3 ? c.grp : d.grp, cats: c.cats && c.cats.length ? c.cats : d.cats, items: c.items || {}, ord: c.ord || [], sizes: c.sizes || d.sizes, spec: c.spec || {} };
+    MFG_AT = (r && r.at) || '';
+  });
+}
+// 品目の種類（機械）：設定が無ければ名前で仮に決める（挽肉だけ）
+function mfgCat(it){ var x = MFG.items[it]; if (x && x.c !== undefined) { return x.c || MFG_NONE; } return /挽|ミンチ/.test(it) ? '挽肉' : MFG_NONE; }
+// 品目 → 鶏・牛・豚（肉の種類から）
+function mfgItems(){
+  var m = {};
+  Object.keys(PLAN.days || {}).forEach(function(d){ (PLAN.days[d] || []).forEach(function(r){ if (r.item && !m[r.item]) { m[r.item] = planGrp(planMeat(r)); } }); });
+  Object.keys(MFG.items).forEach(function(it){ if (!m[it] && MFG.items[it].g) { m[it] = MFG.items[it].g; } });
+  Object.keys(m).sort().forEach(function(it){ if (MFG.ord.indexOf(it) < 0) { MFG.ord.push(it); } });
+  return m;
+}
+// 規格の大きさ（大きい順に並べる用）。読めない規格は下
+function mfgSize(k){
+  var s = String(k || '').replace(/㎝/g, 'cm').replace(/㎜/g, 'mm').replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 65248); });
+  var m = s.match(/(\d+(?:\.\d+)?)\s*(kg|k|g|cm|mm)/i);
+  if (m) { var v = +m[1], u = m[2].toLowerCase(); return u === 'kg' || u === 'k' ? v * 1000 : u === 'cm' ? v * 10 : v; }
+  var f = s.match(/1\s*\/\s*(\d+)/); if (f) { return 1000 / +f[1]; }
+  var n = s.match(/(\d+(?:\.\d+)?)/); if (n) { return +n[1]; }
+  return -1;
+}
+function mNew(){ var x = pNew(); x.n = 0; return x; }
+function mAdd(x, r){ pAdd(x, r); var n = parseFloat(r.n); if (!isNaN(n)) { x.n += n; } }
+function mMerge(a, b){ pMerge(a, b); a.n += b.n; }
+function mCell(x, cls){ if (!x || (pEmpty(x) && !x.n)) { return '<td class="z '+(cls||'')+'">—</td>'; } return '<td class="'+(cls||'')+'">'+(pEmpty(x) ? '' : pQty(x))+(x.n ? '<span class="mai">'+pNum(x.n)+'枚</span>' : '')+'</td>'; }
+function mfgSave(){
+  clearTimeout(MFG_TIMER);
+  $('msSt').textContent = '保存しています…';
+  MFG_TIMER = setTimeout(function(){
+    call('tenryuMfgSet', MFG, myName()).then(function(r){ MFG_AT = r.at; var st = $('msSt'); if (st) { st.textContent = '✓ 保存しました（' + r.at.slice(5).replace('-', '/') + '）'; } })
+      .catch(function(e){ var st = $('msSt'); if (st) { st.textContent = '保存できませんでした：' + e.message; } });
+  }, 700);
+}
+function renderMfg(){
+  if (!MFG) { $('planTbl').innerHTML = '<div class="empty">読み込んでいます…</div>'; mfgLoad().then(renderMfg).catch(function(e){ $('planTbl').innerHTML = '<div class="empty">設定を読み込めませんでした：'+esc(e.message)+'</div>'; }); return; }
+  var win = planDates();
+  if (win.indexOf(MFG_FROM) < 0) { MFG_FROM = win[0]; }
+  if (win.indexOf(MFG_TO) < 0) { MFG_TO = win[0]; }
+  if (MFG_TO < MFG_FROM) { MFG_TO = MFG_FROM; }
+  var opt = function(v){ return win.map(function(d){ return '<option value="'+d+'"'+(d === v ? ' selected' : '')+'>'+planLab(d)+'</option>'; }).join(''); };
+  var gm = mfgItems(), cats = MFG.cats.slice();
+  var used = {}; Object.keys(gm).forEach(function(it){ used[mfgCat(it)] = 1; });
+  if (used[MFG_NONE]) { cats.push(MFG_NONE); }
+  if (MFG_CAT && cats.indexOf(MFG_CAT) < 0) { MFG_CAT = ''; }
+  $('planSel').innerHTML = '<span class="lb">製造する納品日</span><span class="qk"><button data-m="1">明日</button><button data-m="2">2日分</button></span><span style="flex-basis:100%;height:0"></span>'
+    + '<span class="rng"><select id="mfgFrom">'+opt(MFG_FROM)+'</select> から <select id="mfgTo">'+opt(MFG_TO)+'</select> まで</span>'
+    + '<div class="mcat">' + cats.map(function(c){ return '<button data-c="'+esc(c)+'" class="'+(MFG_CAT === c ? 'on' : '')+'">'+esc(c)+'</button>'; }).join('')
+    + '<span class="mhint">'+(MFG_CAT ? 'もう一度押すと全部に戻ります' : '選んでいない時は全部を順番に出します')+'</span></div>';
+  $('mfgFrom').onchange = function(){ MFG_FROM = this.value; if (MFG_TO < MFG_FROM) { MFG_TO = MFG_FROM; } renderMfg(); };
+  $('mfgTo').onchange = function(){ MFG_TO = this.value; if (MFG_TO < MFG_FROM) { MFG_FROM = MFG_TO; } renderMfg(); };
+  [].forEach.call($('planSel').querySelectorAll('[data-m]'), function(b){ b.onclick = function(){ MFG_FROM = win[0]; MFG_TO = win[Math.min(win.length, +b.getAttribute('data-m')) - 1]; renderMfg(); }; });
+  [].forEach.call($('planSel').querySelectorAll('[data-c]'), function(b){ b.onclick = function(){ var c = b.getAttribute('data-c'); MFG_CAT = MFG_CAT === c ? '' : c; renderMfg(); }; });
+  var days = win.filter(function(d){ return d >= MFG_FROM && d <= MFG_TO; });
+  $('planNote').innerHTML = '品目を規格ごとにまとめています（規格は大きい順）。種類分けと順番は一番下の「⚙️ 製造の設定」で変えられます' + (PLAN.at ? '（' + esc(PLAN.at.slice(5).replace('-', '/')) + ' に読み込み）' : '');
+  var T = {};
+  days.forEach(function(d){ (PLAN.days[d] || []).forEach(function(r){
+    if (!r.item) { return; }
+    var t = T[r.item] = T[r.item] || {}, k = r.kik || '', s = t[k] = t[k] || {};
+    mAdd(s[d] = s[d] || mNew(), r);
+  }); });
+  var gi = function(it){ var i = MFG.grp.indexOf(gm[it]); return i < 0 ? 9 : i; };
+  var many = days.length > 1, nc = days.length + (many ? 1 : 0);
+  var blank = function(){ var o = ''; for (var i = 0; i < nc; i++) { o += '<td></td>'; } return o; };
+  var head = '<thead><tr><th>品目・規格</th>' + days.map(function(d){ return '<th>'+planLab(d)+'</th>'; }).join('') + (many ? '<th class="sum">合計</th>' : '') + '</tr></thead>';
+  var html = '';
+  (MFG_CAT ? [MFG_CAT] : cats).forEach(function(c){
+    var its = Object.keys(T).filter(function(it){ return mfgCat(it) === c; }).sort(function(a, b){ return gi(a) - gi(b) || MFG.ord.indexOf(a) - MFG.ord.indexOf(b); });
+    var szl = (MFG.sizes[c] || []).slice(), useSz = c !== MFG_NONE && szl.length > 0;
+    var groups = useSz ? szl.concat(['']) : [null];
+    var h = '';
+    groups.forEach(function(sz){
+      var gh = '', g = '', cnt = 0;
+      its.forEach(function(it){
+        var ks = Object.keys(T[it]).filter(function(k){ return sz === null || mfgSz(c, it, k) === sz; })
+          .sort(function(a, b){ return mfgSize(b) - mfgSize(a) || (a < b ? -1 : 1); });
+        if (!ks.length) { return; }
+        cnt++;
+        var gg = gm[it] || '？';
+        if (gg !== g) { g = gg; gh += '<tr class="gh"><th>'+(MFG_GL[g] || esc(g))+'</th>'+blank()+'</tr>'; }
+        var tot = {}, all = mNew();
+        ks.forEach(function(k){ days.forEach(function(d){ var x = T[it][k][d]; if (x) { mMerge(tot[d] = tot[d] || mNew(), x); mMerge(all, x); } }); });
+        gh += '<tr class="mi"><th>'+esc(it)+'</th>'+days.map(function(d){ return mCell(tot[d]); }).join('')+(many ? mCell(all, 'sum') : '')+'</tr>';
+        if (ks.length > 1 || ks[0]) { ks.forEach(function(k){
+          var x = mNew(); days.forEach(function(d){ if (T[it][k][d]) { mMerge(x, T[it][k][d]); } });
+          gh += '<tr class="it"><th>'+(k ? esc(k) : MFG_NOK)+'</th>'+days.map(function(d){ return mCell(T[it][k][d]); }).join('')+(many ? mCell(x, 'sum') : '')+'</tr>';
+        }); }
+      });
+      if (!cnt) { return; }
+      if (sz !== null) { h += '<tr class="sz'+(sz ? '' : ' un')+'"><th colspan="'+(nc + 1)+'">📏 '+(sz ? esc(sz) : 'サイズ未登録')+'</th></tr>'; }
+      h += gh;
+    });
+    var icon = { 'チョップ': '🔪', 'カット': '✂️', '挽肉': '⚙️' }[c] || '📦';
+    html += '<div class="msec"><div class="mh'+(c === MFG_NONE ? ' none' : '')+'"><span>'+icon+' '+esc(c)+'</span><small>'+its.length+'品目</small></div><div class="tw2">'
+      + (its.length ? '<table>'+head+'<tbody>'+h+'</tbody></table>' : '<div class="empty">この日の注文はありません</div>') + '</div></div>';
+  });
+  $('planTbl').innerHTML = days.length ? html : '<div class="empty">納品日を選んでください</div>';
+  renderMfgSet(gm);
+}
+// 一番下の設定：肉の順番・種類の順番・品目ごとの種類と製造順
+function renderMfgSet(gm){
+  var up = function(i, n){ return '<button data-up="'+i+'"'+(i === 0 ? ' disabled' : '')+'>▲</button><button data-dn="'+i+'"'+(i === n - 1 ? ' disabled' : '')+'>▼</button>'; };
+  var open = false; try { open = localStorage.getItem('nykMfgSetOpen') === '1'; } catch(e){}
+  var h = '<div class="card"><h3 class="ms-top">⚙️ 製造の設定<button id="msTog" type="button">'+(open ? '▲ 閉じる' : '▼ 開く')+'</button></h3><div id="msBody"'+(open ? '' : ' hidden')+'><div class="ms-note">ここで変えるとすぐ保存され、ほかのスマホ・パソコンにも同じ設定が出ます。'+(MFG_AT ? '（前回の保存：'+esc(MFG_AT.slice(5).replace('-', '/'))+'）' : '')+'</div>';
+  h += '<div class="ms-g">肉の順番</div><div class="ms-inline" data-list="grp">' + MFG.grp.map(function(g, i){ return '<div class="ms-row"><span class="nm">'+(MFG_GL[g] || esc(g))+'</span>'+up(i, MFG.grp.length)+'</div>'; }).join('') + '</div>';
+  h += '<div class="ms-g">種類（機械）の順番</div><div class="ms-inline" data-list="cats">' + MFG.cats.map(function(c, i){ return '<div class="ms-row"><span class="nm">'+esc(c)+'</span>'+up(i, MFG.cats.length)+'</div>'; }).join('') + '</div>';
+  h += '<div class="ms-g" style="margin-top:18px">品目の種類分けと製造順</div><div class="ms-note">右の欄で種類（機械）を選びます。▲▼ で同じ肉の中の順番を変えます（上ほど先に出ます）。オレンジの欄はまだ種類が決まっていない品目です。</div>';
+  MFG.grp.forEach(function(g){
+    var its = MFG.ord.filter(function(it){ return gm[it] === g; });
+    if (!its.length) { return; }
+    h += '<div class="ms-g">'+(MFG_GL[g] || esc(g))+'</div><div data-list="ord" data-g="'+esc(g)+'">';
+    its.forEach(function(it, i){
+      var c = mfgCat(it);
+      h += '<div class="ms-row"><span class="nm">'+esc(it)+'</span><select data-it="'+esc(it)+'" class="'+(c === MFG_NONE ? 'un' : '')+'">'
+        + MFG.cats.concat([MFG_NONE]).map(function(x){ return '<option'+(x === c ? ' selected' : '')+'>'+esc(x)+'</option>'; }).join('') + '</select>'+up(i, its.length)+'</div>';
+    });
+    h += '</div>';
+  });
+  // サイズの登録（種類ごと・大きい順）
+  h += '<div class="ms-g" style="margin-top:22px">サイズの登録（種類ごと・大きいものを上に）</div><div class="ms-note">例：チョップ → 3mmスライス、2mmスライス、1mmスライス。▲▼ で順番、✕ で消します。</div>';
+  MFG.cats.forEach(function(c){
+    var l = MFG.sizes[c] || [];
+    h += '<div class="ms-sz"><div class="ms-szh">'+esc(c)+'</div><div data-list="sz" data-c="'+esc(c)+'">';
+    l.forEach(function(z, i){ h += '<div class="ms-row"><span class="nm">'+esc(z)+'</span>'+up(i, l.length)+'<button data-del="'+i+'" class="del">✕</button></div>'; });
+    if (!l.length) { h += '<div class="ms-none">まだありません</div>'; }
+    h += '</div><div class="ms-add"><input type="text" maxlength="20" placeholder="サイズの名前（例：3mmスライス）" data-addin="'+esc(c)+'"><button data-add="'+esc(c)+'">追加</button></div></div>';
+  });
+  // 規格ごとのサイズ分け（決まっていないものを上に）
+  var specs = {};
+  Object.keys(PLAN.days || {}).forEach(function(d){ (PLAN.days[d] || []).forEach(function(r){ if (r.item) { (specs[r.item] = specs[r.item] || {})[r.kik || ''] = 1; } }); });
+  Object.keys(MFG.spec).forEach(function(key){ var p = key.split('|'), it = p[0], k = p.slice(1).join('|'); (specs[it] = specs[it] || {})[k === MFG_NOK ? '' : k] = 1; });
+  var gi2 = function(it){ var i = MFG.grp.indexOf(gm[it]); return i < 0 ? 9 : i; };
+  var list = [], noCat = 0, noSz = {};
+  Object.keys(specs).forEach(function(it){
+    var c = mfgCat(it);
+    if (c === MFG_NONE) { noCat++; return; }
+    if (!(MFG.sizes[c] || []).length) { noSz[c] = 1; return; }
+    Object.keys(specs[it]).forEach(function(k){ list.push({ it: it, k: k, c: c, sz: mfgSz(c, it, k) }); });
+  });
+  list.sort(function(x, y){ return MFG.cats.indexOf(x.c) - MFG.cats.indexOf(y.c) || gi2(x.it) - gi2(y.it) || MFG.ord.indexOf(x.it) - MFG.ord.indexOf(y.it) || mfgSize(y.k) - mfgSize(x.k); });
+  var row = function(e){
+    var l = MFG.sizes[e.c] || [];
+    return '<div class="ms-row"><span class="nm">'+esc(e.it)+'<small>'+esc(e.c)+'・規格：'+(e.k ? esc(e.k) : 'なし')+'</small></span>'
+      + (l.length ? '<select data-spec="'+esc(mfgKey(e.it, e.k))+'" class="'+(e.sz ? '' : 'un')+'"><option value="">未登録</option>'+l.map(function(z){ return '<option'+(z === e.sz ? ' selected' : '')+'>'+esc(z)+'</option>'; }).join('')+'</select>'
+        : '<span class="ms-none">'+esc(e.c)+'のサイズが未登録</span>') + '</div>';
+  };
+  var un = list.filter(function(e){ return !e.sz; }), done = list.filter(function(e){ return e.sz; });
+  h += '<div class="ms-g" style="margin-top:22px">規格のサイズ分け <span class="ms-cnt">未登録 '+un.length+'件</span></div><div class="ms-note">規格ごとにサイズを選んで登録します。'+(noCat ? '種類が「未分類」の品目（'+noCat+'品目）は、先に上で種類を選ぶとここに出ます。' : '')+(Object.keys(noSz).length ? 'サイズを登録していない種類（'+Object.keys(noSz).map(esc).join('・')+'）の規格は、上でサイズを追加するとここに出ます。' : '')+'</div>';
+  h += un.length ? un.map(row).join('') : '<div class="ms-none">すべて登録済みです</div>';
+  if (done.length) { h += '<details class="ms-done"><summary>登録済みの規格（'+done.length+'件）を見る・変える</summary>'+done.map(row).join('')+'</details>'; }
+  h += '</div><div class="ms-st" id="msSt"></div></div>';
+  $('mfgSet').innerHTML = h;
+  $('msTog').onclick = function(){ var b = $('msBody'), o = b.hidden; b.hidden = !o; this.textContent = o ? '▲ 閉じる' : '▼ 開く'; try { localStorage.setItem('nykMfgSetOpen', o ? '1' : '0'); } catch(e){} };
+  [].forEach.call($('mfgSet').querySelectorAll('[data-list]'), function(box){
+    var kind = box.getAttribute('data-list'), g = box.getAttribute('data-g');
+    var sc = box.getAttribute('data-c');
+    var arr = kind === 'ord' ? MFG.ord.filter(function(it){ return gm[it] === g; }) : kind === 'sz' ? (MFG.sizes[sc] || []) : MFG[kind];
+    var move = function(i, j){
+      var a = arr.slice(), t = a[i]; a[i] = a[j]; a[j] = t;
+      if (kind === 'ord') { var pos = MFG.ord.map(function(it, k){ return gm[it] === g ? k : -1; }).filter(function(k){ return k >= 0; }); pos.forEach(function(k, n){ MFG.ord[k] = a[n]; }); }
+      else if (kind === 'sz') { MFG.sizes[sc] = a; }
+      else { MFG[kind] = a; }
+      renderMfg(); mfgSave();
+    };
+    [].forEach.call(box.querySelectorAll('[data-up]'), function(b){ b.onclick = function(){ var i = +b.getAttribute('data-up'); move(i, i - 1); }; });
+    [].forEach.call(box.querySelectorAll('[data-dn]'), function(b){ b.onclick = function(){ var i = +b.getAttribute('data-dn'); move(i, i + 1); }; });
+  });
+  [].forEach.call($('mfgSet').querySelectorAll('[data-del]'), function(b){ b.onclick = function(){
+    var c = b.closest('[data-c]').getAttribute('data-c'), i = +b.getAttribute('data-del'), l = MFG.sizes[c] || [];
+    if (!confirm('「' + l[i] + '」を消しますか？\nこのサイズにしていた規格は「未登録」に戻ります。')) { return; }
+    l.splice(i, 1); MFG.sizes[c] = l; renderMfg(); mfgSave();
+  }; });
+  [].forEach.call($('mfgSet').querySelectorAll('[data-add]'), function(b){
+    var c = b.getAttribute('data-add'), inp = $('mfgSet').querySelector('[data-addin="'+c+'"]');
+    var add = function(){
+      var v = (inp.value || '').trim().slice(0, 20), l = MFG.sizes[c] = MFG.sizes[c] || [];
+      if (!v) { inp.focus(); return; }
+      if (l.indexOf(v) >= 0) { alert('同じ名前のサイズがもうあります'); return; }
+      l.push(v); renderMfg(); mfgSave();
+    };
+    b.onclick = add;
+    inp.onkeydown = function(e){ if (e.key === 'Enter') { add(); } };
+  });
+  [].forEach.call($('mfgSet').querySelectorAll('select[data-spec]'), function(sel){ sel.onchange = function(){
+    var key = sel.getAttribute('data-spec');
+    if (sel.value) { MFG.spec[key] = sel.value; } else { delete MFG.spec[key]; }
+    var op = $('mfgSet').querySelector('.ms-done') && $('mfgSet').querySelector('.ms-done').open;
+    renderMfg(); mfgSave();
+    if (op) { $('mfgSet').querySelector('.ms-done').open = true; }
+  }; });
+  [].forEach.call($('mfgSet').querySelectorAll('select[data-it]'), function(s){ s.onchange = function(){
+    var it = s.getAttribute('data-it'); MFG.items[it] = { c: s.value === MFG_NONE ? '' : s.value, g: gm[it] }; renderMfg(); mfgSave();
+  }; });
+}
+// 上のタブ：注文数／製造／集計／配送
 [].forEach.call(document.querySelectorAll('#vtabs button'), function(b){ b.onclick = function(){
   var v = b.getAttribute('data-v');
   [].forEach.call(document.querySelectorAll('#vtabs button'), function(x){ x.classList.toggle('on', x === b); });
+  document.body.classList.toggle('mfgOn', v === 'mfg');
   if (v === 'tally') { document.body.classList.remove('planOn'); return; }
   var was = document.body.classList.contains('planOn');
   PLAN_TAB = v; $('planTbl').scrollLeft = 0;
