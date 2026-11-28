@@ -20,6 +20,21 @@ header a{color:#cfe0f5;font-size:13px;text-decoration:none;white-space:nowrap}
 .sub{font-size:12px;color:var(--sub);line-height:1.6}
 .sbtn{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;color:var(--ink)}
 #dates{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 4px}
+/* 製造と同じ形：「明日」「2日分」のボタン＋「〇〇 ～ 〇〇まで」 */
+#dates.rsel{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+#dates.rsel .qk{display:inline-flex;gap:6px}
+#dates.rsel .qk button{font:inherit;font-size:14px;font-weight:700;background:#fff;border:2px solid #c6d3dc;color:#56687a;border-radius:16px;padding:4px 14px;line-height:1.3}
+#dates.rsel .qk button.on{border-color:var(--acc);background:var(--acc);color:#fff}
+#dates.rsel .rng{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:#3c4f61;flex-basis:100%;min-width:0;white-space:nowrap}
+#dates.rsel select{font:inherit;font-size:15px;font-weight:700;color:var(--acc);background:#fff;border:2px solid var(--acc);border-radius:8px;padding:5px 8px;min-width:0;max-width:200px;flex:0 1 auto}
+#dates.rsel .dsum{flex-basis:100%;font-size:13px;color:var(--sub)}
+#dates.rsel .dsum b{color:var(--ink)}
+/* パソコン・タブレットは「明日」「2日分」を見出しの右隣に。スマホは日付の上の行のまま */
+.dtl{display:inline-flex;align-items:center;gap:12px}
+#dq{display:none;gap:6px}
+#dq button{font:inherit;font-size:14px;font-weight:700;background:#fff;border:2px solid #c6d3dc;color:#56687a;border-radius:16px;padding:3px 14px;line-height:1.3}
+#dq button.on{border-color:var(--acc);background:var(--acc);color:#fff}
+@media (min-width:641px){ #dq{display:inline-flex} #dates.rsel .qk{display:none} }
 #dates button{font:inherit;font-size:15px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:10px;padding:5px 2px;color:var(--ink);line-height:1.2;text-align:center;min-width:0}
 #dates button small{font-weight:400}
 .top{padding:10px 12px;margin-bottom:8px}
@@ -377,11 +392,10 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
 <div class="card top" id="topCard">
   <div id="topSum"><span id="topSumTxt"></span><button class="sbtn" id="topOpen">変更 ▼</button></div>
   <div id="topFull">
-  <div class="ctitle" style="justify-content:space-between">集計のしかた<button class="sbtn" id="topClose">閉じる ▲</button></div>
-  <div id="tmode"><button data-m="one">1日ずつ集計</button><button data-m="both">2日同時に集計</button></div>
-  <div class="sub one" id="tmodeHelp" style="margin:2px 0 8px"></div>
-  <div class="ctitle">納品日を選ぶ</div>
+  <div class="ctitle" style="justify-content:space-between"><span class="dtl">集計する納品日<span id="dq" class="qk"></span></span><button class="sbtn" id="topClose">閉じる ▲</button></div>
+  <div id="tmode" style="display:none"><button data-m="one">1日ずつ集計</button><button data-m="both">2日同時に集計</button></div>
   <div id="dates"><span class="sub">読み込んでいます…</span></div>
+  <div class="sub one" id="tmodeHelp" style="margin:2px 0 6px"></div>
   <div class="sub one" id="autoInfo">5分ごとに自動で読み込み・土日は注文がある時だけ表示</div>
   </div>
   <div class="frow" style="display:none">
@@ -440,7 +454,7 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
     ・「<b>5番</b>」「<b>6番</b>」「<b>7番</b>」…「<b>完了</b>」… 番号を続けて言い、最後に「完了」でまとめて完了（「5番 6番 7番 完了」と一度に言っても可。目方がいる行は画面で入れます）<br>
     ・「<b>全て完了</b>」… 漏れが無いか確かめる<br>
     ・「5番 取り消し」… 完了を取り消す／「もう一度」… 読み上げをくり返す／「終了」… 音声をやめる<br>
-    <b>1日ずつ集計</b>：選んだ納品日の番号だけを集計します。<b>2日同時に集計</b>：「<b>26日の5番 完了</b>」のように納品日も話します（無い時は「何日の納品ですか」と聞き返すので「26日」と答えます）。<br>
+    <b>納品日の選び方</b>：「明日」「2日分」を押すか、「〇〇 ～ 〇〇まで」で選びます。<b>1日だけ</b>なら番号だけで集計します。<b>2日以上</b>なら「<b>26日の5番 完了</b>」のように納品日も話します（無い時は「何日の納品ですか」と聞き返すので「26日」と答えます）。<br>
     <b>追加注文</b>：ファイルを読み込み直して、作業中の納品日に新しい行が増えると、お知らせと「新規注文を追加しました」の声が出ます。「確認しました」を押すと消えます。<br>
     「番」を付けて話すと、番号と目方を聞き違えにくくなります。<br>
     <b>目方が必要な行</b>：発注量が空、または単位がkg以外の行（黄色の欄）。<br>
@@ -515,7 +529,7 @@ function loadDates(){
     var saved = []; try { saved = JSON.parse(ls(K.sel) || '[]'); } catch(e){}
     SEL = SEL.length ? SEL : saved;
     SEL = SEL.filter(function(d){ return win.indexOf(d) >= 0; });
-    if (TMODE === 'one' && SEL.length > 1) { SEL = [SEL.slice().sort()[0]]; }
+    if (SEL.length > 1) { var s0 = SEL.slice().sort(); SEL = win.filter(function(d){ return d >= s0[0] && d <= s0[s0.length-1]; }); }
     if (!SEL.length) {
       // 明日から順に、行がある最初の日
       var has = win.filter(function(d){ return countOf(d) > 0; });
@@ -523,7 +537,7 @@ function loadDates(){
     }
     renderDates();
     // 前に選んだ日があり行もあれば、最初からたたんでおく
-    if (SEL.some(function(d){ return countOf(d) > 0; }) && (TMODE === 'one' || SEL.length >= 2)) { setTop(true); }
+    if (SEL.some(function(d){ return countOf(d) > 0; })) { setTop(true); }
     return loadData();
   }).catch(function(e){ $('dates').innerHTML = '<span class="sub">読み込めませんでした：'+esc(e.message)+'</span>'; });
 }
@@ -539,13 +553,31 @@ function windowDates(){
 }
 function chipLab(iso){ var d = new Date(iso+'T00:00:00'); return (d.getMonth()+1)+'/'+d.getDate()+'('+WD[d.getDay()]+')'; }
 function countOf(d){ for (var i = 0; i < DATES.length; i++) { if (DATES[i].date === d) { return DATES[i].count; } } return 0; }
+// 納品日の選び方は製造と同じ形：「明日」「2日分」＋「〇〇 ～ 〇〇まで」。
+// 1日だけなら番号だけで集計、2日以上なら納品日も話す（例「26日の5番 完了」）
 function renderDates(){
-  $('dates').innerHTML = windowDates().map(function(d){
-    var fin = DATA[d] && DATA[d].marks && DATA[d].marks._fin, n = countOf(d);
-    return '<button data-d="'+d+'" class="'+(SEL.indexOf(d)>=0?'on ':'')+(fin?'fin':'')+'">'+chipLab(d)+'<small>'+(n ? n+'件' : 'まだありません')+'</small></button>';
-  }).join('');
-  [].forEach.call($('dates').querySelectorAll('button'), function(b){ b.onclick = function(){ toggleDate(b.getAttribute('data-d')); }; });
+  var win = windowDates(), s = selDates();
+  if (!win.length) { $('dates').innerHTML = ''; return; }
+  var from = s.length ? s[0] : win[0], to = s.length ? s[s.length-1] : from;
+  TMODE = s.length > 1 ? 'both' : 'one'; renderMode();
+  var lab = function(d){ var fin = DATA[d] && DATA[d].marks && DATA[d].marks._fin; return chipLab(d) + (countOf(d) ? '' : '・なし') + (fin ? ' ✓' : ''); };
+  var opt = function(v){ return win.map(function(d){ return '<option value="'+d+'"'+(d === v ? ' selected' : '')+'>'+lab(d)+'</option>'; }).join(''); };
+  var q1 = s.length === 1 && s[0] === win[0], q2 = win.length > 1 && s.length === 2 && s[0] === win[0] && s[1] === win[1];
+  var el = $('dates'); el.className = 'rsel';
+  el.innerHTML = '<span class="qk"><button data-q="1" class="'+(q1?'on':'')+'">明日</button><button data-q="2" class="'+(q2?'on':'')+'">2日分</button></span>'
+    + '<span class="rng"><select id="tFrom">'+opt(from)+'</select> ～ <select id="tTo">'+opt(to)+'</select> まで</span>'
+    + ('<span class="dsum">' + (s.length > 1 ? s.length + '日分：' : '') + s.map(function(d){ var n = countOf(d); return chipLab(d) + ' <b>' + (n ? n + '件' : 'なし') + '</b>'; }).join('・') + '</span>');
+  $('tFrom').onchange = function(){ var f = this.value, t = $('tTo').value; setRange(f, t < f ? f : t); };
+  $('tTo').onchange = function(){ var t = this.value, f = $('tFrom').value; setRange(f > t ? t : f, t); };
+  $('dq').innerHTML = el.querySelector('.qk').innerHTML;
+  [].forEach.call(document.querySelectorAll('#dates [data-q], #dq [data-q]'), function(b){ b.onclick = function(){ setRange(win[0], win[Math.min(win.length, +b.getAttribute('data-q')) - 1]); }; });
   if ($('topCard').classList.contains('mini')) { renderTopSum(); }
+}
+function setRange(f, t){
+  SEL = windowDates().filter(function(d){ return d >= f && d <= t; });
+  if (!SEL.length) { SEL = [f]; }
+  ls(K.sel, JSON.stringify(SEL)); pending = null; ask2 = null; BATCH = [];
+  renderDates(); loadData();
 }
 function addDays(iso, n){ var d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
 // 集計のしかた：one＝1日ずつ（選んだ日の番号だけ）／ both＝2日同時（納品日も話す）
@@ -560,7 +592,7 @@ function setTMode(m){
 }
 function renderMode(){
   [].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === TMODE); });
-  $('tmodeHelp').textContent = TMODE === 'one' ? '選んだ1日の番号だけ集計（例「5番 完了」）' : '2日選び、納品日も話す（例「26日の5番 完了」）';
+  $('tmodeHelp').textContent = TMODE === 'one' ? '1日だけの時は番号だけ話します（例「5番 完了」）' : '2日以上の時は納品日も話します（例「26日の5番 完了」）';
 }
 [].forEach.call(document.querySelectorAll('#tmode button'), function(b){ b.onclick = function(){ setTMode(b.getAttribute('data-m')); }; });
 renderMode();
@@ -579,7 +611,7 @@ function setTop(mini){
   if (mini) { renderTopSum(); }
 }
 function renderTopSum(){
-  $('topSumTxt').textContent = (TMODE === 'both' ? '2日同時' : '1日ずつ') + '　' + selDates().map(function(d){ var n = countOf(d); return chipLab(d) + ' ' + (n ? n + '件' : 'なし'); }).join('・');
+  $('topSumTxt').textContent = (SEL.length > 1 ? SEL.length + '日分' : '1日') + '　' + selDates().map(function(d){ var n = countOf(d); return chipLab(d) + ' ' + (n ? n + '件' : 'なし'); }).join('・');
 }
 $('topOpen').onclick = function(){ setTop(false); };
 $('topClose').onclick = function(){ setTop(true); };
@@ -1014,7 +1046,7 @@ function renderPlan(){
   if (PLAN_TO < PLAN_FROM) { PLAN_TO = PLAN_FROM; }
   var opt = function(v){ return win.map(function(d){ return '<option value="'+d+'"'+(d === v ? ' selected' : '')+'>'+planLab(d)+'</option>'; }).join(''); };
   $('planSel').innerHTML = '<span class="lb">納品日（2週間先まで表示）</span><span class="qk"><button data-q="1">明日だけ</button></span><span style="flex-basis:100%;height:0"></span>'
-    + '<span class="rng"><select id="planFrom">'+opt(PLAN_FROM)+'</select> から <select id="planTo">'+opt(PLAN_TO)+'</select> まで</span>';
+    + '<span class="rng"><select id="planFrom">'+opt(PLAN_FROM)+'</select> ～ <select id="planTo">'+opt(PLAN_TO)+'</select> まで</span>';
   $('planFrom').onchange = function(){ PLAN_FROM = this.value; if (PLAN_TO < PLAN_FROM) { PLAN_TO = PLAN_FROM; } renderPlan(); };
   $('planTo').onchange = function(){ PLAN_TO = this.value; if (PLAN_TO < PLAN_FROM) { PLAN_FROM = PLAN_TO; } renderPlan(); };
   [].forEach.call($('planSel').querySelectorAll('[data-q]'), function(b){ b.onclick = function(){
@@ -1146,7 +1178,7 @@ function renderMfg(){
   if (used[MFG_NONE]) { cats.push(MFG_NONE); }
   if (MFG_CAT && cats.indexOf(MFG_CAT) < 0) { MFG_CAT = ''; }
   $('planSel').innerHTML = '<span class="lb">製造する納品日</span><span class="qk"><button data-m="1">明日</button><button data-m="2">2日分</button></span><span style="flex-basis:100%;height:0"></span>'
-    + '<span class="rng"><select id="mfgFrom">'+opt(MFG_FROM)+'</select> から <select id="mfgTo">'+opt(MFG_TO)+'</select> まで</span>'
+    + '<span class="rng"><select id="mfgFrom">'+opt(MFG_FROM)+'</select> ～ <select id="mfgTo">'+opt(MFG_TO)+'</select> まで</span>'
     + '<div class="mcat">' + cats.map(function(c){ return '<button data-c="'+esc(c)+'" class="'+(MFG_CAT === c ? 'on' : '')+'">'+esc(c)+'</button>'; }).join('')
     + '<span class="mhint">'+(MFG_CAT ? 'もう一度押すと全部に戻ります' : '選んでいない時は全部を順番に出します')+'</span></div>';
   $('mfgFrom').onchange = function(){ MFG_FROM = this.value; if (MFG_TO < MFG_FROM) { MFG_TO = MFG_FROM; } renderMfg(); };
@@ -1787,7 +1819,7 @@ function batchShow(){
 function manyNos(p){
   var all = selDates(), d0 = null;
   if (both()) {
-    if (!p.day) { say('2日同時の時は、26日の5番、6番、完了、のように納品日も話してください'); return; }
+    if (!p.day) { say('2日以上選んでいる時は、26日の5番、6番、完了、のように納品日も話してください'); return; }
     d0 = all.filter(function(d){ return +d.slice(8) === p.day; })[0];
     if (!d0) { say(p.day + '日は選ばれていません'); return; }
   } else {
