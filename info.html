@@ -20,6 +20,21 @@
   [hidden] { display: none !important; }
   .app { max-width: 640px; margin: 0 auto; min-height: 100vh; }
   .app.big { zoom: 1.15; }
+  /* 画面の大きさで自動調整（スマホ＝今のまま／タブレット・パソコン＝幅を広げて文字も少し大きく）。
+     --z は全体の倍率。お知らせ・確認の窓（#layer など）も同じ倍率にする */
+  :root { --z: 1; }
+  .app { zoom: var(--z); }
+  .app.big { zoom: calc(var(--z) * 1.15); }
+  /* 倍率をかけても高さは画面ぴったり（余計なスクロールを出さない） */
+  .app { min-height: calc(100vh / var(--z)); }
+  .app.big { min-height: calc(100vh / var(--z) / 1.15); }
+  #layer, #upd, #feat { zoom: var(--z); }
+  @media (min-width: 720px) and (min-height: 560px) { :root { --z: 1.1; } .app { max-width: 800px; } }
+  @media (min-width: 1100px) and (min-height: 600px) { :root { --z: 1.2; } .app { max-width: 860px; } }
+  /* 1920×1080（拡大125%）などの広いパソコン画面：もう少し広げる */
+  @media (min-width: 1400px) and (min-height: 600px) { .app { max-width: 1040px; } }
+  /* 注文タブ（天柳事業所管理の表）はタブレット・パソコンでは横幅いっぱいに使う */
+  @media (min-width: 720px) and (min-height: 560px) { body.tyOn .app { max-width: none; } }
   /* 上の帯（ロゴ3：ダークヘッダー） */
   .top { position: sticky; top: 0; z-index: 5; background: #fff; }
   .bar { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; background: linear-gradient(135deg, #1c2a3a, #26384d); border-bottom: 3px solid #d0452b; }
@@ -191,7 +206,7 @@
   .kdft .pri { background: var(--accent); border-color: var(--accent); color: #fff; }
   .mvb { margin-left: auto; flex: none; font: inherit; font-size: 11px; font-weight: 800; border: 1px solid var(--blue); color: var(--blue); background: #fff; border-radius: 6px; padding: 1px 6px; line-height: 1.6; cursor: pointer; }
   .sh .shs { white-space: nowrap; }
-  .mvw { max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
+  .mvw { max-height: calc((100vh - 40px) / var(--z)); max-height: calc((100dvh - 40px) / var(--z)); display: flex; flex-direction: column; }
   .mvls { overflow-y: auto; margin: 0 -14px; padding: 0 14px; }
   .mvg { font-size: 11px; font-weight: 800; color: var(--faint); background: var(--soft); border-radius: 6px; padding: 3px 8px; margin: 8px 0 2px; }
   .mvr { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--soft); }
@@ -439,6 +454,9 @@
   .hp li { font-size: 14px; line-height: 1.6; padding: 2px 0; }
   /* 確認・お知らせ */
   .mask { position: fixed; inset: 0; background: rgba(20,26,32,.45); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+  /* 窓が画面より高いとき（横向きのスマホなど）も上が切れずにスクロールできるように */
+  body .mask, body .ntf-mask { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; align-items: flex-start; }
+  body .mask > *, body .ntf-mask > * { margin: auto; flex: none; }
   .dlg { background: #fff; border-radius: 14px; padding: 18px 16px 14px; max-width: 340px; width: 100%; text-align: center; }
   .dlg p { margin: 0 0 14px; font-size: 15px; line-height: 1.6; font-weight: 700; }
   .dlg .b2 { display: flex; gap: 8px; }
@@ -1612,7 +1630,7 @@
     var w = $('tyv'); if (w.hidden) { return; }
     var z = parseFloat(getComputedStyle($('app')).zoom) || 1, t = document.querySelector('.top').getBoundingClientRect().bottom;
     var vh = document.documentElement.clientHeight || window.innerHeight;
-    w.style.height = Math.max(300, Math.floor((Math.min(vh, window.innerHeight) - Math.max(0, t)) / z)) + 'px';
+    w.style.height = Math.max(200, Math.floor((Math.min(vh, window.innerHeight) - Math.max(0, t)) / z)) + 'px';
   }
   window.addEventListener('resize', tySize); window.addEventListener('orientationchange', function () { setTimeout(tySize, 300); });
   function ordLinkHtml() {

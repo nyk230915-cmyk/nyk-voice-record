@@ -319,6 +319,22 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
   body #plan td.miss span{font-size:11px;padding:1px 4px}
   body #plan .en-sub{font-size:10px}
 }
+/* タブレット・パソコン：名前の列を細くして（長い名前は折り返す）数字の列を多く見せる */
+@media (min-width:641px){
+  body #plan tbody th{white-space:normal;min-width:150px;max-width:220px;line-height:1.35;overflow-wrap:anywhere}
+  body #plan thead th:first-child{max-width:220px;white-space:normal}
+  body #plan td{min-width:84px}
+}
+/* タブレット（縦）：品目ボタンは名前の下に置いて、名前を1行で読めるようにする */
+@media (min-width:641px) and (max-width:999px){
+  body #plan tbody th{min-width:170px;max-width:200px}
+  body #plan thead th:first-child{max-width:200px}
+  body #plan tbody th .mk{flex-direction:column;align-items:flex-start;gap:3px}
+}
+/* パソコン（広い画面）：注文数・製造・配送の表は画面の幅いっぱいに使う */
+@media (min-width:1000px){
+  body.planOn .wrap{max-width:none;padding-left:24px;padding-right:24px}
+}
 #plan .itb.on{background:#2f6f4f;color:#fff;border-color:#2f6f4f}
 #plan tr.it th,#plan tr.it td{background:#fbfcf8;font-size:13px;border-bottom:1px dashed #e6ebef}
 #plan tr.it th{font-weight:400;color:#3c4f61;padding-left:22px}
