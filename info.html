@@ -1795,7 +1795,7 @@
     PUSH.busy = true; PUSH.msg = '準備しています…'; render();
     var fail = function (m) { PUSH.busy = false; PUSH.msg = m; render(); };
     Notification.requestPermission().then(function (perm) {
-      if (perm !== 'granted') { fail('通知が許可されませんでした。スマホの設定で、このアプリの通知を「許可」にしてください'); return; }
+      if (perm !== 'granted') { fail(IOS ? '通知が止まっています。iPhoneの「設定」→「通知」→「NYKインフォ」→「通知を許可」をオンにしてから、もう一度押してください。一覧に「NYKインフォ」が無いときは、ホーム画面のアイコンを長押し→「ホーム画面から取り除く」→ Safariでもう一度「ホーム画面に追加」して、アイコンから開き直してください' : '通知が止まっています。ブラウザのアドレス欄の左のマーク（🔒など）→「通知」を「許可」にしてから、もう一度押してください'); return; }
       return Promise.all([PUSH.reg ? Promise.resolve(PUSH.reg) : navigator.serviceWorker.register('sw.js'), api('pushKey', [S.key])]).then(function (a) {
         PUSH.reg = a[0]; if (!a[1]) { throw new Error('サーバーの準備がまだです'); }
         return navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(a[1]) }); });
@@ -1828,6 +1828,7 @@
     else if (!PUSH.sub) {
       h += '<div class="pnote">議事録の更新・システムの改修・要発注・天柳事業所の集計・今日の作業の残りを、スマホに通知します。</div>' +
         (pushNeedHome() ? '<div class="pnote warn">iPhone・iPad は、Safari の「共有」→「ホーム画面に追加」をして、ホーム画面のアイコンから開いてから設定してください。</div>' : '') +
+        (!pushNeedHome() && Notification.permission === 'denied' ? '<div class="pnote warn">このスマホでは通知が止まっています。' + (IOS ? 'iPhoneの「設定」→「通知」→「NYKインフォ」→「通知を許可」をオンにしてから押してください。' : 'ブラウザの設定で、このページの通知を「許可」にしてから押してください。') + '</div>' : '') +
         '<button type="button" class="btn" data-push="on"' + (PUSH.busy ? ' disabled' : '') + '>🔔 通知を受け取る</button>';
     } else {
       h += '<div class="pnote">受け取る通知（押すと切り替え）</div><div class="pks">' + Object.keys(PUSH_KINDS).map(function (k) {
