@@ -1630,7 +1630,12 @@
     var w = $('tyv'); if (w.hidden) { return; }
     var z = parseFloat(getComputedStyle($('app')).zoom) || 1, t = document.querySelector('.top').getBoundingClientRect().bottom;
     var vh = document.documentElement.clientHeight || window.innerHeight;
-    w.style.height = Math.max(200, Math.floor((Math.min(vh, window.innerHeight) - Math.max(0, t)) / z)) + 'px';
+    var hv = Math.max(200, Math.min(vh, window.innerHeight) - Math.max(0, t));   // 画面上の実際の高さ
+    w.style.height = Math.floor(hv / z) + 'px';
+    // 中の天柳事業所管理には倍率をかけない（向こうがタブレット・パソコン用に自分で大きさを決めているため。
+    // 倍率をかけると横向きのタブレットで上の部分だけで画面が埋まり、集計の行がほとんど見えなくなる）
+    var f = w.querySelector('iframe');
+    if (f) { f.style.zoom = String(1 / z); f.style.width = Math.floor(w.clientWidth * z) + 'px'; f.style.height = Math.floor(hv) + 'px'; }
   }
   window.addEventListener('resize', tySize); window.addEventListener('orientationchange', function () { setTimeout(tySize, 300); });
   function ordLinkHtml() {
