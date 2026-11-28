@@ -332,7 +332,8 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
 }
 /* パソコン（マウスで使う広い画面）：集計は少し大きく（タブレットと同じ配置のままだと小さく見えるため） */
 @media (any-hover:hover) and (min-width:1100px){
-  body:not(.planOn) .wrap{zoom:1.35;max-width:1400px}
+  /* 余白は倍率で割り戻して、注文数などの画面（余白 上12px・左右24px）とタブの位置をそろえる */
+  body:not(.planOn) .wrap{zoom:1.35;max-width:1400px;padding:calc(12px / 1.35) calc(24px / 1.35) 60px}
   /* 注文数・製造・配送のときも上のタブは集計と同じ大きさ（タブを切り替えても大きさが変わらない） */
   body.planOn #vtabs{zoom:1.35}
 }
