@@ -66,10 +66,6 @@
   .pinv span { flex: 1; min-width: 0; }
   .pinv button { flex: none; border: 0; background: var(--blue); color: #fff; border-radius: 8px; padding: 6px 10px; font-weight: 800; font-size: 12.5px; }
   .pinv button.x { background: none; color: #1f4f7a; padding: 4px 6px; }
-  .tyal { background: #fdecea; border: 2px solid var(--red); border-radius: 12px; padding: 10px 12px; margin: 2px 0 10px; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
-  .tyal .tt { font-weight: 900; font-size: 15px; color: var(--red); }
-  .tyal .ts { grid-column: 1; font-size: 13px; font-weight: 700; color: #7a2a20; }
-  .tyal button { grid-column: 2; grid-row: 1 / span 2; border: 0; background: var(--red); color: #fff; border-radius: 10px; padding: 9px 12px; font-weight: 800; font-size: 13.5px; }
   .ordc p { margin: 0 0 14px; font-size: 13.5px; color: var(--faint); }
   .ordc a.btn { display: block; text-decoration: none; }
   .tabs button { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px 0 5px; font-size: 12px; color: var(--faint); font-weight: 700; background: none; border: 0; border-bottom: 3px solid transparent; }
@@ -375,6 +371,10 @@
   .ar { color: #8a939c; font-size: 10px; }
   .al.q1 { border-color: #f0d77a; background: #fff9e6; } .al.q1 b { color: #8a6200; } .al.q1 .an { background: #e0a400; }
   .al.o1 { border-color: #f0a59b; background: #fff4f2; } .al.o1 b { color: var(--red); } .al.o1 .an { background: #d0452b; }
+  .al.t1 { border-color: var(--red); background: #fdecea; } .al.t1 b { color: var(--red); } .al.t1 .an { background: var(--red); }
+  .tyd2 { font-size: 13px; font-weight: 800; color: #7a2a20; padding-top: 6px; }
+  .tyd3 { font-size: 12px; color: var(--faint); line-height: 1.6; margin: 2px 0 6px; }
+  .tyb2 { border: 0; background: var(--red); color: #fff; border-radius: 9px; padding: 7px 12px; font-weight: 800; font-size: 13px; }
   .al.u1 { border-color: #e6cf9a; background: #fffbef; } .al.u1 b { color: #8a6200; } .al.u1 .an { background: #b08a2e; }
   .ald { border-top: 1px dashed rgba(0,0,0,.12); padding: 2px 10px 6px; background: #fff; }
   .dl { font-size: 13px; line-height: 1.55; padding: 6px 0; border-top: 1px solid var(--soft); display: flex; gap: 8px; }
@@ -830,8 +830,9 @@
     return { main: (m ? m[1] : s).trim() || '—', sub: m ? m[2].replace(/[）)]$/, '') : (it.subs[0] || '') };
   }
   function homeHtml() {
-    var t = today(), c = S.cal, h = tyBannerHtml() + '<div class="dayhead">' + mdLong(t) + ' <span class="badge">今日</span></div>' + pushInviteHtml();
-    // 上の3行
+    var t = today(), c = S.cal, h = '<div class="dayhead">' + mdLong(t) + ' <span class="badge">今日</span></div>' + pushInviteHtml();
+    // 上の行（天柳事業所 目方未入力 → 要確認 → 要発注 → 単価未登録）
+    h += tyBannerHtml();
     var qs = questions();
     if (qs.length) { h += alertRow('q', 'q1', '❓', '要確認', qs.length, qs[0].s + (qs.length > 1 ? ' ほか' : ''), qs.map(function (q) { return '<div class="dl"><small>' + md(q.date) + '</small><span>' + esc(q.s) + '</span></div>'; }).join('')); }
     if (c.orders.length) { var o0 = c.orders[0], s0 = shortage(o0); h += alertRow('o', 'o1', '⚠', '要発注', c.orders.length, o0.item + (s0 ? ' ' + s0 : '') + (c.orders.length > 1 ? ' ほか' : ''), c.orders.map(function (o) { var s = shortage(o); return '<div class="dl"><span><b>' + esc(o.item) + '</b>' + (s ? '　<span class="short">' + esc(s) + '</span>' : '') + (function (d) { var x = [d.h, d.a, d.b].filter(Boolean).map(esc).join('<br>'); return x ? '<br><small>' + x + '</small>' : ''; })(ordDet(o)) + '</span></div>'; }).join('')); }
@@ -1585,7 +1586,7 @@
         ul(['📝 <b>議事録の更新</b>：議事録が新しくなったとき',
           '🆕 <b>システムの改修</b>：アプリに新しい機能が入ったとき',
           '⚠ <b>要発注が増えた</b>：要発注の件数が増えたとき（増えた品目も出ます）',
-          '🏢 <b>天柳事業所の集計</b>：今日の作業に天柳事業所があり、18時を過ぎても集計が全部終わっていないとき（23時まで1時間おき。ホームの一番上にも赤いお知らせが出ます）',
+          '🏢 <b>天柳事業所の目方</b>：今日の作業に天柳事業所があり、18時を過ぎても目方がエクセル（天柳事業所 管理）に入っていないとき（23時まで1時間おき）。「全て完了」を押したのにエクセルに入力できなかったときは、時間に関係なくすぐ届きます。ホームの「要確認」の上にも「天柳事業所 目方未入力／エクセル未入力」が出て、エクセルに入力できると消えます',
           '🏭 <b>今日の作業の残り</b>：18時の時点でチェックが付いていない作業があるとき（1日1回）']) +
         '<b>自分で変えられること（ほかの人には影響しません）</b>' +
         ul(['右上の「👤 名前」→「🔔 スマホへの通知」で、<b>受け取る種類を5つそれぞれオン・オフ</b>できます（押すとすぐ保存）',
@@ -1793,7 +1794,7 @@
   //  通知の中身はサーバー（push_log）に置き、スマホへは合図だけ届く。sw.js が中身を聞きに行って表示する
   // ============================================================
   var PUSH = { ok: !!(window.NYK_API && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window), reg: null, sub: null, prefs: null, kinds: null, busy: false, msg: '' };
-  var PUSH_KINDS = { min: '議事録の更新', sys: 'システムの改修', ord: '要発注が増えた', ty: '天柳事業所の集計（18時以降・1時間おき）', work: '今日の作業の残り（18時）' };
+  var PUSH_KINDS = { min: '議事録の更新', sys: 'システムの改修', ord: '要発注が増えた', ty: '天柳事業所の目方（エクセル未入力）', work: '今日の作業の残り（18時）' };
   function pushNeedHome() { return IOS && !(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)); }
   function b64uToU8(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '==='.slice((s.length + 3) % 4); var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) { u[i] = b.charCodeAt(i); } return u; }
   // sw.js が使う「かぎ」と窓口を渡しておく（sw.js は localStorage を読めないため）
@@ -1866,9 +1867,9 @@
     return '<div class="pinv"><span>🔔 スマホに通知を受け取れます（議事録・要発注・天柳事業所など）</span><button type="button" data-push="set">設定する</button><button type="button" class="x" data-push="hide" aria-label="閉じる">✕</button></div>';
   }
   // 天柳事業所の集計：18時を過ぎて、今日の作業に天柳事業所があり、集計が全部終わっていない時はホームの一番上に出す
-  function tyNeed() { return new Date().getHours() >= 18 && workOf(today()).some(function (it) { return /天柳事業所/.test(it.t); }); }
+  // （18時以降の判定・「全て完了」してもエクセルに入らなかった時の判定はサーバー側 tyAlert_ で行う。ここは5分ごとに聞くだけ）
   function tyCheck(force) {
-    if (!S.data || !tyNeed()) { if (S.tyState) { S.tyState = null; if (S.tab === 'home' && !S.screen) { render(); } } return; }
+    if (!S.data) { return; }
     if (!force && S.tyAt && Date.now() - S.tyAt < 5 * 60000) { return; }
     S.tyAt = Date.now();
     api('pushTyState', [S.key]).then(function (a) {
@@ -1876,10 +1877,17 @@
       if (was !== JSON.stringify(S.tyState) && S.tab === 'home' && !S.screen) { render(); }
     }).catch(function () {});
   }
+  // 「要確認」と同じ形・高さの1行（押すと詳しく）。エクセルに入力できたら消える
   function tyBannerHtml() {
     var a = S.tyState; if (!a || a.done) { return ''; }
-    return '<div class="tyal"><div class="tt">🏢 天柳事業所の集計がまだ終わっていません</div><div class="ts">' + esc(a.text) + '</div>' +
-      (window.NYK_API ? '<button type="button" data-gotab="ord">集計を開く</button>' : '') + '</div>';
+    var fail = a.state === 'fail', label = fail ? 'エクセル未入力' : '目方未入力', open = S.open === 'ty1';
+    var badge = a.state === 'tally' ? '残り' + a.left : fail ? '要対応' : '入力待ち';
+    var sum = String(a.text || '').replace(/^\d{1,2}\/\d{1,2}納品分：/, '');
+    var md0 = a.date ? (+a.date.slice(5, 7)) + '/' + (+a.date.slice(8, 10)) + '納品分 ' : '';
+    return '<div class="al t1"><button type="button" class="alh" data-open="ty1"><span>🏢</span><b>天柳事業所 ' + label + '</b><span class="an">' + esc(badge) + '</span><span class="as">' + esc(md0 + sum) + '</span><span class="ar">' + (open ? '▲' : '▼') + '</span></button>' +
+      (open ? '<div class="ald"><div class="tyd2">' + esc(a.text) + '</div><div class="tyd3">' +
+        (fail ? 'パソコンでエクセル（天柳事業所 管理）を開いて確かめてください。直ると自動で消えます。' : a.state === 'wait' ? 'パソコンが5分ごとにエクセルへ自動で入力します。入力できると消えます。' : '集計で目方を入れて「全て完了」を押すと、エクセルに自動で入力され、消えます。') +
+        '</div>' + (window.NYK_API ? '<button type="button" class="tyb2" data-gotab="ord">集計を開く</button>' : '') + '</div>' : '') + '</div>';
   }
 
   // ============================================================
