@@ -29,12 +29,9 @@
   .app { min-height: calc(100vh / var(--z)); }
   .app.big { min-height: calc(100vh / var(--z) / 1.15); }
   #layer, #upd, #feat { zoom: var(--z); }
-  @media (min-width: 720px) and (min-height: 560px) { :root { --z: 1.1; } .app { max-width: 800px; } }
-  @media (min-width: 1100px) and (min-height: 600px) { :root { --z: 1.2; } .app { max-width: 860px; } }
-  /* 1920×1080（拡大125%）などの広いパソコン画面：もう少し広げる */
-  @media (min-width: 1400px) and (min-height: 600px) { .app { max-width: 1040px; } }
-  /* 注文タブ（天柳事業所管理の表）はタブレット・パソコンでは横幅いっぱいに使う */
-  @media (min-width: 720px) and (min-height: 560px) { body.tyOn .app { max-width: none; } }
+  /* タブレット・パソコン：どのタブも画面の横幅いっぱいに使う（注文タブと同じ幅。タブを切り替えても幅が変わらない） */
+  @media (min-width: 720px) and (min-height: 560px) { :root { --z: 1.1; } .app { max-width: none; } .pad { padding-left: 18px; padding-right: 18px; } }
+  @media (min-width: 1100px) and (min-height: 600px) { :root { --z: 1.2; } .pad { padding-left: 24px; padding-right: 24px; } }
   /* 上の帯（ロゴ3：ダークヘッダー） */
   .top { position: sticky; top: 0; z-index: 5; background: #fff; }
   .bar { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; background: linear-gradient(135deg, #1c2a3a, #26384d); border-bottom: 3px solid #d0452b; }

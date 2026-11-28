@@ -85,6 +85,13 @@ body.iosCold #iosHint{display:block}
 .row .l1 .ko{flex:none;color:var(--ink);font-weight:700}
 .row .short{color:#fff;background:var(--ng);border-radius:5px;padding:0 5px;font-weight:700}
 #flt{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:0 0 8px}
+/* 温度帯（チルド・冷凍）は2つ目の行。品目の4つと組み合わせて絞り込める */
+#flt button.fo{grid-column:span 2}
+#flt button.fo.chil:not(.on){border-color:#9cc7e6;color:#1f5f8b;background:#f2f8fd}
+#flt button.fo.frz:not(.on){border-color:#b7aee8;color:#4b3f9e;background:#f5f3fd}
+#flt button.fo.chil.on{background:#1f5f8b;border-color:#1f5f8b}
+#flt button.fo.frz.on{background:#4b3f9e;border-color:#4b3f9e}
+@media (min-width:700px){ #flt{grid-template-columns:repeat(4,1fr) repeat(2,.9fr)} #flt button.fo{grid-column:auto} }
 #flt button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 2px;color:var(--ink);min-width:0;white-space:nowrap}
 #flt button small{font-weight:400;color:var(--sub);font-size:11px;margin-left:3px}
 #flt button.on{background:#24384f;border-color:#24384f;color:#fff}
@@ -423,6 +430,7 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
     ・「<b>5番 完了</b>」… 5番を完了にする<br>
     ・「<b>5番 3.2キロ 完了</b>」… 目方を入れて完了にする<br>
     ・「<b>5番 3.2キロ</b>」… 目方だけ入れる<br>
+    ・「<b>5番</b>」「<b>6番</b>」「<b>7番</b>」…「<b>完了</b>」… 番号を続けて言い、最後に「完了」でまとめて完了（「5番 6番 7番 完了」と一度に言っても可。目方がいる行は画面で入れます）<br>
     ・「<b>全て完了</b>」… 漏れが無いか確かめる<br>
     ・「5番 取り消し」… 完了を取り消す／「もう一度」… 読み上げをくり返す／「終了」… 音声をやめる<br>
     <b>1日ずつ集計</b>：選んだ納品日の番号だけを集計します。<b>2日同時に集計</b>：「<b>26日の5番 完了</b>」のように納品日も話します（無い時は「何日の納品ですか」と聞き返すので「26日」と答えます）。<br>
@@ -720,10 +728,10 @@ function render(){
       h += '<div class="dhead">'+dLab(d, true)+' 納品<small>'+done+'/'+rows.length+'件 完了'+(x.marks&&x.marks._fin?'　✓ 全て完了 '+esc(x.marks._fin.at.slice(5).replace('-','/'))+' '+esc(x.marks._fin.by||''):'')+'</small></div>';
     }
     if (rows.length && rows[0].auto) { h += '<div class="sub" style="margin:-2px 0 6px">※この日はファイルに番号が無かったので、表の並び順で番号を付けました（上から大きい番号）</div>'; }
-    var shown = rows.filter(function(r){ if (FLT && catOf(r).indexOf(FLT) < 0) { return false; } if (!only) { return true; } var m = markOf(d, r.no) || {}; return !m.d || (needW(r) && !m.w); });
+    var shown = rows.filter(function(r){ if (!fltOk(r)) { return false; } if (!only) { return true; } var m = markOf(d, r.no) || {}; return !m.d || (needW(r) && !m.w); });
     var kc = {}; rows.forEach(function(r){ var k = r.id || ('#'+r.no); kc[k] = (kc[k] || 0) + 1; });
     if (!rows.length) { h += '<div class="empty">この日の行がありません</div>'; }
-    else if (!shown.length) { h += '<div class="empty">'+(FLT ? '「'+FLTN[FLT]+'」の行はありません' : 'まだの分はありません 🎉')+'</div>'; }
+    else if (!shown.length) { h += '<div class="empty">'+(FLT || FLTO ? '「'+fltName()+'」の行はありません' : 'まだの分はありません 🎉')+'</div>'; }
     h += '<div class="rows">' + shown.map(function(r){ return rowHtml(d, r, kc[r.id || ('#'+r.no)]); }).join('') + '</div>';
   });
   $('list').innerHTML = h || '<div class="empty">納品日を選んでください</div>';
@@ -742,6 +750,8 @@ function render(){
 }
 // 品目のフィルター：押すとその種類だけ、もう一度押すと解除
 var FLT = '', FLTN = { w:'目方', kiri:'鶏の切身', hiki:'挽肉', etc:'その他' };
+// 温度帯のフィルター（品目のフィルターと組み合わせられる。例：挽肉＋冷凍）
+var FLTO = '', FLTON = { chil:'チルド', frz:'冷凍' };
 function catOf(r){
   var c = [], it = String(r.item || '');
   if (needW(r)) { c.push('w'); }
@@ -750,11 +760,18 @@ function catOf(r){
   if (!c.length) { c.push('etc'); }
   return c;
 }
+function ondoOf(r){ var o = String(r.ondo || ''); return /冷凍/.test(o) ? 'frz' : /チルド|冷蔵/.test(o) ? 'chil' : ''; }
+function fltOk(r){ return (!FLT || catOf(r).indexOf(FLT) >= 0) && (!FLTO || ondoOf(r) === FLTO); }
+function fltName(){ return [FLT ? FLTN[FLT] : '', FLTO ? FLTON[FLTO] : ''].filter(Boolean).join('・'); }
 function renderFlt(){
-  var cnt = { w:0, kiri:0, hiki:0, etc:0 };
-  selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ catOf(r).forEach(function(c){ cnt[c]++; }); }); });
-  $('flt').innerHTML = Object.keys(FLTN).map(function(k){ return '<button data-k="'+k+'" class="'+(FLT===k?'on':'')+'">'+FLTN[k]+'<small>'+cnt[k]+'</small></button>'; }).join('');
-  [].forEach.call($('flt').querySelectorAll('button'), function(b){ b.onclick = function(){ var k = b.getAttribute('data-k'); FLT = FLT === k ? '' : k; renderFlt(); render(); }; });
+  var cnt = { w:0, kiri:0, hiki:0, etc:0, chil:0, frz:0 };
+  selDates().forEach(function(d){ rowsOf(d).forEach(function(r){ catOf(r).forEach(function(c){ cnt[c]++; }); var o = ondoOf(r); if (o) { cnt[o]++; } }); });
+  $('flt').innerHTML = Object.keys(FLTN).map(function(k){ return '<button data-k="'+k+'" class="'+(FLT===k?'on':'')+'">'+FLTN[k]+'<small>'+cnt[k]+'</small></button>'; }).join('') +
+    Object.keys(FLTON).map(function(k){ return '<button data-o="'+k+'" class="fo '+k+(FLTO===k?' on':'')+'">'+FLTON[k]+'<small>'+cnt[k]+'</small></button>'; }).join('');
+  [].forEach.call($('flt').querySelectorAll('button'), function(b){ b.onclick = function(){
+    var k = b.getAttribute('data-k'), o = b.getAttribute('data-o');
+    if (k) { FLT = FLT === k ? '' : k; } else { FLTO = FLTO === o ? '' : o; }
+    renderFlt(); render(); }; });
 }
 $('onlyLeft').checked = ls(K.left) === '1';
 $('onlyLeft').onchange = function(){ ls(K.left, this.checked ? '1' : '0'); render(); };
@@ -1634,6 +1651,15 @@ function parseCmd(text){
   var w = null, km = t.match(/(\d+(?:\.\d+)?)\s*(キロ|kg|KG|Kg|k|K)(?:グラム)?\s*(\d{1,3})?\s*(グラム|g)?/);
   if (km) { w = parseFloat(km[1]) + (km[3] ? +km[3] / 1000 : 0); t = t.replace(km[0], ' '); o.unit = true; }
   else { var gm = t.match(/(\d+)\s*(グラム|g)/); if (gm) { w = +gm[1] / 1000; t = t.replace(gm[0], ' '); o.unit = true; } }
+  // いくつもの番号：「5番 6番 7番 完了」「5 6 7番 完了」（目方の無い時だけ）
+  if (w == null) {
+    var many = [], mm, reB = /(\d+)\s*番/g;
+    while ((mm = reB.exec(t))) { many.push(+mm[1]); }
+    var lm = t.match(/(\d+(?:\s+\d+)+)\s*番/);
+    if (lm) { lm[1].trim().split(/\s+/).forEach(function(x){ if (many.indexOf(+x) < 0) { many.push(+x); } }); }
+    var rest = t.replace(/(\d+(?:\s+\d+)*)\s*番(号)?/g, ' ');
+    if (many.length > 1 && !/\d/.test(rest)) { o.nos = many.sort(function(a, b){ return a - b; }); o.no = o.nos[0]; return o; }
+  }
   var nums = (t.replace(/番(号)?/g, ' ').match(/\d+(?:\.\d+)?/g) || []);
   if (o.hasBan) {
     var bm = t.match(/(\d+)\s*番/); if (bm) { o.no = +bm[1]; nums.splice(nums.indexOf(bm[1]), 1); }
@@ -1651,6 +1677,8 @@ function quickReady(text){
   if (mode !== 'cmd' || pending || ask2) { return false; }
   var p = parseCmd(text);
   if (p.type === 'finish') { return /(完了|終わり|終了)$/.test(c); }
+  if (p.type === 'mark' && p.no == null && p.done && batchLive() && /^(完了|かんりょう)$/.test(c)) { return true; }
+  if (p.nos) { return p.done && /(完了|かんりょう)$/.test(c) && p.nos.every(function(n){ return selDates().some(function(d){ return findRow(d, n); }); }); }
   if (p.type !== 'mark' || p.no == null || !selDates().some(function(d){ return findRow(d, p.no); })) { return false; }
   if (p.undo) { return /(取り消|取消|キャンセル)(して|て)?$/.test(c); }
   return p.done && /(完了|かんりょう)$/.test(c);
@@ -1667,7 +1695,8 @@ function onHeard(alts){
     var p = parseCmd(alts[i]), sc = 0;
     if (p.type !== 'mark') { sc = 5; }
     else {
-      if (p.no != null) { sc += 1; if (selDates().some(function(d){ return findRow(d, p.no); })) { sc += 2; } }
+      if (p.nos) { sc += 1 + p.nos.length; }
+      else if (p.no != null) { sc += 1; if (selDates().some(function(d){ return findRow(d, p.no); })) { sc += 2; } }
       if (p.done || p.undo) { sc += 1; }
       if (p.w || p.glued) { sc += 1; }
     }
@@ -1680,8 +1709,11 @@ function doCmd(p, raw){
   // 「◯番」が入っていない言葉（まわりの会話など）は何も言わずに無視する
   // ただし目方や日にちを聞き返している時の答え、「完了」「キロ」付きの言葉は受け取る
   if (p.type === 'mark' && !pending && !ask2 && !p.hasBan && !p.done && !p.undo && !p.unit) { return; }
+  // 続けて言った番号のあとの「完了」だけ → まとめて完了
+  if (p.type === 'mark' && p.no == null && p.done && !p.undo && !p.w && !p.glued && batchLive()) { lastCmdAt = Date.now(); pending = null; ask2 = null; doneMany(BATCH.splice(0)); return; }
   if (p.type === 'mark' && p.no == null && !p.w && !p.glued && !pending && !ask2) { return; }
   lastCmdAt = Date.now();
+  if (p.type === 'mark' && p.nos && !p.undo) { pending = null; ask2 = null; manyNos(p); return; }
   if (p.type === 'stop') { pending = null; ask2 = null; setMode('wake'); say('集計の聞き取りを止めます。「集計」と話すと再開します'); return; }
   if (p.type === 'repeat') { say(say.last || '番号と完了を話してください'); return; }
   if (p.type === 'finish') { pending = null; ask2 = null; finish(true); return; }
@@ -1730,8 +1762,63 @@ function doCmd(p, raw){
   if (!findRow(d1, p.no)) { say(p.no + '番はありません'); return; }
   apply(d1, p);
 }
+// ---------- 番号を続けて言って、最後に「完了」でまとめて完了 ----------
+// 「5番」「6番」「7番」…「完了」／「5番 6番 7番 完了」のどちらでもよい。最後に番号を言ってから90秒で忘れる
+var BATCH = [], batchAt = 0;
+function batchLive(){ if (BATCH.length && Date.now() - batchAt > 90000) { BATCH = []; batchShow(); } return BATCH.length > 0; }
+function batchAdd(d, no){
+  batchLive();
+  if (!BATCH.some(function(x){ return x.d === d && x.no === no; })) { BATCH.push({ d: d, no: no }); }
+  batchAt = Date.now(); batchShow();
+}
+function batchLab(list){ var two = selDates().length > 1; return list.map(function(x){ return (two ? (+x.d.slice(8)) + '日の' : '') + x.no + '番'; }).join('、'); }
+function batchShow(){
+  var el = $('heard'); if (!el) { return; }
+  if (BATCH.length > 1) { el.textContent = 'まとめて完了を待っています：' + batchLab(BATCH) + '（最後に「完了」と話してください）'; }
+}
+// 1回の言葉に番号がいくつもある時
+function manyNos(p){
+  var all = selDates(), d0 = null;
+  if (both()) {
+    if (!p.day) { say('2日同時の時は、26日の5番、6番、完了、のように納品日も話してください'); return; }
+    d0 = all.filter(function(d){ return +d.slice(8) === p.day; })[0];
+    if (!d0) { say(p.day + '日は選ばれていません'); return; }
+  } else {
+    d0 = all[0];
+    if (p.day && +d0.slice(8) !== p.day) { say('いまは' + (+d0.slice(8)) + '日の集計中です'); return; }
+  }
+  var miss = p.nos.filter(function(n){ return !findRow(d0, n); });
+  if (miss.length) { say(miss.join('番、') + '番はありません。もう一度どうぞ'); return; }
+  var list = p.nos.map(function(n){ return { d: d0, no: n }; });
+  if (p.done) { doneMany(list); return; }
+  list.forEach(function(x){ batchAdd(x.d, x.no); });
+  say(batchLab(list) + '。続けて番号を言うか、最後に完了と話してください');
+}
+// まとめて完了にする
+function doneMany(list){
+  BATCH = []; batchAt = 0;
+  var todo = [], already = [], noW = [];
+  list.forEach(function(x){
+    var r = findRow(x.d, x.no); if (!r) { return; }
+    var m = markOf(x.d, x.no) || {};
+    if (m.d) { already.push(x); return; }
+    todo.push(x);
+    if (needW(r) && !m.w) { noW.push(x); }
+  });
+  todo.forEach(function(x){ flash(x.d, x.no); });
+  var t = todo.length ? batchLab(todo) + '、完了' : '';
+  if (already.length) { t += (t ? '。' : '') + batchLab(already) + 'は完了済みです'; }
+  if (noW.length) { t += '。' + batchLab(noW) + 'は目方が未入力です。画面で目方を入れてください'; }
+  say(t || '完了にする番号がありません');
+  $('heard').textContent = todo.length ? 'まとめて完了：' + batchLab(todo) : '';
+  if (todo.length === 1) { lastUndo = { d: todo[0].d, no: todo[0].no, before: markOf(todo[0].d, todo[0].no) || {} }; }
+  todo.forEach(function(x){
+    mark(x.d, x.no, { done: true }).catch(function(){ say(x.no + '番を記録できませんでした。電波を確かめて、もう一度話してください'); });
+  });
+}
 function apply(d, p){
   pending = null;
+  if (p.done || p.undo) { BATCH = []; }
   var r = findRow(d, p.no), m = markOf(d, p.no) || {}, two = selDates().length > 1;
   var head = headOf(d, r);
   if (p.undo) {
@@ -1744,7 +1831,10 @@ function apply(d, p){
   var wIgnored = false;
   if (p.w && !needW(r)) { wIgnored = true; p = Object.assign({}, p, { w: null }); }
   if (wIgnored && !p.done) { flash(d, p.no); say(head + '。この行は目方の入力はいりません'); return; }
-  if (!p.done && !p.w) {   // 番号だけ：内容を読み上げる
+  if (!p.done && !p.w) {   // 番号だけ：内容を読み上げる（あとで「完了」だけ言えばまとめて完了にできるよう覚えておく）
+    batchAdd(d, p.no);
+    // 2つ目からは番号だけ返す（続けて言っている途中なので短く）
+    if (BATCH.length > 1) { flash(d, p.no); say((two ? (+d.slice(8)) + '日の' : '') + p.no + '番'); return; }
     var info = head + (r.qty ? '' : '、発注量なし') + (m.d ? '、完了しています' : '') + (m.w ? '、目方' + m.w + 'キロ' : '');
     if (needW(r) && !m.w) { pending = { d: d, no: p.no, done: false }; info += '。目方を言ってください'; }
     flash(d, p.no); say(info); return;
