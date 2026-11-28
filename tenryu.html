@@ -343,7 +343,7 @@ body #plan .msec tr.sz th{white-space:nowrap;max-width:none;position:static}
 
 <div id="addAlert"><div class="box"><div class="t">🔔 新規注文が追加されました</div><div class="sub" id="addMsg"></div><ul id="addList"></ul><button id="addOk">確認しました</button></div></div>
 <div class="wrap">
-<div id="vtabs"><button data-v="meat">🥩 注文数</button><button data-v="mfg">🏭 製造</button><button data-v="tally" class="on">🎙️ 集計</button><button data-v="en">🚚 配送</button></div>
+<div id="vtabs"><button data-v="meat" class="on">🥩 注文数</button><button data-v="mfg">🏭 製造</button><button data-v="tally">🎙️ 集計</button><button data-v="en">🚚 配送</button></div>
 <div id="plan">
   <div class="pwrap">
     <div class="psel" id="planSel"></div>
@@ -1894,7 +1894,8 @@ function iosWarmUp(then){
     $('prompt').textContent = '声がまだ出ていません。もう一度ボタンを押してください\n（音量・マナーモードも確かめてください）';
   }, 1500);
 }
-function start(){ iosHint(); var p = loadDates(); if (p && p.then) { p.then(autoWake); } else { autoWake(); } }
+var firstOpen = true;
+function start(){ iosHint(); if (firstOpen) { firstOpen = false; document.querySelector("#vtabs [data-v=meat]").click(); } var p = loadDates(); if (p && p.then) { p.then(autoWake); } else { autoWake(); } }
 if (KEY) { start(); } else { lock(''); }
 </script>
 </body>
